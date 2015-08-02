@@ -217,6 +217,10 @@ char Scanner::scan_char_lit()
 			last_char = read_char();
 			return '\\';
 		}
+		char tmp;
+		tmp = last_char;
+		last_char = read_char();
+		return tmp;
 	} else {
 		char tmp;
 		tmp = last_char;
@@ -292,7 +296,7 @@ Token Scanner::get_token()
     	}
     }
 
-	else if (isalpha(last_char) || last_char == '_') { // reserved word or id
+	if (isalpha(last_char) || last_char == '_') { // reserved word or id
 		do {
 			last_word = last_word + last_char;
 			last_char = read_char();
@@ -465,8 +469,11 @@ Token Scanner::get_token()
 		if (last_char == '=') {
 			last_char = read_char();
 			return TOK_SLASHEQ;		/* /= */
+		} else if (last_char == '/') {
+			last_char = read_char();
+			return TOK_SLASHSLASH;
 		}
-			return TOK_SLASH;
+		return TOK_SLASH;
 	}
 
 	/* ":" - colon */
@@ -562,13 +569,16 @@ Token Scanner::get_token()
 		return TOK_TILDE;
 	}
 
-	if (last_char == -1) {
+	if (last_char == -1 || buf.eof()) {
 		/* pop all indentation */
 		while (indentation.size() > 1) {
-			dedentation_count++;
+			if (indentation.top() > 0) dedentation_count++;
 			indentation.pop();
 		}
-		if (dedentation_count > 0) return TOK_DEDENT;
+		if (dedentation_count > 0) {
+			dedentation_count--;
+			return TOK_DEDENT;
+		}
 		return TOK_EOF;
 	}
 		

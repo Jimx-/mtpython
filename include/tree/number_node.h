@@ -5,24 +5,21 @@
 #include "parse/token.h"
 #include <iostream>
 #include "macros.h"
-#include "type/types.h"
 
 namespace mtpython { 
 namespace tree {
 
-class ValueNode : public Node {
+class NumberNode : public ASTNode {
 private:
-	mtpython::type::Value* val;
-	mtpython::type::Type* type;
 public:
-	ValueNode(const int line_nr);
-	~ValueNode() { SAFE_DELETE(val); SAFE_DELETE(type); }
+	NumberNode(const int line_nr);
+	~NumberNode() {  }
 
 	virtual void print(const int padding) {
 
 	}
 	
-	virtual NodeType get_tag() { return NT_LITERAL; }
+	virtual NodeType get_tag() { return NT_NUMBER; }
 };
 
 }

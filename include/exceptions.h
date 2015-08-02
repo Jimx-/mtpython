@@ -19,6 +19,13 @@ public:
     virtual ~FileNotFoundException() throw() {}
 };
 
+class SyntaxError:public std::runtime_error
+{
+public:
+    SyntaxError (const char * error_msg) :runtime_error(error_msg){}
+    virtual ~SyntaxError() throw() {}
+};
+
 }
 
 #endif /* _EXCEPTIONS_H_ */

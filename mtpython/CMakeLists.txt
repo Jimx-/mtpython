@@ -1,7 +1,7 @@
 SET(MTPYTHON_SRCLIST
 		main.cpp)
 
-SET(LIBRARIES ${mtpython_BINARY_DIR}/lib/libmtpython.a)
+SET(LIBRARIES  libmtpython)
 
 ADD_EXECUTABLE(mtpython ${MTPYTHON_SRCLIST})
 

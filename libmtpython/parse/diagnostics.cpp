@@ -1,4 +1,5 @@
 #include "parse/diagnostics.h"
+#include "exceptions.h"
 #include <iostream>
 
 using mtpython::parse::Diagnostics;
@@ -17,4 +18,6 @@ void Diagnostics::error(int line, int col, const std::string& error_msg)
 	std::cerr << "error: " << error_msg << std::endl;
 	std::cerr << "  " << source.get_line(line) << std::endl;
 	std::cerr << "  " << std::string(" ", col - 1) << "^" << std::endl; 
+
+	throw mtpython::SyntaxError(error_msg.c_str());
 }

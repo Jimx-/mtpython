@@ -3,6 +3,6 @@
 
 #include <cstddef>
 
-#define SAFE_DELETE(p) do { delete p; p = NULL; } while(0)
+#define SAFE_DELETE(p) do { if (p) delete p; p = NULL; } while(0)
 
 #endif /* _MACRO_H_ */

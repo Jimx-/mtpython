@@ -5,7 +5,7 @@
 
 int main(int argc, char * argv[])
 {
-	mtpython::parse::Parser p("a.py");
+	mtpython::parse::Parser p("D:\\a.py");
 
 	/*p.read_token();
 	while (p.last_token() != mtpython::parse::TOK_EOF) {
@@ -13,7 +13,7 @@ int main(int argc, char * argv[])
 		p.read_token();
 	}*/
 
-	p.parse();
-
+	p.parse()->print(0);
+	while (1);
 	return 0;
 }

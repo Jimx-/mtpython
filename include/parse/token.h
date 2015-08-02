@@ -7,11 +7,11 @@ namespace mtpython {
 	namespace parse {
 		typedef enum {
 			TOK_FILE_INPUT,
-			TOK_INDENT, TOK_DEDENT, TOK_IMPORT, TOK_DEF,
-			TOK_ELSE, TOK_ELIF, TOK_FOR, TOK_IF, TOK_WHILE, TOK_TRY, TOK_EXCEPT, TOK_FINALLY, 
-			TOK_EQL, TOK_IDENT, TOK_BREAK, TOK_CONTINUE, TOK_CLASS, TOK_IN, TOK_ERROR, 
+			TOK_INDENT, TOK_DEDENT, TOK_IMPORT, TOK_DEF, TOK_LAMBDA, TOK_DEL, TOK_YIELD, TOK_FROM,
+			TOK_ELSE, TOK_ELIF, TOK_FOR, TOK_IF, TOK_WHILE, TOK_TRY, TOK_EXCEPT, TOK_FINALLY, TOK_RAISE,
+			TOK_EQL, TOK_IDENT, TOK_BREAK, TOK_CONTINUE, TOK_CLASS, TOK_IN, TOK_PASS, TOK_ERROR, 
 
-			TOK_PLUS, TOK_MINUS, TOK_STAR, TOK_STARSTAR, TOK_SLASH, TOK_PERCENT, 
+			TOK_PLUS, TOK_MINUS, TOK_STAR, TOK_STARSTAR, TOK_SLASH, TOK_SLASHSLASH, TOK_PERCENT, 
 			TOK_LPAREN, TOK_RPAREN, TOK_LBRACE, TOK_RBRACE, TOK_LSQUARE, TOK_RSQUARE, 
 			TOK_EQLEQL, TOK_COMMA, TOK_DOT, TOK_COLON, TOK_CARPET,
 			TOK_AND, TOK_OR, TOK_NOT, TOK_AMP, TOK_VERTBAR, TOK_TILDE, TOK_LSSLSS, TOK_GTRGTR,
@@ -29,17 +29,24 @@ namespace mtpython {
 
 		typedef enum {
 			OP_PLUS, OP_MINUS, OP_MUL, OP_DIV, OP_MOD,  /* + - * / % */
-			OP_ASSIGN, OP_PLUSEQ, OP_MINUSEQ, OP_MULEQ, OP_DIVEQ, OP_MODEQ,	/* = += -= *= /= %= */
+			OP_PLUSEQ, OP_MINUSEQ, OP_MULEQ, OP_DIVEQ, OP_MODEQ,	/* += -= *= /= %= */
 			OP_SHL, OP_SHR, OP_AND, OP_OR, OP_BITAND, OP_BITOR,	OP_BITXOR, /* << >> && || & | ^ */
-			OP_LSS, OP_GTR, OP_LSSEQ, OP_GTREQ, OP_EQ, OP_NOTEQ,		/* < > <= >= == != */
 			OP_POWER,	/* ** */
 			INVALID_BINOP
 		} BinaryOper;
+
+		typedef enum {
+			OP_LSS, OP_GTR, OP_LSSEQ, OP_GTREQ, OP_EQ, OP_NOTEQ,		/* < > <= >= == != */
+			INVALID_CMPOP,
+		} CmpOper;
 
 		/* token -> string : debug only */
 		std::string tok2str(Token tok);
 		UnaryOper tok2unop(Token tok);
 		BinaryOper tok2binop(Token tok);
+		std::string binop2str(BinaryOper op);
+		std::string cmpop2str(CmpOper op);
+		CmpOper tok2cmpop(Token tok);
 	}
 }	
 

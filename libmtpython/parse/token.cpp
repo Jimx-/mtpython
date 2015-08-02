@@ -135,6 +135,68 @@ std::string mtpython::parse::tok2str(Token tok)
 	return "UNKNOWN SYMBOL";
 }
 
+std::string mtpython::parse::binop2str(BinaryOper op)
+{
+	switch (op) {
+	case OP_PLUS:
+		return "+";
+	case OP_MINUS:
+		return "-";
+	case OP_MUL:
+		return "*";
+	case OP_DIV:
+		return "/";
+	case OP_MOD:
+		return "%";
+	case OP_SHL:
+		return "<<";
+	case OP_SHR:
+		return ">>";
+	case OP_AND:
+		return "and";
+	case OP_OR:
+		return "or";
+	case OP_BITAND:
+		return "&";
+	case OP_BITOR:
+		return "|";
+	case OP_BITXOR:
+		return "^";
+	case OP_POWER:
+		return "**";
+	case OP_PLUSEQ:
+		return "+=";
+	case OP_MINUSEQ:
+		return "-=";
+	case OP_MULEQ:
+		return "*=";
+	case OP_DIVEQ:
+		return "/=";
+	}
+
+	return "INVALID BINOP";
+}
+
+std::string mtpython::parse::cmpop2str(CmpOper op)
+{
+	switch (op) {
+	case OP_EQ:
+		return "==";
+	case OP_NOTEQ:
+		return "!=";
+	case OP_LSS:
+		return "<";
+	case OP_GTR:
+		return ">";
+	case OP_LSSEQ:
+		return "<=";
+	case OP_GTREQ:
+		return ">=";
+	}
+
+	return "INVALID CMPOP";
+}
+
 UnaryOper mtpython::parse::tok2unop(Token tok)
 {
 	switch (tok) {
@@ -185,24 +247,34 @@ BinaryOper mtpython::parse::tok2binop(Token tok)
 		return OP_BITOR;
 	case TOK_CARPET:
 		return OP_BITXOR;
-	case TOK_NEQ:
-		return OP_NOTEQ;
-	case TOK_LSS:
-		return OP_LSS;
-	case TOK_GTR:
-		return OP_GTR;
 	case TOK_LSSLSS:
 		return OP_SHL;
 	case TOK_GTRGTR:
 		return OP_SHR;
-	case TOK_LEQ:
-		return OP_LSSEQ;
-	case TOK_GEQ:
-		return OP_GTREQ;
 	case TOK_STARSTAR:
 		return OP_POWER;
 	default:
 		break;
 	}
 	return INVALID_BINOP;
+}
+
+CmpOper mtpython::parse::tok2cmpop(Token tok)
+{
+	switch (tok) {
+	case TOK_EQLEQL:
+		return OP_EQ;
+	case TOK_NEQ:
+		return OP_NOTEQ;
+	case TOK_LSS:
+		return OP_LSS;
+	case TOK_GTR:
+		return OP_GTR;
+	case TOK_LEQ:
+		return OP_LSSEQ;
+	case TOK_GEQ:
+		return OP_GTREQ;
+	}
+
+	return INVALID_CMPOP;
 }
