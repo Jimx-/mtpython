@@ -1,7 +1,7 @@
 #ifndef _AUGASSIGN_NODE_
 #define _AUGASSIGN_NODE_
 
-#include "tree/node.h"
+#include "tree/nodes/node.h"
 #include "parse/token.h"
 #include <iostream>
 #include <vector>

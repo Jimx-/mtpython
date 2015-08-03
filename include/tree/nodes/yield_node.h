@@ -1,7 +1,7 @@
-#ifndef _YIELDFROM_NODE_
-#define _YIELDFROM_NODE_
+#ifndef _YIELD_NODE_
+#define _YIELD_NODE_
 
-#include "tree/node.h"
+#include "tree/nodes/node.h"
 #include "parse/token.h"
 #include <iostream>
 #include "macros.h"
@@ -9,29 +9,29 @@
 namespace mtpython { 
 namespace tree {
 
-class YieldFromNode : public ASTNode {
+class YieldNode : public ASTNode {
 private:
 	ASTNode* value;
 public:
-	YieldFromNode(const int line_nr);
-	~YieldFromNode() { SAFE_DELETE(value); }
+	YieldNode(const int line_nr);
+	~YieldNode() { SAFE_DELETE(value); }
 
 	ASTNode* get_value() { return value; }
 	void set_value(ASTNode* value) { this->value = value; }
 
 	virtual void print(const int padding) {
 		std::string blank(padding, ' ');
-		std::cout << blank << line << ": YieldFrom: "<< std::endl;
+		std::cout << blank << line << ": Yield: "<< std::endl;
 		std::cout << blank << "  " << line << ": Value: "<< std::endl;
 		if (value) value->print(padding + 4);
 	}
 	
-	virtual NodeType get_tag() { return NT_YIELDFROM; }
+	virtual NodeType get_tag() { return NT_YIELD; }
 
-	virtual void visit(ASTVisitor* visitor) { visitor->visit_yieldfrom(this); }
+	virtual void visit(ASTVisitor* visitor) { visitor->visit_yield(this); }
 };
 
 }
 }
 
-#endif /* _YIELDFROM_NODE_ */
+#endif /* _YIELD_NODE_ */

@@ -1,7 +1,7 @@
 #ifndef _MODULE_NODE_
 #define _MODULE_NODE_
 
-#include "tree/node.h"
+#include "tree/nodes/node.h"
 #include "parse/token.h"
 #include <iostream>
 #include "macros.h"

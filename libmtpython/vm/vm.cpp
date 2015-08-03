@@ -1,5 +1,5 @@
 #include "parse/parser.h"
-#include "tree/print_visitor.h"
+#include "tree/visitors/print_visitor.h"
 #include "vm/vm.h"
 
 using namespace mtpython::vm;

@@ -1,7 +1,7 @@
-#ifndef _WHILE_NODE_
-#define _WHILE_NODE_
+#ifndef _IF_NODE_
+#define _IF_NODE_
 
-#include "tree/node.h"
+#include "tree/nodes/node.h"
 #include "parse/token.h"
 #include <iostream>
 #include "macros.h"
@@ -9,12 +9,12 @@
 namespace mtpython { 
 namespace tree {
 
-class WhileNode : public ASTNode {
+class IfNode : public ASTNode {
 private:
 	ASTNode* test, *body, *orelse; 
 public:
-	WhileNode(const int line_nr);
-	~WhileNode() { SAFE_DELETE(test); SAFE_DELETE(body); SAFE_DELETE(orelse); }
+	IfNode(const int line_nr);
+	~IfNode() { SAFE_DELETE(test); SAFE_DELETE(body); SAFE_DELETE(orelse); }
 
 	ASTNode * get_test() { return test; }
 	void set_test(ASTNode * test) { this->test = test; }
@@ -25,7 +25,7 @@ public:
 
 	virtual void print(const int padding) {
 		std::string blank(padding, ' ');
-		std::cout << blank << line << ": While:" << std::endl;
+		std::cout << blank << line << ": If:" << std::endl;
 		std::cout << blank << "  " << line << ": Test:" << std::endl;
 		test->print(padding + 4);
 		
@@ -46,12 +46,12 @@ public:
 		}
 	}
 
-	virtual NodeType get_tag() { return NT_WHILE; }
+	virtual NodeType get_tag() { return NT_IF; }
 
-	virtual void visit(ASTVisitor* visitor) { visitor->visit_while(this); }
+	virtual void visit(ASTVisitor* visitor) { visitor->visit_if(this); }
 };
 
 }
 }
 
-#endif /* _WHILE_NODE_ */
+#endif /* _IF_NODE_ */

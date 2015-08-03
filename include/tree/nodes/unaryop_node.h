@@ -1,7 +1,7 @@
 #ifndef _UNARYOP_NODE_
 #define _UNARYOP_NODE_
 
-#include "tree/node.h"
+#include "tree/nodes/node.h"
 #include "parse/token.h"
 #include <iostream>
 #include "macros.h"

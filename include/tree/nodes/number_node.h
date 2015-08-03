@@ -1,7 +1,7 @@
 #ifndef _VALUE_NODE_
 #define _VALUE_NODE_
 
-#include "tree/node.h"
+#include "tree/nodes/node.h"
 #include "parse/token.h"
 #include "objects/base_object.h"
 #include <iostream>
