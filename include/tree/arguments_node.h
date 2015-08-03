@@ -17,6 +17,7 @@ public:
 	ArgumentsNode(const int line_nr);
 	~ArgumentsNode() { args.clear(); }
 
+	std::vector<ASTNode*>& get_args() { return args; }
 	void push_arg(ASTNode* arg) { args.push_back(arg); }
 	virtual NodeType get_tag() { return NT_ARGUMENTS; }
 

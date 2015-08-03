@@ -33,7 +33,8 @@ public:
 		std::cout << blank << "  " << line << ": Right: "<< std::endl;
 		right->print(padding + 4);
 	}
-	
+
+	virtual void visit(ASTVisitor* visitor) { visitor->visit_binop(this); }	
 	virtual NodeType get_tag() { return NT_BINOP; }
 };
 

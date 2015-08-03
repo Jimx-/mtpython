@@ -17,6 +17,7 @@ public:
 	DeleteNode(const int line_nr);
 	~DeleteNode() { targets.clear(); }
 
+	std::vector<ASTNode*>& get_targets() { return targets; }
 	void push_target(ASTNode* target) { targets.push_back(target); }
 	virtual NodeType get_tag() { return NT_DELETE; }
 
@@ -25,6 +26,8 @@ public:
 		std::cout << blank << line << ": Delete:" << std::endl;
 		for (unsigned int i = 0; i < targets.size(); i++) targets[i]->print(padding + 4);
 	}
+
+	virtual void visit(ASTVisitor* visitor) { visitor->visit_delete(this); }
 };
 
 }

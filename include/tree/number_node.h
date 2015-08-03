@@ -27,6 +27,7 @@ public:
 		std::cout << std::endl;
 	}
 	
+	virtual void visit(ASTVisitor* visitor) { visitor->visit_number(this); }
 	virtual NodeType get_tag() { return NT_NUMBER; }
 };
 

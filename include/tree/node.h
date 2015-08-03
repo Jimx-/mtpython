@@ -17,6 +17,8 @@ typedef enum {
     NT_YIELD, NT_YIELDFROM, NT_RAISE, NT_PASS,
 } NodeType;
 
+class ASTVisitor;
+
 class ASTNode {
 protected:
 	int line;					// line nr
@@ -34,6 +36,8 @@ public:
     virtual NodeType get_tag() { return NT_EMPTY; }
     virtual void print(const int padding) { }
 
+    virtual void visit(ASTVisitor* visitor) { }
+
     int length() 
     {
     	int ret = 0;
@@ -44,6 +48,65 @@ public:
     	}
     	return ret;
     }
+};
+
+class ModuleNode;
+class ArgumentsNode;
+class AssignNode;
+class AugAssignNode;
+class BinOpNode;
+class BreakNode;
+class CompareNode;
+class ContinueNode;
+class DeleteNode;
+class ForNode;
+class FunctionDefNode;
+class IfNode;
+class IfExpNode;
+class NameNode;
+class NumberNode;
+class PassNode;
+class RaiseNode;
+class ReturnNode;
+class TupleNode;
+class UnaryOpNode;
+class WhileNode;
+class YieldNode;
+class YieldFromNode;
+
+class ASTVisitor {
+public:
+    virtual void visit_sequence(ASTNode* seq) {
+        ASTNode* node = seq;
+        while (node) {
+            node->visit(this);
+            node = node->get_sibling();
+        }
+    }
+
+    virtual ASTNode* visit_module(ModuleNode* node) { return nullptr; }
+    virtual ASTNode* visit_arguments(ArgumentsNode* node) { return nullptr; }
+    virtual ASTNode* visit_assign(AssignNode* node) { return nullptr; }
+    virtual ASTNode* visit_augassign(AugAssignNode* node) { return nullptr; }
+    virtual ASTNode* visit_binop(BinOpNode* node) { return nullptr; }
+    virtual ASTNode* visit_break(BreakNode* node) { return nullptr; }
+    virtual ASTNode* visit_compare(CompareNode* node) { return nullptr; }
+    virtual ASTNode* visit_continue(ContinueNode* node) { return nullptr; }
+    virtual ASTNode* visit_delete(DeleteNode* node) { return nullptr; }
+    virtual ASTNode* visit_for(ForNode* node) { return nullptr; }
+    virtual ASTNode* visit_functiondef(FunctionDefNode* node) { return nullptr; }
+    virtual ASTNode* visit_if(IfNode* node) { return nullptr; }
+    virtual ASTNode* visit_ifexp(IfExpNode* node) { return nullptr; }
+    virtual ASTNode* visit_name(NameNode* node) { return nullptr; }
+    virtual ASTNode* visit_number(NumberNode* node) { return nullptr; }
+    virtual ASTNode* visit_pass(PassNode* node) { return nullptr; }
+    virtual ASTNode* visit_raise(RaiseNode* node) { return nullptr; }
+    virtual ASTNode* visit_return(ReturnNode* node) { return nullptr; }
+    virtual ASTNode* visit_tuple(TupleNode* node) { return nullptr; }
+    virtual ASTNode* visit_unaryop(UnaryOpNode* node) { return nullptr; }
+    virtual ASTNode* visit_while(WhileNode* node) { return nullptr; }
+    virtual ASTNode* visit_yield(YieldNode* node) { return nullptr; }
+    virtual ASTNode* visit_yieldfrom(YieldFromNode* node) { return nullptr; }
 };
 
 }

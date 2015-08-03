@@ -32,6 +32,8 @@ public:
 	}
 	
 	virtual NodeType get_tag() { return NT_RAISE; }
+
+	virtual void visit(ASTVisitor* visitor) { visitor->visit_raise(this); }
 };
 
 }

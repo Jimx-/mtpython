@@ -19,6 +19,8 @@ public:
 		std::string blank(padding, ' ');
 		std::cout << blank << line << ": Break" << std::endl;
 	}
+
+	virtual void visit(ASTVisitor* visitor) { visitor->visit_break(this); }
 };
 
 }

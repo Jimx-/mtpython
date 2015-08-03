@@ -47,6 +47,8 @@ public:
 	}
 
 	virtual NodeType get_tag() { return NT_WHILE; }
+
+	virtual void visit(ASTVisitor* visitor) { visitor->visit_while(this); }
 };
 
 }

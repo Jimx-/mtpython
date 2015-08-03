@@ -33,6 +33,8 @@ public:
 		std::cout << blank << "  " << line << ": Elements:" << std::endl;
 		for (unsigned int i = 0; i < elts.size(); i++) elts[i]->print(padding + 4);
 	}
+
+	virtual void visit(ASTVisitor* visitor) { visitor->visit_tuple(this); }
 };
 
 }

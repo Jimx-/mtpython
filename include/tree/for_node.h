@@ -51,6 +51,8 @@ public:
 		}
 	}
 	virtual NodeType get_tag() { return NT_FOR; }
+
+	virtual void visit(ASTVisitor* visitor) { visitor->visit_for(this); }
 };
 
 }

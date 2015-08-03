@@ -1,4 +1,5 @@
 #include "parse/parser.h"
+#include "tree/print_visitor.h"
 #include "vm/vm.h"
 
 using namespace mtpython::vm;
@@ -15,7 +16,8 @@ void PyVM::run_file(std::string& filename)
 {
 	Parser parser(space, filename);
 
-	parser.parse()->print(0);
+	parser.parse()->visit(new mtpython::tree::PrintVisitor());
+	//parser.parse()->print(0);
 
 	while(1);
 }

@@ -19,6 +19,8 @@ public:
 		std::string blank(padding, ' ');
 		std::cout << blank << line << ": Pass" << std::endl;
 	}
+
+	virtual void visit(ASTVisitor* visitor) { visitor->visit_pass(this); }
 };
 
 }

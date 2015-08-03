@@ -20,6 +20,7 @@ public:
 
 	ASTNode* get_value() { return value; }
 	void set_value(ASTNode* value) { this->value = value; }
+	std::vector<ASTNode*>& get_targets() { return targets; }
 	void push_target(ASTNode* target) { targets.push_back(target); }
 	void set_targets(std::vector<ASTNode*>& targets) { this->targets = targets; }
 	
@@ -33,6 +34,8 @@ public:
 			std::cout << blank << "  " << line << ": Value:" << std::endl;
 		value->print(padding + 4);
 	}
+
+	virtual void visit(ASTVisitor* visitor) { visitor->visit_assign(this); }
 };
 
 }

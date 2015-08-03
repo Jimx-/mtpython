@@ -22,6 +22,8 @@ public:
 	mtpython::parse::UnaryOper get_op() { return this->op; }
 	void set_op(const mtpython::parse::UnaryOper op) { this->op = op; } 
 	virtual NodeType get_tag() { return NT_UNARY; }
+
+	virtual void visit(ASTVisitor* visitor) { visitor->visit_unaryop(this); }
 };
 
 }

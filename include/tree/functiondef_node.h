@@ -37,6 +37,8 @@ public:
 	}
 	
 	virtual NodeType get_tag() { return NT_FUNCDEF; }
+
+	virtual void visit(ASTVisitor* visitor) { visitor->visit_functiondef(this); }
 };
 
 }

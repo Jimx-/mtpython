@@ -9,6 +9,8 @@
 namespace mtpython { 
 namespace tree {
 
+class ASTVisitor;
+
 class ModuleNode : public ASTNode {
 private:
 	ASTNode* body;
@@ -30,6 +32,8 @@ public:
 		}
 	}
 	
+	virtual void visit(ASTVisitor* visitor) { visitor->visit_module(this); }
+
 	virtual NodeType get_tag() { return NT_MODULE; }
 };
 

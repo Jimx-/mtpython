@@ -28,6 +28,7 @@ public:
 		std::cout << blank << line << ": Ident: " << name << ", Context: " << exprctx2str(ctx) << std::endl;
 	}
 	virtual NodeType get_tag() { return NT_IDENT; }
+	virtual void visit(ASTVisitor* visitor) { visitor->visit_name(this); }
 };
 
 }

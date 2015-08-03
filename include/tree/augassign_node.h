@@ -37,6 +37,8 @@ public:
 		std::cout << blank << "  " << line << ": Value:" << std::endl;
 		value->print(padding + 4);
 	}
+
+	virtual void visit(ASTVisitor* visitor) { visitor->visit_augassign(this); }
 };
 
 }
