@@ -1,4 +1,4 @@
-SET(MTPYTHON_SRCLIST
+SET(LIBMTPYTHON_SRCLIST
 		parse/token.cpp
 		parse/diagnostics.cpp
 		parse/scanner.cpp
@@ -6,9 +6,13 @@ SET(MTPYTHON_SRCLIST
 		tree/nodes.cpp
 		utils/source_buffer.cpp)
 
+FILE(GLOB_RECURSE LIBMTPYTHON_HDRLIST ../include/*.h)
+
+SOURCE_GROUP("Header Files" FILES ${LIBMTPYTHON_HDRLIST})
+
 SET(LIBRARIES )
 
-ADD_LIBRARY(libmtpython ${MTPYTHON_SRCLIST})
+ADD_LIBRARY(libmtpython ${LIBMTPYTHON_SRCLIST} ${LIBMTPYTHON_HDRLIST})
 
 SET_TARGET_PROPERTIES(libmtpython PROPERTIES OUTPUT_NAME "mtpython") 
 
