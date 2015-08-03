@@ -6,12 +6,12 @@ using namespace mtpython::tree;
 
 NODE_CONSTRUCTOR(ModuleNode)
 {
-	body = NULL;
+	body = nullptr;
 }
 
 NODE_CONSTRUCTOR(FunctionDefNode)
 {
-	body = NULL;
+	body = nullptr;
 }
 
 NODE_CONSTRUCTOR(NameNode)
@@ -31,24 +31,24 @@ NODE_CONSTRUCTOR(ReturnNode)
 
 NODE_CONSTRUCTOR(BinOpNode)
 {
-	left = right = NULL;
+	left = right = nullptr;
 }
 
 NODE_CONSTRUCTOR(UnaryOpNode)
 {
-	operand = NULL;
+	operand = nullptr;
 }
 
 NODE_CONSTRUCTOR(CompareNode)
 {
-	left = NULL;
+	left = nullptr;
 }
 
 NODE_CONSTRUCTOR(IfExpNode)
 {
-	test = NULL;
-	body = NULL;
-	orelse = NULL;
+	test = nullptr;
+	body = nullptr;
+	orelse = nullptr;
 }
 
 NODE_CONSTRUCTOR(TupleNode)
@@ -59,14 +59,14 @@ NODE_CONSTRUCTOR(TupleNode)
 
 NODE_CONSTRUCTOR(AssignNode)
 {
-	value = NULL;
+	value = nullptr;
 	targets.clear();
 }
 
 NODE_CONSTRUCTOR(AugAssignNode)
 {
-	value = NULL;
-	target = NULL;
+	value = nullptr;
+	target = nullptr;
 }
 
 NODE_CONSTRUCTOR(BreakNode)
@@ -91,38 +91,43 @@ NODE_CONSTRUCTOR(DeleteNode)
 
 NODE_CONSTRUCTOR(YieldNode)
 {
-	value = NULL;
+	value = nullptr;
 }
 
 NODE_CONSTRUCTOR(YieldFromNode)
 {
-	value = NULL;
+	value = nullptr;
 }
 
 NODE_CONSTRUCTOR(RaiseNode)
 {
-	exc = NULL;
-	cause = NULL;
+	exc = nullptr;
+	cause = nullptr;
 }
 
 NODE_CONSTRUCTOR(IfNode)
 {
-	test = NULL;
-	body = NULL;
-	orelse = NULL;
+	test = nullptr;
+	body = nullptr;
+	orelse = nullptr;
 }
 
 NODE_CONSTRUCTOR(ForNode)
 {
-	target = NULL;
-	iter = NULL;
-	body = NULL;
-	orelse = NULL;
+	target = nullptr;
+	iter = nullptr;
+	body = nullptr;
+	orelse = nullptr;
 }
 
 NODE_CONSTRUCTOR(WhileNode)
 {
-	test = NULL;
-	body = NULL;
-	orelse = NULL;
+	test = nullptr;
+	body = nullptr;
+	orelse = nullptr;
+}
+
+NODE_CONSTRUCTOR(NumberNode)
+{
+	value = nullptr;
 }

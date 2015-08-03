@@ -6,8 +6,9 @@
 using namespace mtpython::parse;
 using namespace mtpython::tree;
 
-Parser::Parser(const std::string& filename): sb(filename), diag(sb), s(sb, diag)
+Parser::Parser(mtpython::objects::ObjSpace* space, const std::string& filename): sb(filename), diag(sb), s(sb, diag)
 {
+	this->space = space;
 	init_res_words(s);
 }
 
@@ -77,7 +78,7 @@ void Parser::init_res_words(Scanner& scn)
 */
 ASTNode* Parser::mod()
 {
-	ASTNode* node = NULL;
+	ASTNode* node = nullptr;
 	switch (cur_tok) {
 	case TOK_FILE_INPUT:
 		match(cur_tok);
@@ -101,8 +102,8 @@ ASTNode* Parser::module()
 	while (cur_tok != TOK_EOF) {
 		ASTNode* n = stmt();
 		if (cur_tok == TOK_SEMICOLON) match(TOK_SEMICOLON);
-		if (n != NULL) {
-			if (tn == NULL)
+		if (n != nullptr) {
+			if (tn == nullptr)
 				body = tn = n;
 			else {
 				tn->set_sibling(n);
@@ -131,8 +132,8 @@ ASTNode* Parser::suite()
 		while (cur_tok != TOK_DEDENT) {
 			ASTNode* n = stmt();
 			if (cur_tok == TOK_SEMICOLON) match(TOK_SEMICOLON);
-			if (n != NULL) {
-				if (tn == NULL)
+			if (n != nullptr) {
+				if (tn == nullptr)
 					node = tn = n;
 				else {
 					tn->set_sibling(n);
@@ -151,7 +152,7 @@ ASTNode* Parser::suite()
 
 ASTNode* Parser::stmt()
 {
-	ASTNode* node = NULL;
+	ASTNode* node = nullptr;
 
 	switch (cur_tok) {
 	case TOK_DEF:
@@ -188,6 +189,7 @@ ASTNode* Parser::stmt()
 		node = pass_stmt();
 		break;
 	case TOK_IDENT:
+	case TOK_INTLITERAL:
 		node = expr_stmt();
 		break;
 	case TOK_INDENT:
@@ -246,13 +248,13 @@ ASTNode* Parser::testlist_comp()
 		while (cur_tok == TOK_COMMA) {
 			match(TOK_COMMA);
 			elt = test();
-			if (elt != NULL) {
+			if (elt != nullptr) {
 				tuple->push_element(elt);
 			}
 		}
 		elt = tuple;
 	} else if (cur_tok == TOK_FOR) {
-		return NULL;
+		return nullptr;
 	}
 
 	return elt;
@@ -268,7 +270,7 @@ ASTNode* Parser::testlist()
 		while (cur_tok == TOK_COMMA) {
 			match(TOK_COMMA);
 			elt = test();
-			if (elt != NULL) {
+			if (elt != nullptr) {
 				tuple->push_element(elt);
 			}
 		}
@@ -281,9 +283,9 @@ ASTNode* Parser::testlist()
 /* test: or_test ['if' or_test 'else' test] | lambdef */
 ASTNode* Parser::test()
 {
-	ASTNode* node = NULL;
+	ASTNode* node = nullptr;
 	if (cur_tok == TOK_LAMBDA) {
-		return NULL;
+		return nullptr;
 	} else {
 		node = or_test();
 		if (cur_tok == TOK_IF) {
@@ -303,10 +305,10 @@ ASTNode* Parser::test()
 ASTNode* Parser::or_test()
 {
     ASTNode* node = and_test();
-    BinOpNode* p = NULL;
+    BinOpNode* p = nullptr;
     while (cur_tok == TOK_OR) {
         p = new BinOpNode(s.get_line());
-        if (p != NULL) {
+        if (p != nullptr) {
             p->set_left(node);     
             p->set_op(OP_OR);  
             match(cur_tok);
@@ -321,10 +323,10 @@ ASTNode* Parser::or_test()
 ASTNode* Parser::and_test()
 {
     ASTNode* node = not_test();
-    BinOpNode* p = NULL;
+    BinOpNode* p = nullptr;
     while (cur_tok == TOK_AND) {
         p = new BinOpNode(s.get_line());
-        if (p != NULL) {
+        if (p != nullptr) {
             p->set_left(node);     
             p->set_op(OP_AND);  
             match(cur_tok);
@@ -338,8 +340,8 @@ ASTNode* Parser::and_test()
 /* not_test: 'not' not_test | comparison */
 ASTNode* Parser::not_test()
 {
-	ASTNode* node = NULL;
-    UnaryOpNode* tmp = NULL;
+	ASTNode* node = nullptr;
+    UnaryOpNode* tmp = nullptr;
 
     if (cur_tok == TOK_NOT) {
     	tmp = new UnaryOpNode(s.get_line());
@@ -385,7 +387,7 @@ ASTNode* Parser::exprlist()
 		while (cur_tok == TOK_COMMA) {
 			match(TOK_COMMA);
 			elt = expr();
-			if (elt != NULL) {
+			if (elt != nullptr) {
 				tuple->push_element(elt);
 			}
 		}
@@ -399,10 +401,10 @@ ASTNode* Parser::exprlist()
 ASTNode* Parser::expr()
 {
     ASTNode* node = xor_expr();
-    BinOpNode* p = NULL;
+    BinOpNode* p = nullptr;
     while (cur_tok == TOK_VERTBAR) {
         p = new BinOpNode(s.get_line());
-        if (p != NULL) {
+        if (p != nullptr) {
             p->set_left(node);     
             p->set_op(tok2binop(cur_tok));  
             match(cur_tok);
@@ -417,10 +419,10 @@ ASTNode* Parser::expr()
 ASTNode* Parser::xor_expr()
 {
     ASTNode* node = and_expr();
-    BinOpNode* p = NULL;
+    BinOpNode* p = nullptr;
     while (cur_tok == TOK_CARPET) {
         p = new BinOpNode(s.get_line());
-        if (p != NULL) {
+        if (p != nullptr) {
             p->set_left(node);     
             p->set_op(tok2binop(cur_tok));  
             match(cur_tok);
@@ -435,10 +437,10 @@ ASTNode* Parser::xor_expr()
 ASTNode* Parser::and_expr()
 {
     ASTNode* node = shift_expr();
-    BinOpNode* p = NULL;
+    BinOpNode* p = nullptr;
     while (cur_tok == TOK_AMP) {
         p = new BinOpNode(s.get_line());
-        if (p != NULL) {
+        if (p != nullptr) {
             p->set_left(node);     
             p->set_op(tok2binop(cur_tok));  
             match(cur_tok);
@@ -453,10 +455,10 @@ ASTNode* Parser::and_expr()
 ASTNode* Parser::shift_expr()
 {
     ASTNode* node = arith_expr();
-    BinOpNode* p = NULL;
+    BinOpNode* p = nullptr;
     if ((cur_tok == TOK_LSSLSS) || (cur_tok == TOK_GTRGTR)) {
         p = new BinOpNode(s.get_line());
-        if (p != NULL) {
+        if (p != nullptr) {
             p->set_left(node);     
             p->set_op(tok2binop(cur_tok));  
             match(cur_tok);
@@ -471,10 +473,10 @@ ASTNode* Parser::shift_expr()
 ASTNode* Parser::arith_expr()
 {
     ASTNode* node = term();
-    BinOpNode * p = NULL;
+    BinOpNode * p = nullptr;
     while ((cur_tok == TOK_PLUS) || (cur_tok == TOK_MINUS)) { 
         p = new BinOpNode(s.get_line()); 
-        if (p != NULL) {
+        if (p != nullptr) {
             p->set_left(node);
             p->set_op(tok2binop(cur_tok));
             match(cur_tok);
@@ -489,10 +491,10 @@ ASTNode* Parser::arith_expr()
 ASTNode* Parser::term()
 {
     ASTNode* node = factor();
-    BinOpNode * p = NULL;
+    BinOpNode * p = nullptr;
     while ((cur_tok == TOK_STAR) || (cur_tok == TOK_SLASH) || (cur_tok == TOK_PERCENT) || (cur_tok == TOK_SLASHSLASH)) { 
         p = new BinOpNode(s.get_line());  
-        if (p != NULL) {
+        if (p != nullptr) {
             p->set_left(node);
             p->set_op(tok2binop(cur_tok));
             match(cur_tok);
@@ -506,8 +508,8 @@ ASTNode* Parser::term()
 /* factor: ('+'|'-'|'~') factor | power */
 ASTNode* Parser::factor()
 {
-    ASTNode* node = NULL;
-    UnaryOpNode* tmp = NULL;
+    ASTNode* node = nullptr;
+    UnaryOpNode* tmp = nullptr;
 	Token tok = cur_tok;
 	switch (cur_tok) {
 	case TOK_TILDE:
@@ -537,11 +539,11 @@ ASTNode* Parser::factor()
 ASTNode* Parser::power()
 {
     ASTNode* node = atom();
-    BinOpNode* p = NULL;
+    BinOpNode* p = nullptr;
     while (cur_tok == TOK_STARSTAR)
     { 
         p = new BinOpNode(s.get_line());  
-        if (p != NULL) 
+        if (p != nullptr) 
         {
             p->set_left(node);
             p->set_op(tok2binop(cur_tok));
@@ -559,7 +561,7 @@ ASTNode* Parser::power()
        NAME | NUMBER | STRING+ | '...' | 'None' | 'True' | 'False') */
 ASTNode* Parser::atom()
 {
-    ASTNode* node = NULL;
+    ASTNode* node = nullptr;
     switch (cur_tok) 
     {
     case TOK_IDENT :
@@ -577,17 +579,31 @@ ASTNode* Parser::atom()
     case TOK_LONGLITERAL:
     case TOK_FLOATLITERAL:
     case TOK_DOUBLELITERAL:
+    	node = parse_number();
+    	break;
     case TOK_CHARLITERAL:
     case TOK_STRINGLITERAL:
     case TOK_TRUE:
     case TOK_FALSE:
     case TOK_NONE:
-         node = NULL;
+         node = nullptr;
          break;
     default:
-		return NULL;
+		return nullptr;
     }
     return node;
+}
+
+ASTNode* Parser::parse_number()
+{
+	NumberNode* node = new NumberNode(s.get_line());
+
+	if (cur_tok == TOK_INTLITERAL) {
+		node->set_value(space->wrap_int(s.get_last_strnum()));
+		match(TOK_INTLITERAL);
+	}
+
+	return node;
 }
 
 ASTNode* Parser::yield_expr()
@@ -608,7 +624,7 @@ ASTNode* Parser::yield_expr()
 		return node;
 	}
 
-	return NULL;
+	return nullptr;
 }
 
 /* funcdef: 'def' NAME parameters ['->' test] ':' suite */
@@ -781,7 +797,7 @@ ASTNode* Parser::raise_stmt()
 ASTNode* Parser::arguments()
 {
 	ArgumentsNode* node = new ArgumentsNode(s.get_line());
-	ASTNode* p = NULL;
+	ASTNode* p = nullptr;
 	match(TOK_LPAREN);
 	if (cur_tok != TOK_RPAREN) {
 		p = expr();

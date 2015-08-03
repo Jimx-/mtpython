@@ -1,19 +1,16 @@
 #include <string>
 #include <iostream>
-#include "utils/source_buffer.h"
-#include "parse/parser.h"
+
+#include "objects/std/obj_space_std.h"
+#include "vm/vm.h"
 
 int main(int argc, char * argv[])
 {
-	mtpython::parse::Parser p("D:\\a.py");
+	mtpython::objects::StdObjSpace space;
+	mtpython::vm::PyVM vm(&space);
 
-	/*p.read_token();
-	while (p.last_token() != mtpython::parse::TOK_EOF) {
-		std::cout << mtpython::parse::tok2str(p.last_token()) << std::endl;
-		p.read_token();
-	}*/
+	std::string path("D:\\a.py");
+	vm.run_file(path);
 
-	p.parse()->print(0);
-	while (1);
 	return 0;
 }

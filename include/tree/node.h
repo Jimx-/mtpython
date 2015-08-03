@@ -7,7 +7,7 @@
 namespace mtpython {
 namespace tree {
 
-#define error_tree NULL
+#define error_tree nullptr
 
 typedef enum {
 	NT_EMPTY, NT_IF, NT_FOR, NT_FOREACH, NT_ASSIGN, NT_AUGASSIGN, NT_WHILE, NT_DOWHILE, NT_TRY,
@@ -24,7 +24,7 @@ protected:
 	ASTNode* sibling;		// sibling node
 	
 public:
-    ASTNode(const int line_nr) : line(line_nr) { sibling = NULL; }
+    ASTNode(const int line_nr) : line(line_nr) { sibling = nullptr; }
     ~ASTNode() { }
 
     int get_line() { return line; }

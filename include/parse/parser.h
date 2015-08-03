@@ -4,6 +4,7 @@
 #include "parse/token.h"
 #include "parse/scanner.h"
 #include "tree/nodes.h"
+#include "objects/obj_space.h"
 #include <string>
 
 namespace mtpython {
@@ -11,6 +12,8 @@ namespace mtpython {
 
 		class Parser {
 		protected:
+			mtpython::objects::ObjSpace* space;
+
 			mtpython::utils::SourceBuffer sb;
 			mtpython::parse::Diagnostics diag;
 			mtpython::parse::Scanner s;
@@ -55,10 +58,11 @@ namespace mtpython {
 			mtpython::tree::ASTNode* factor();
 			mtpython::tree::ASTNode* power();
 			mtpython::tree::ASTNode* atom();
+			mtpython::tree::ASTNode* parse_number();
 			mtpython::tree::ASTNode* yield_expr();
 			mtpython::tree::ASTNode* name();
 		public:
-			Parser(const std::string& filename);
+			Parser(mtpython::objects::ObjSpace* space, const std::string& filename);
 			~Parser();
 
 			void read_token();

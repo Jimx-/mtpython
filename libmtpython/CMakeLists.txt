@@ -4,7 +4,10 @@ SET(LIBMTPYTHON_SRCLIST
 		parse/scanner.cpp
 		parse/parser.cpp
 		tree/nodes.cpp
-		utils/source_buffer.cpp)
+		utils/source_buffer.cpp
+		objects/std/int_object.cpp
+		objects/std/obj_space_std.cpp
+		vm/vm.cpp)
 
 FILE(GLOB_RECURSE LIBMTPYTHON_HDRLIST ../include/*.h)
 

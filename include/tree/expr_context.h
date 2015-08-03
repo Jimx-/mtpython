@@ -7,8 +7,6 @@
 namespace mtpython {
 namespace tree {
 
-#define error_tree NULL
-
 typedef enum {
 	EC_LOAD, EC_STORE, EC_DEL, EC_PARAM,
 } ExprContext;
