@@ -8,7 +8,7 @@ using namespace mtpython::vm;
 using namespace mtpython::objects;
 using namespace mtpython::parse;
 
-PyVM::PyVM(ObjSpace* space)
+PyVM::PyVM(ObjSpace* space) : main_thread(this, space)
 {
 	this->space = space;
 	space->set_vm(this);

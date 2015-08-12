@@ -11,6 +11,7 @@ SET(LIBMTPYTHON_SRCLIST
 		objects/std/int_object.cpp
 		objects/std/obj_space_std.cpp
 		interpreter/pycode.cpp
+		vm/thread_context.cpp
 		vm/vm.cpp)
 
 FILE(GLOB_RECURSE LIBMTPYTHON_HDRLIST ../include/*.h)
