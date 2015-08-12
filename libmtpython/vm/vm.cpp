@@ -1,5 +1,7 @@
 #include "parse/parser.h"
-#include "tree/visitors/print_visitor.h"
+#include "parse/symtable.h"
+#include "parse/codegen.h"
+#include "interpreter/pycode.h"
 #include "vm/vm.h"
 
 using namespace mtpython::vm;
@@ -16,8 +18,10 @@ void PyVM::run_file(std::string& filename)
 {
 	Parser parser(space, filename);
 
-	parser.parse()->visit(new mtpython::tree::PrintVisitor());
-	//parser.parse()->print(0);
+	mtpython::tree::ASTNode* module = parser.parse();
+	SymtableVisitor symtab(space, module);
+	ModuleCodeGenerator codegen(space, module, &symtab);
+	mtpython::interpreter::PyCode* code = codegen.build();
 
 	while(1);
 }

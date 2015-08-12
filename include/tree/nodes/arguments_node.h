@@ -26,6 +26,8 @@ public:
 		std::cout << blank << line << ": Arguments:" << std::endl;
 		for (unsigned int i = 0; i < args.size(); i++) args[i]->print(padding + 4);
 	}
+
+	virtual void visit(ASTVisitor* visitor) { visitor->visit_arguments(this); }
 };
 
 }

@@ -3,10 +3,14 @@ SET(LIBMTPYTHON_SRCLIST
 		parse/diagnostics.cpp
 		parse/scanner.cpp
 		parse/parser.cpp
+		parse/symtable.cpp
+		parse/code_builder.cpp
+		parse/codegen.cpp
 		tree/nodes.cpp
 		utils/source_buffer.cpp
 		objects/std/int_object.cpp
 		objects/std/obj_space_std.cpp
+		interpreter/pycode.cpp
 		vm/vm.cpp)
 
 FILE(GLOB_RECURSE LIBMTPYTHON_HDRLIST ../include/*.h)
