@@ -3,6 +3,7 @@
 
 #include "parse/token.h"
 #include "parse/scanner.h"
+#include "parse/compile_info.h"
 #include "tree/nodes.h"
 #include "objects/obj_space.h"
 #include <string>
@@ -62,7 +63,7 @@ namespace mtpython {
 			mtpython::tree::ASTNode* yield_expr();
 			mtpython::tree::ASTNode* name();
 		public:
-			Parser(mtpython::objects::ObjSpace* space, const std::string& filename);
+			Parser(mtpython::objects::ObjSpace* space, const std::string& source, CompileInfo* info);
 			~Parser();
 
 			void read_token();

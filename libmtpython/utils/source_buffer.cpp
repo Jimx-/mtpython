@@ -8,14 +8,48 @@
 using namespace std;
 using namespace mtpython::utils;
 
-SourceBuffer::SourceBuffer(const string& filename)
+SourceBuffer::SourceBuffer(const string& source, mtpython::parse::SourceType src_type)
 {
-	load_file(filename);
+	load_source(source);
+	this->src_type = src_type;
 }
 
 SourceBuffer::SourceBuffer(vector<char>::iterator first, vector<char>::iterator last) : buf(first, last), fname("<no file>")
 {
 	pos = 0;
+}
+
+int SourceBuffer::load_source(const string& source)
+{	
+	int idx = 0;
+
+	buf.clear();
+	
+	char tmp = 0;
+	line_offset.push_back(0);
+	/* line 1 starts from offset 0 */
+	line_offset.push_back(0);
+	while (true) {
+		tmp = 0;
+		if (idx == source.length()) break;
+		tmp = source[idx++];
+		/* deal with CRLF */
+		if (tmp == '\n' || tmp == '\r') {
+			buf.push_back('\n');
+			line_offset.push_back(buf.size());
+		}
+		while (tmp == '\n' || tmp == '\r') {
+			if (idx == source.length()) break;
+			tmp = source[idx++];
+		}
+		buf.push_back(tmp);
+	}
+
+	line_offset.push_back(buf.size());
+
+	pos = 0;
+
+	return 0;
 }
 
 int SourceBuffer::load_file(const string& filename)
@@ -57,12 +91,12 @@ int SourceBuffer::load_file(const string& filename)
 	pos = 0;
 	str.close();
 
-	src_type = ST_FILE_INPUT;
+	src_type = mtpython::parse::SourceType::ST_FILE_INPUT;
 	
 	return 0;
 }
 	
-SourceType SourceBuffer::get_src_type()
+mtpython::parse::SourceType SourceBuffer::get_src_type()
 {
 	return src_type;
 }

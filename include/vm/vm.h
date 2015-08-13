@@ -4,6 +4,11 @@
 #include "objects/obj_space.h"
 
 namespace mtpython {
+
+namespace interpreter {
+class BaseCompiler;
+}
+
 namespace vm {
 
 class PyVM;
@@ -12,10 +17,14 @@ class ThreadContext {
 private:
 	PyVM* vm;
 	mtpython::objects::ObjSpace* space;
+	mtpython::interpreter::BaseCompiler* compiler;
 public:
 	ThreadContext(PyVM* vm, mtpython::objects::ObjSpace* space);
+	~ThreadContext();
 
+	mtpython::interpreter::BaseCompiler* get_compiler() { return compiler; }
 	mtpython::objects::ObjSpace* get_space() { return space; }
+
 };
 
 class PyVM {

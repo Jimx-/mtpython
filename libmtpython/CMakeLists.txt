@@ -8,9 +8,11 @@ SET(LIBMTPYTHON_SRCLIST
 		parse/codegen.cpp
 		tree/nodes.cpp
 		utils/source_buffer.cpp
+		objects/obj_space.cpp
 		objects/std/int_object.cpp
 		objects/std/obj_space_std.cpp
 		interpreter/pycode.cpp
+		interpreter/compiler.cpp
 		vm/thread_context.cpp
 		vm/vm.cpp)
 

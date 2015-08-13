@@ -15,9 +15,9 @@ namespace mtpython {
 		class Scanner {
 		private:
 			/* current source file */
-			utils::SourceBuffer buf;
+			utils::SourceBuffer* buf;
 			/* diagnostics */
-			Diagnostics diagnostics;
+			Diagnostics* diagnostics;
 			/* reserve word list */
 			std::unordered_map<std::string, Token> res_words;
 
@@ -51,7 +51,7 @@ namespace mtpython {
 			Token scan_hex_exponent_and_suffix();
 			char scan_char_lit();
 		public:
-			Scanner(const utils::SourceBuffer& sb, const Diagnostics& diag);
+			Scanner(utils::SourceBuffer* sb, Diagnostics* diag);
 
 			void add_res_word(const std::string& key, Token tok);
 			Token get_token();

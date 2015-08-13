@@ -6,7 +6,7 @@
 using namespace mtpython::parse;
 using namespace mtpython::tree;
 
-Parser::Parser(mtpython::objects::ObjSpace* space, const std::string& filename): sb(filename), diag(sb), s(sb, diag)
+Parser::Parser(mtpython::objects::ObjSpace* space, const std::string& source, CompileInfo* info): sb(source, info->get_type()), diag(info, &sb), s(&sb, &diag)
 {
 	this->space = space;
 	init_res_words(s);

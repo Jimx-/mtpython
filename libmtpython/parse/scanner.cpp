@@ -7,7 +7,7 @@ using namespace std;
 using namespace mtpython::parse;
 using namespace mtpython::utils;
 
-Scanner::Scanner(const SourceBuffer& sb, const Diagnostics& diag) : buf(sb), diagnostics(diag)
+Scanner::Scanner(SourceBuffer* sb, Diagnostics* diag) : buf(sb), diagnostics(diag)
 {
 	line = 1;
 	col = 0;
@@ -23,9 +23,9 @@ char Scanner::read_char()
 {
 	char ret = 0;
 	
-    if (buf.eof()) return -1;
+    if (buf->eof()) return -1;
     /* can not use input_file >> ret because it will skip white space char */
-	ret = buf.read();
+	ret = buf->read();
 	col++;
 
 	return ret;	
@@ -50,7 +50,7 @@ int Scanner::char2digit(int base, char ch)
 	int i, ret = -1;
 
 	if (ch > 0x7f) {
-	    diagnostics.error(line, col, "illegal nonascii digit");
+	    diagnostics->error(line, col, "illegal nonascii digit");
 	}
 
 	for (i = 0; i < base; i++) {
@@ -125,7 +125,7 @@ void Scanner::scan_fraction()
 			} while (isdigit(last_char));
 			return;
 	    }
-	    diagnostics.error(line, col, "malformed floating point literal");
+	    diagnostics->error(line, col, "malformed floating point literal");
 	}
 }
 
@@ -171,11 +171,11 @@ Token Scanner::scan_hex_exponent_and_suffix()
 				last_char = read_char();
 			} while (isdigit(last_char));
 		} else {
-			diagnostics.error(line, col, "malformed floating point literal");
+			diagnostics->error(line, col, "malformed floating point literal");
 			return TOK_ERROR;
 		}
 	} else {
-	    diagnostics.error(line, col, "malformed floating point literal");
+	    diagnostics->error(line, col, "malformed floating point literal");
 		return TOK_ERROR;
 	}
 
@@ -234,7 +234,7 @@ Token Scanner::get_token()
 {
 	if (at_start) {
 		at_start = false;
-		SourceType type = buf.get_src_type();
+		SourceType type = buf->get_src_type();
 
 		switch (type) {
 		case ST_FILE_INPUT:
@@ -275,7 +275,7 @@ Token Scanner::get_token()
     	char indentation_char = last_char;
     	while ((last_char == ' ') || (last_char == '\t')) {
     		if (last_char != indentation_char) { /* error: mixed tabs and spaces */
-    			diagnostics.error(line, col, "inconsistent use of tabs and spaces in indentation");
+    			diagnostics->error(line, col, "inconsistent use of tabs and spaces in indentation");
     			return TOK_ERROR;
     		}
     		indentation_level++;
@@ -319,7 +319,7 @@ Token Scanner::get_token()
 		else if (last_char == 'x' || last_char == 'X') {
 			last_char = read_char();
 			if (char2digit(16, last_char) < 0) {
-				diagnostics.error(line, col, "invalid hex number");
+				diagnostics->error(line, col, "invalid hex number");
 				return TOK_ERROR;
 			} else {
 				return scan_number(16);
@@ -351,12 +351,12 @@ Token Scanner::get_token()
 		last_char = read_char();
 		if (last_char == '\'') {
 			last_char = read_char();
-			diagnostics.error(line, col, "empty character literal");
+			diagnostics->error(line, col, "empty character literal");
 			return TOK_ERROR;
 		}
 		else if (last_char == '\n' || last_char == '\r') {
 			last_char = read_char();
-			diagnostics.error(line, col, "illegal line end in character literal");
+			diagnostics->error(line, col, "illegal line end in character literal");
 			return TOK_ERROR;
 		}
 		last_char_lit = scan_char_lit();
@@ -365,7 +365,7 @@ Token Scanner::get_token()
 			return TOK_CHARLITERAL;
 		} else {
 			last_char = read_char();
-			diagnostics.error(line, col, "unclosed character literal");
+			diagnostics->error(line, col, "unclosed character literal");
 			return TOK_ERROR;
 		}
 	} */
@@ -386,7 +386,7 @@ Token Scanner::get_token()
 			return TOK_STRINGLITERAL;
 		} else {
 			last_char = read_char();
-			diagnostics.error(line, col, "unclosed string literal");
+			diagnostics->error(line, col, "unclosed string literal");
 			return TOK_ERROR;
 		}
 	}
@@ -406,7 +406,7 @@ Token Scanner::get_token()
 			return TOK_STRINGLITERAL;
 		} else {
 			last_char = read_char();
-			diagnostics.error(line, col, "unclosed string literal");
+			diagnostics->error(line, col, "unclosed string literal");
 			return TOK_ERROR;
 		}
 	}
@@ -569,7 +569,7 @@ Token Scanner::get_token()
 		return TOK_TILDE;
 	}
 
-	if (last_char == -1 || buf.eof()) {
+	if (last_char == -1 || buf->eof()) {
 		/* pop all indentation */
 		while (indentation.size() > 1) {
 			if (indentation.top() > 0) dedentation_count++;
@@ -591,18 +591,18 @@ Token Scanner::get_token()
 	ss >> error_msg;
 	error_msg += ")";
 
-	diagnostics.error(line, col, error_msg);
+	diagnostics->error(line, col, error_msg);
 	return TOK_ERROR;
 }
 
 int Scanner::cur_pos()
 {
-	return buf.tell_pos();
+	return buf->tell_pos();
 }
 
 void Scanner::peek_begin()
 {
-	peek_start_pos = buf.tell_pos();
+	peek_start_pos = buf->tell_pos();
 }
 
 Token Scanner::peek_token()
@@ -612,7 +612,7 @@ Token Scanner::peek_token()
 
 void Scanner::peek_end()
 {
-	buf.seek(peek_start_pos);
+	buf->seek(peek_start_pos);
 }
 
 void Scanner::close_input()
