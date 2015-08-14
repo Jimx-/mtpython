@@ -19,7 +19,7 @@ protected:
 
     virtual int get_code_flags() { return 0; }
 public:
-	BaseCodeGenerator(std::string& name, mtpython::objects::ObjSpace* space, mtpython::tree::ASTNode* module, SymtableVisitor* symtab, int lineno);
+	BaseCodeGenerator(std::string& name, mtpython::objects::ObjSpace* space, mtpython::tree::ASTNode* module, SymtableVisitor* symtab, int lineno, CompileInfo* info);
 
 	/*virtual ASTNode* visit_module(ModuleNode* node); */
     //virtual mtpython::tree::ASTNode* visit_arguments(mtpython::tree::ArgumentsNode* node);
@@ -50,7 +50,7 @@ class ModuleCodeGenerator : public BaseCodeGenerator {
 private:
 	virtual void compile(mtpython::tree::ASTNode* node);
 public:
-	ModuleCodeGenerator(mtpython::objects::ObjSpace* space, mtpython::tree::ASTNode* module, SymtableVisitor* symtab);
+	ModuleCodeGenerator(mtpython::objects::ObjSpace* space, mtpython::tree::ASTNode* module, SymtableVisitor* symtab, CompileInfo* info);
 };
 
 }

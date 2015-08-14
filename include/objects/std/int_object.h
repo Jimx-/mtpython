@@ -14,6 +14,13 @@ public:
 	M_StdIntObject(int x);
 	M_StdIntObject(std::string& x);
 
+	static M_BaseObject* __repr__(mtpython::vm::ThreadContext* context, mtpython::objects::M_BaseObject* self);
+
+
+	static interpreter::Typedef* _int_typedef();
+	
+	virtual interpreter::Typedef* get_typedef();
+
 	virtual void dbg_print();
 };
 

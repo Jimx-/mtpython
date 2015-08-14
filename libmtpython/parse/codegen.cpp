@@ -9,7 +9,7 @@ using namespace mtpython::objects;
 static std::unordered_map<int, int> name_ops_default = {{EC_LOAD, LOAD_NAME}, {EC_STORE, STORE_NAME}, {EC_DEL, DELETE_NAME}};
 static std::unordered_map<int, int> name_ops_fast = {{EC_LOAD, LOAD_FAST}, {EC_STORE, STORE_FAST}, {EC_DEL, DELETE_FAST}};
 
-BaseCodeGenerator::BaseCodeGenerator(std::string& name, ObjSpace* space, ASTNode* module, SymtableVisitor* symtab, int lineno) : CodeBuilder(name, space, symtab->find_scope(module), lineno)
+BaseCodeGenerator::BaseCodeGenerator(std::string& name, ObjSpace* space, ASTNode* module, SymtableVisitor* symtab, int lineno, CompileInfo* info) : CodeBuilder(name, space, symtab->find_scope(module), lineno, info)
 {
 	this->scope = symtab->find_scope(module);
 	this->symtab = symtab;
@@ -88,7 +88,7 @@ ASTNode* BaseCodeGenerator::visit_number(NumberNode* node)
 	return node;
 }
 
-ModuleCodeGenerator::ModuleCodeGenerator(mtpython::objects::ObjSpace* space, mtpython::tree::ASTNode* module, SymtableVisitor* symtab) : BaseCodeGenerator(std::string("module"), space, module, symtab, -1)
+ModuleCodeGenerator::ModuleCodeGenerator(mtpython::objects::ObjSpace* space, mtpython::tree::ASTNode* module, SymtableVisitor* symtab, CompileInfo* info) : BaseCodeGenerator(std::string("module"), space, module, symtab, -1, info)
 {
 	compile(module);
 }

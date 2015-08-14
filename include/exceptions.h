@@ -26,6 +26,13 @@ public:
     virtual ~SyntaxError() throw() {}
 };
 
+class TypeError:public std::runtime_error
+{
+public:
+    TypeError (const char * error_msg) :runtime_error(error_msg){}
+    virtual ~TypeError() throw() {}
+};
+
 }
 
 #endif /* _EXCEPTIONS_H_ */

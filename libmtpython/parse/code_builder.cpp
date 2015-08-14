@@ -134,10 +134,11 @@ static void vector2map(std::vector<T>& vec, std::unordered_map<T, int>& map)
 	}
 }
 
-CodeBuilder::CodeBuilder(std::string& name, mtpython::objects::ObjSpace* space, Scope* scope, int first_lineno) : name(name)
+CodeBuilder::CodeBuilder(std::string& name, mtpython::objects::ObjSpace* space, Scope* scope, int first_lineno, CompileInfo* info) : name(name)
 {
 	this->first_lineno = first_lineno;
 	this->space = space;
+	compile_info = info;
 	this->first_block = new CodeBlock();
 	set_block(this->first_block);
 	lineno = 0;
@@ -370,7 +371,7 @@ mtpython::interpreter::PyCode* CodeBuilder::build()
 		varnames_array,
 		freevars_array,
 		cellvars_array,
-		std::string("<module>"),
+		compile_info->get_filename(),
 		name,
 		first_lineno,
 		lnotab);

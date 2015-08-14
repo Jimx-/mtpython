@@ -8,7 +8,7 @@
 namespace mtpython {
 namespace interpreter {
 
-class PyCode : public M_Code {
+class PyCode : public Code {
 private:
 	mtpython::objects::ObjSpace* space;
 	int co_argcount;

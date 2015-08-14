@@ -16,13 +16,13 @@ protected:
 public:
 	BaseCompiler(vm::ThreadContext* context) : space(context->get_space()) { }
 
-	virtual M_Code* compile(std::string& source, std::string& filename, mtpython::parse::SourceType type, int flags) { return nullptr; }
+	virtual Code* compile(std::string& source, std::string& filename, mtpython::parse::SourceType type, int flags) { return nullptr; }
 };
 
 class PyCompiler : public BaseCompiler {
 public:
 	PyCompiler(vm::ThreadContext* context);
-	virtual M_Code* compile(std::string& source, std::string& filename, mtpython::parse::SourceType type, int flags);
+	virtual Code* compile(std::string& source, std::string& filename, mtpython::parse::SourceType type, int flags);
 };
 
 }

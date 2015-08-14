@@ -13,7 +13,7 @@ PyCompiler::PyCompiler(mtpython::vm::ThreadContext* context) : BaseCompiler(cont
 
 }
 
-M_Code* PyCompiler::compile(std::string& source, std::string& filename, mtpython::parse::SourceType type, int flags)
+Code* PyCompiler::compile(std::string& source, std::string& filename, mtpython::parse::SourceType type, int flags)
 {
 	CompileInfo info(filename, type, flags);
 
@@ -21,7 +21,7 @@ M_Code* PyCompiler::compile(std::string& source, std::string& filename, mtpython
 
 	mtpython::tree::ASTNode* module = parser.parse();
 	SymtableVisitor symtab(space, module);
-	ModuleCodeGenerator codegen(space, module, &symtab);
+	ModuleCodeGenerator codegen(space, module, &symtab, &info);
 	mtpython::interpreter::PyCode* code = codegen.build();
 
 	return code;

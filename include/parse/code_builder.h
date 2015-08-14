@@ -7,6 +7,7 @@
 #include "tools/opcode.h"
 #include "parse/symtable.h"
 #include "interpreter/pycode.h"
+#include "parse/compile_info.h"
 #include <vector>
 #include <unordered_map>
 
@@ -78,6 +79,8 @@ private:
 	void build_lnotab(std::vector<CodeBlock*>& blocks, std::vector<char>& lnotab);
 
 protected:
+	CompileInfo* compile_info;
+	
 	std::unordered_map<std::string, int> names;
 	std::unordered_map<std::string, int> varnames;
 	std::unordered_map<std::string, int> freevars;
@@ -90,7 +93,7 @@ protected:
 
 	int opcode_stack_effect(char op, int arg);
 public:
-	CodeBuilder(std::string& name, mtpython::objects::ObjSpace* space, Scope* scope, int first_lineno);
+	CodeBuilder(std::string& name, mtpython::objects::ObjSpace* space, Scope* scope, int first_lineno, CompileInfo* info);
 
 	mtpython::interpreter::PyCode* build();
 

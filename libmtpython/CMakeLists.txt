@@ -10,9 +10,14 @@ SET(LIBMTPYTHON_SRCLIST
 		utils/source_buffer.cpp
 		objects/obj_space.cpp
 		objects/std/int_object.cpp
+		objects/std/object_object.cpp
+		objects/std/type_object.cpp
 		objects/std/obj_space_std.cpp
 		interpreter/pycode.cpp
 		interpreter/compiler.cpp
+		interpreter/typedef.cpp
+		interpreter/gateway.cpp
+		interpreter/function.cpp
 		vm/thread_context.cpp
 		vm/vm.cpp)
 
