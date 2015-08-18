@@ -9,8 +9,10 @@ SET(LIBMTPYTHON_SRCLIST
 		tree/nodes.cpp
 		utils/source_buffer.cpp
 		objects/obj_space.cpp
+		objects/base_object.cpp
 		objects/std/int_object.cpp
 		objects/std/object_object.cpp
+		objects/std/str_object.cpp
 		objects/std/type_object.cpp
 		objects/std/obj_space_std.cpp
 		interpreter/pycode.cpp
@@ -18,6 +20,7 @@ SET(LIBMTPYTHON_SRCLIST
 		interpreter/typedef.cpp
 		interpreter/gateway.cpp
 		interpreter/function.cpp
+		interpreter/pyframe.cpp
 		vm/thread_context.cpp
 		vm/vm.cpp)
 

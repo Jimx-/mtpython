@@ -16,11 +16,17 @@ private:
 	std::string name;
 	std::vector<M_BaseObject*> bases;
 	std::unordered_map<std::string, M_BaseObject*> dict;
+	std::vector<M_BaseObject*> mro;
 
+	void init_mro();
 public:
 	StdTypeObject(ObjSpace* space, std::string& name, std::vector<M_BaseObject*>& bases, std::unordered_map<std::string, M_BaseObject*>& dict);
 
 	static interpreter::Typedef* _type_typedef();
+
+	virtual M_BaseObject* get_dict_value(ObjSpace* space, std::string& attr);
+
+	virtual M_BaseObject* lookup_cls(std::string& attr, M_BaseObject*& cls);
 };
 
 class StdTypedefCache : public TypedefCache {

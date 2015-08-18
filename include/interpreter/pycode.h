@@ -3,6 +3,7 @@
 
 #include "objects/obj_space.h"
 #include "interpreter/code.h"
+#include "vm/vm.h"
 #include <vector>
 
 namespace mtpython {
@@ -30,6 +31,11 @@ public:
 			std::vector<char>& code, std::vector<mtpython::objects::M_BaseObject*>& consts, 
 			std::vector<std::string>& names, std::vector<std::string>& varnames, std::vector<std::string>& freevars,
 			std::vector<std::string>& cellvars, std::string& filename, std::string& name, int firstlineno, std::vector<char>& lnotab);
+
+	std::vector<char>& get_code() { return co_code; }
+	std::vector<mtpython::objects::M_BaseObject*>& get_consts() { return co_consts; }
+
+	virtual objects::M_BaseObject* exec_code(vm::ThreadContext* context, objects::M_BaseObject* globals, objects::M_BaseObject* locals);
 };
 
 }

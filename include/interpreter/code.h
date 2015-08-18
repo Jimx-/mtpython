@@ -27,6 +27,11 @@ public:
 	{
 		return nullptr;
 	}
+
+	virtual objects::M_BaseObject* exec_code(vm::ThreadContext* context, objects::M_BaseObject* globals, objects::M_BaseObject* locals)
+	{
+		return nullptr;
+	}
 };
 
 }

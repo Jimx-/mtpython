@@ -30,7 +30,7 @@ void PyVM::run_file(std::string& filename)
     file.read(&source[0], source.size());
     file.close();
 
-    main_thread.get_compiler()->compile(source, filename, mtpython::parse::SourceType::ST_FILE_INPUT, 0);
+    main_thread.get_compiler()->compile(source, filename, mtpython::parse::SourceType::ST_FILE_INPUT, 0)->exec_code(&main_thread, nullptr, nullptr);
 
 	while(1);
 }

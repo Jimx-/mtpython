@@ -25,6 +25,8 @@ public:
 	mtpython::interpreter::BaseCompiler* get_compiler() { return compiler; }
 	mtpython::objects::ObjSpace* get_space() { return space; }
 
+	void gc_track_object(mtpython::objects::M_BaseObject* obj) { }
+	void gc_untrack_object(mtpython::objects::M_BaseObject* obj) { }
 };
 
 class PyVM {

@@ -16,10 +16,13 @@ public:
 
 	static M_BaseObject* __repr__(mtpython::vm::ThreadContext* context, mtpython::objects::M_BaseObject* self);
 
+	static M_BaseObject* __add__(mtpython::vm::ThreadContext* context, mtpython::objects::M_BaseObject* self, mtpython::objects::M_BaseObject* other);
+
 
 	static interpreter::Typedef* _int_typedef();
-	
 	virtual interpreter::Typedef* get_typedef();
+
+	virtual int to_int(ObjSpace* space, bool allow_conversion) { return intval; }
 
 	virtual void dbg_print();
 };
