@@ -72,7 +72,7 @@ int PyFrame::execute_bytecode(ThreadContext* context, std::vector<unsigned char>
 	try {
 		next_pc = dispatch_bytecode(context, bytecode, next_pc);
 	}
-	catch (const InterpError& e) {
+	catch (InterpError& e) {
 		next_pc = handle_interp_error(e);
 	}
 
@@ -82,6 +82,7 @@ int PyFrame::execute_bytecode(ThreadContext* context, std::vector<unsigned char>
 int PyFrame::handle_interp_error(InterpError& exc)
 {
 	context->gc_track_object(exc.get_value());
+	return 0;
 }
 
 int PyFrame::dispatch_bytecode(ThreadContext* context, std::vector<unsigned char>& bytecode, int next_pc)

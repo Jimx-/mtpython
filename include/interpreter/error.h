@@ -18,7 +18,7 @@ namespace mtpython {
 		public:
 			InterpError(objects::M_BaseObject* type, objects::M_BaseObject* value) : std::runtime_error("Interpreter exception"), type(type), value(value) { }
 		
-			objects::M_BaseObject* get_value();
+			objects::M_BaseObject* get_value() { return value; }
 			
 			template<typename ... Args>
 			static InterpError format(objects::ObjSpace* space, objects::M_BaseObject* type, const char* format, Args ... args)

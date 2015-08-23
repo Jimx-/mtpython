@@ -121,6 +121,11 @@ public:
 		return node; 
 	}
 
+	virtual ASTNode* visit_string(StringNode* node)
+	{
+		return node;
+	}
+
 	virtual ASTNode* visit_pass(PassNode* node) 
 	{ 
 		return node;

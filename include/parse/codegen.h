@@ -37,6 +37,7 @@ public:
     virtual ASTNode* visit_ifexp(IfExpNode* node);*/
     virtual mtpython::tree::ASTNode* visit_name(mtpython::tree::NameNode* node);
     virtual mtpython::tree::ASTNode* visit_number(mtpython::tree::NumberNode* node);
+    virtual mtpython::tree::ASTNode* visit_string(mtpython::tree::StringNode* node);
     /*virtual ASTNode* visit_pass(PassNode* node);
     virtual ASTNode* visit_raise(RaiseNode* node);
     virtual ASTNode* visit_return(ReturnNode* node);

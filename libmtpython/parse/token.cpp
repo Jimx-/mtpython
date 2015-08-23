@@ -41,8 +41,6 @@ std::string mtpython::parse::tok2str(Token tok)
 		return "INT_LITERAL";
 	case TOK_LONGLITERAL:
 		return "LONG_LITERAL";
-	case TOK_CHARLITERAL:
-		return "CHAR_LITERAL";
 	case TOK_STRINGLITERAL:
 		return "STRING_LITERAL";
 	case TOK_FLOATLITERAL:

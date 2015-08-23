@@ -602,8 +602,15 @@ ASTNode* Parser::atom()
     case TOK_DOUBLELITERAL:
     	node = parse_number();
     	break;
-    case TOK_CHARLITERAL:
     case TOK_STRINGLITERAL:
+	{
+		/* TODO: handle encoding, str concat */
+		StringNode* str_node = new StringNode(s.get_line());
+		str_node->set_value(space->wrap_str(s.get_last_string()));
+		match(TOK_STRINGLITERAL);
+		node = str_node;
+		break;
+	}
     case TOK_TRUE:
     case TOK_FALSE:
     case TOK_NONE:

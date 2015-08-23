@@ -132,6 +132,11 @@ NODE_CONSTRUCTOR(NumberNode)
 	value = nullptr;
 }
 
+NODE_CONSTRUCTOR(StringNode)
+{
+	value = nullptr;
+}
+
 NODE_CONSTRUCTOR(CallNode)
 {
 	func = nullptr;

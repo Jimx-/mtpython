@@ -371,38 +371,15 @@ Token Scanner::get_token()
 	} */
 
 	/* string literal */
-	else if (last_char == '\"') {
+	else if (last_char == '\"' || last_char == '\'') {
+		char end_char = last_char;
 		last_string = "";
 		last_char = read_char();
-		while (last_char != '\"' && last_char != '\n' && last_char != '\r' && last_char != (-1)) {
+		while (last_char != end_char && last_char != '\n' && last_char != '\r' && last_char != (-1)) {
 			last_string = last_string + scan_char_lit();
 		}
-		if (last_char == '\"') {
+		if (last_char == end_char) {
 			last_char = read_char();
-			if (last_string.length() == 1) {
-				last_char = last_string[0];
-				return TOK_CHARLITERAL;
-			} 
-			return TOK_STRINGLITERAL;
-		} else {
-			last_char = read_char();
-			diagnostics->error(line, col, "unclosed string literal");
-			return TOK_ERROR;
-		}
-	}
-
-	else if (last_char == '\'') {
-		last_string = "";
-		last_char = read_char();
-		while (last_char != '\'' && last_char != '\n' && last_char != '\r' && last_char != (-1)) {
-			last_string = last_string + scan_char_lit();
-		}
-		if (last_char == '\'') {
-			last_char = read_char();
-			if (last_string.length() == 1) {
-				last_char = last_string[0];
-				return TOK_CHARLITERAL;
-			} 
 			return TOK_STRINGLITERAL;
 		} else {
 			last_char = read_char();

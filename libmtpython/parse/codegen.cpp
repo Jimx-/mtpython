@@ -117,6 +117,14 @@ ASTNode* BaseCodeGenerator::visit_number(NumberNode* node)
 	return node;
 }
 
+ASTNode* BaseCodeGenerator::visit_string(StringNode* node)
+{
+	set_lineno(node->get_line());
+	load_const(node->get_value());
+
+	return node;
+}
+
 ModuleCodeGenerator::ModuleCodeGenerator(mtpython::objects::ObjSpace* space, mtpython::tree::ASTNode* module, SymtableVisitor* symtab, CompileInfo* info) : BaseCodeGenerator(std::string("module"), space, module, symtab, -1, info)
 {
 	compile(module);
