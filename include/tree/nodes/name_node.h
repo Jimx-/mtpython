@@ -1,5 +1,5 @@
-#ifndef _IDENT_NODE_
-#define _IDENT_NODE_
+#ifndef _NAME_NODE_
+#define _NAME_NODE_
 
 #include "tree/nodes/node.h"
 #include "parse/token.h"
@@ -34,4 +34,4 @@ public:
 }
 }
 
-#endif /* _FUNCTIONDEF_NODE_ */
+#endif /* _NAME_NODE_ */

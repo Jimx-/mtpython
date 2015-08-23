@@ -4,6 +4,8 @@
 #include "exceptions.h"
 #include <fstream>
 
+#include "interpreter/module.h"
+
 using namespace mtpython::vm;
 using namespace mtpython::objects;
 using namespace mtpython::parse;
@@ -30,7 +32,7 @@ void PyVM::run_file(std::string& filename)
     file.read(&source[0], source.size());
     file.close();
 
-    main_thread.get_compiler()->compile(source, filename, mtpython::parse::SourceType::ST_FILE_INPUT, 0)->exec_code(&main_thread, nullptr, nullptr);
+    main_thread.get_compiler()->compile(source, filename, mtpython::parse::SourceType::ST_FILE_INPUT, 0)->exec_code(&main_thread, space->new_dict(), nullptr);
 
 	while(1);
 }

@@ -37,6 +37,9 @@ private:
 public:
 	PyVM(mtpython::objects::ObjSpace* space);
 
+	/* we have only one thread now */
+	ThreadContext* current_thread() { return &main_thread; }
+
 	void run_file(std::string& filename);
 };
 

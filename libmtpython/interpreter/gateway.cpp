@@ -9,26 +9,45 @@ using namespace mtpython::vm;
 
 M_BaseObject* BuiltinCode::funcrun_obj(ThreadContext* context, M_BaseObject* func, M_BaseObject* obj, Arguments& args)
 {
-	return this->func(context, obj, args);
+	std::vector<M_BaseObject*> scope;
+	args.parse(obj, sig, scope);
+
+	return this->func(context, scope);
 }
 
-M_BaseObject* BuiltinCode1::funcrun(ThreadContext* context, M_BaseObject* func, Arguments& args)
+M_BaseObject* BuiltinCode1::funcrun_obj(ThreadContext* context, M_BaseObject* func, M_BaseObject* obj, Arguments& args)
 {
-	if (args.size() != 1) throw TypeError("function takes exactly 1 arguments");
+	std::vector<M_BaseObject*> scope;
+	args.parse(obj, sig, scope);
+	
+	if (scope.size() != 1) throw TypeError("function takes exactly 1 arguments");
 
-	return this->func(context, args[0]);
+	return this->func(context, scope[0]);
 }
 
-M_BaseObject* BuiltinCode2::funcrun(ThreadContext* context, M_BaseObject* func, Arguments& args)
+M_BaseObject* BuiltinCode2::funcrun_obj(ThreadContext* context, M_BaseObject* func, M_BaseObject* obj, Arguments& args)
 {
-	if (args.size() != 2) throw TypeError("function takes exactly 2 arguments");
+	std::vector<M_BaseObject*> scope;
+	args.parse(obj, sig, scope);
 
-	return this->func(context, args[0], args[1]);
+	if (scope.size() != 2) throw TypeError("function takes exactly 2 arguments");
+
+	return this->func(context, scope[0], scope[1]);
 }
 
-InterpFunctionWrapper::InterpFunctionWrapper(InterpFunction f)
+M_BaseObject* BuiltinCode3::funcrun_obj(ThreadContext* context, M_BaseObject* func, M_BaseObject* obj, Arguments& args)
 {
-	code = new BuiltinCode(f);
+	std::vector<M_BaseObject*> scope;
+	args.parse(obj, sig, scope);
+
+	if (scope.size() != 3) throw TypeError("function takes exactly 3 arguments");
+
+	return this->func(context, scope[0], scope[1], scope[2]);
+}
+
+InterpFunctionWrapper::InterpFunctionWrapper(InterpFunction f, Signature& sig)
+{
+	code = new BuiltinCode(f, sig);
 }
 
 InterpFunctionWrapper::InterpFunctionWrapper(InterpFunction1 f)
@@ -36,9 +55,29 @@ InterpFunctionWrapper::InterpFunctionWrapper(InterpFunction1 f)
 	code = new BuiltinCode1(f);
 }
 
+InterpFunctionWrapper::InterpFunctionWrapper(InterpFunction1 f, Signature& sig)
+{
+	code = new BuiltinCode1(f, sig);
+}
+
 InterpFunctionWrapper::InterpFunctionWrapper(InterpFunction2 f)
 {
 	code = new BuiltinCode2(f);
+}
+
+InterpFunctionWrapper::InterpFunctionWrapper(InterpFunction2 f, Signature& sig)
+{
+	code = new BuiltinCode2(f, sig);
+}
+
+InterpFunctionWrapper::InterpFunctionWrapper(InterpFunction3 f)
+{
+	code = new BuiltinCode3(f);
+}
+
+InterpFunctionWrapper::InterpFunctionWrapper(InterpFunction3 f, Signature& sig)
+{
+	code = new BuiltinCode3(f, sig);
 }
 
 M_BaseObject* GatewayCache::build(M_BaseObject* key)

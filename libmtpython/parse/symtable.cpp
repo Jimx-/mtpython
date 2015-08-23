@@ -40,7 +40,7 @@ void Scope::finalize_name(const std::string& id, int flags)
 	if (flags & SYM_BOUND) {
 		symbols[id] = SCOPE_LOCAL;
 	} else
-		symbols[id] = SCOPE_UNKNOWN;
+		symbols[id] = SCOPE_GLOBAL_IMPLICIT;
 }
 
 void Scope::finalize()

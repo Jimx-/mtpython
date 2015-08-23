@@ -37,12 +37,12 @@ void StdTypeObject::init_mro()
 	M_BaseObject* candidate;
 	while (true) {
 		candidate = nullptr;
-		for (auto candidates : orderlist) {
+		for (auto& candidates : orderlist) {
 			if (candidates.size() > 0) {
 				candidate = candidates[0];
 
 				bool ok = true;
-				for (auto lst : orderlist) {
+				for (auto& lst : orderlist) {
 					if (lst.size() <= 1) continue;
 					for (auto it = lst.begin() + 1; it != lst.end(); it++) {
 						if (*it == candidate) ok = false;
@@ -69,6 +69,18 @@ M_BaseObject* StdTypeObject::get_dict_value(ObjSpace* space, std::string& attr)
 	if (got == dict.end()) return nullptr;
 
 	return got->second;
+}
+
+M_BaseObject* StdTypeObject::lookup(std::string& name)
+{
+	for (auto base : mro) {
+		M_BaseObject* value = base->get_dict_value(space, name);
+		if (value) {
+			return value;
+		}
+	}
+
+	return nullptr;
 }
 
 M_BaseObject* StdTypeObject::lookup_cls(std::string& attr, M_BaseObject*& cls)

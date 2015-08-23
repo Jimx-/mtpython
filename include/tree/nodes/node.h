@@ -12,9 +12,9 @@ namespace tree {
 typedef enum {
 	NT_EMPTY, NT_IF, NT_FOR, NT_FOREACH, NT_ASSIGN, NT_AUGASSIGN, NT_WHILE, NT_DOWHILE, NT_TRY,
 	NT_CATCH, NT_FINALLY, NT_CASE, NT_RETURN, NT_BREAK, NT_CONTINUE, NT_EXPRSTMT,
-	NT_WHEN, NT_IDENT, NT_UNARY, NT_BINARY, NT_LITERAL, NT_ARGUMENTS, NT_FUNCCALL,
+	NT_WHEN, NT_IDENT, NT_UNARY, NT_BINARY, NT_LITERAL, NT_ARGUMENTS, NT_CALL,
     NT_MODULE, NT_FUNCDEF, NT_NUMBER, NT_BINOP, NT_COMPARE, NT_IFEXP, NT_TUPLE, NT_DELETE,
-    NT_YIELD, NT_YIELDFROM, NT_RAISE, NT_PASS,
+    NT_YIELD, NT_YIELDFROM, NT_RAISE, NT_PASS, NT_KEYWORD
 } NodeType;
 
 class ASTVisitor;
@@ -56,6 +56,7 @@ class AssignNode;
 class AugAssignNode;
 class BinOpNode;
 class BreakNode;
+class CallNode;
 class CompareNode;
 class ContinueNode;
 class DeleteNode;
@@ -63,6 +64,7 @@ class ForNode;
 class FunctionDefNode;
 class IfNode;
 class IfExpNode;
+class KeywordNode;
 class NameNode;
 class NumberNode;
 class PassNode;
@@ -90,6 +92,7 @@ public:
     virtual ASTNode* visit_augassign(AugAssignNode* node) { return nullptr; }
     virtual ASTNode* visit_binop(BinOpNode* node) { return nullptr; }
     virtual ASTNode* visit_break(BreakNode* node) { return nullptr; }
+    virtual ASTNode* visit_call(CallNode* node) { return nullptr; }
     virtual ASTNode* visit_compare(CompareNode* node) { return nullptr; }
     virtual ASTNode* visit_continue(ContinueNode* node) { return nullptr; }
     virtual ASTNode* visit_delete(DeleteNode* node) { return nullptr; }
@@ -97,6 +100,7 @@ public:
     virtual ASTNode* visit_functiondef(FunctionDefNode* node) { return nullptr; }
     virtual ASTNode* visit_if(IfNode* node) { return nullptr; }
     virtual ASTNode* visit_ifexp(IfExpNode* node) { return nullptr; }
+    virtual ASTNode* visit_keyword(KeywordNode* node) { return nullptr; }
     virtual ASTNode* visit_name(NameNode* node) { return nullptr; }
     virtual ASTNode* visit_number(NumberNode* node) { return nullptr; }
     virtual ASTNode* visit_pass(PassNode* node) { return nullptr; }

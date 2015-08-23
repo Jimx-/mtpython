@@ -539,6 +539,13 @@ ASTNode* Parser::factor()
 ASTNode* Parser::power()
 {
     ASTNode* node = atom();
+
+    while (true) {
+    	ASTNode* tmp_node = trailer(node);
+    	if (!tmp_node) break;
+    	node = tmp_node;
+    }
+
     BinOpNode* p = nullptr;
     while (cur_tok == TOK_STARSTAR)
     { 
@@ -548,11 +555,25 @@ ASTNode* Parser::power()
             p->set_left(node);
             p->set_op(tok2binop(cur_tok));
             match(cur_tok);
-            p->set_right(atom());
+            p->set_right(factor());
             node = p;
         }
     }
     return node;    
+}
+
+/* trailer: '(' [arglist] ')' | '[' subscriptlist ']' | '.' NAME */
+ASTNode* Parser::trailer(ASTNode* left)
+{
+	ASTNode* node = nullptr;
+
+	switch (cur_tok)
+	{
+	case TOK_LPAREN:
+		return call(left);
+	}
+
+	return node;
 }
 
 /* atom: ('(' [yield_expr|testlist_comp] ')' |
@@ -592,6 +613,51 @@ ASTNode* Parser::atom()
 		return nullptr;
     }
     return node;
+}
+
+ASTNode* Parser::call(ASTNode* callable)
+{
+	CallNode* node = new CallNode(s.get_line());
+	node->set_func(callable);
+	match(TOK_LPAREN);
+
+	while (cur_tok != TOK_RPAREN) {
+		if (cur_tok == TOK_STAR) {
+
+		} else if (cur_tok == TOK_STARSTAR) {
+
+		} else {
+			ASTNode* arg = argument();
+			KeywordNode* keyword = dynamic_cast<KeywordNode*>(arg);
+			if (keyword) {
+				node->push_keyword(keyword);
+			} else {
+				node->push_arg(arg);
+			}
+		}
+
+		if (cur_tok != TOK_RPAREN) match(TOK_COMMA);
+	}
+
+	match(TOK_RPAREN);
+	return node;
+}
+
+ASTNode* Parser::argument()
+{
+	ASTNode* node = test();
+	
+	if (cur_tok == TOK_EQL) {
+		KeywordNode* keyword = new KeywordNode(s.get_line());
+
+		keyword->set_arg(node);
+		match(TOK_EQL);
+		keyword->set_value(test());
+
+		return keyword;
+	}
+
+	return node;
 }
 
 ASTNode* Parser::parse_number()

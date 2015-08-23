@@ -57,7 +57,21 @@ public:
 		return node; 
 	}
 
-	virtual ASTNode* visit_compare(CompareNode* node) { return node;}
+	virtual ASTNode* visit_call(CallNode* node)
+	{
+		node->get_func()->visit(this);
+		std::vector<ASTNode*>& args = node->get_args();
+		for (unsigned int i = 0; i < args.size(); i++) {
+			args[i]->visit(this);
+		}
+		std::vector<KeywordNode*>& keywords = node->get_keywords();
+		for (unsigned int i = 0; i < keywords.size(); i++) {
+			keywords[i]->visit(this);
+		}
+		return node;
+	}
+
+	virtual ASTNode* visit_compare(CompareNode* node) { return node; }
 	
 	virtual ASTNode* visit_continue(ContinueNode* node) 
 	{
@@ -95,6 +109,8 @@ public:
 	
 	virtual ASTNode* visit_ifexp(IfExpNode* node) {return node; }
 	
+	virtual ASTNode* visit_keyword(KeywordNode* node) { return node; }
+
 	virtual ASTNode* visit_name(NameNode* node) 
 	{
 		return node; 

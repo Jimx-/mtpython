@@ -26,6 +26,7 @@ public:
 
 	virtual M_BaseObject* get_dict_value(ObjSpace* space, std::string& attr);
 
+	virtual M_BaseObject* lookup(std::string& name);
 	virtual M_BaseObject* lookup_cls(std::string& attr, M_BaseObject*& cls);
 };
 

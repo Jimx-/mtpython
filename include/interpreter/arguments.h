@@ -2,22 +2,33 @@
 #define _INTERPRETER_ARGUMENTS_H_
 
 #include "objects/base_object.h"
-#include <deque>
+#include "interpreter/signature.h"
+#include <vector>
 #include <initializer_list>
 
 namespace mtpython {
+
+namespace objects {
+class ObjSpace;
+}
+
 namespace interpreter {
 
 /* List of arguments to a function call */
 class Arguments {
 protected:
-	std::deque<objects::M_BaseObject*> args;
+	objects::ObjSpace* space;
+	std::vector<objects::M_BaseObject*> args;
 public:
-	Arguments(std::initializer_list<objects::M_BaseObject*>& args) : args(args) { }
+	Arguments(objects::ObjSpace* space, std::initializer_list<objects::M_BaseObject*>& args) : space(space), args(args) { }
+	Arguments(objects::ObjSpace* space, std::vector<objects::M_BaseObject*>& args) : space(space), args(args) { }
 
-	void prepend(objects::M_BaseObject* arg) { args.push_front(arg); }
-	std::size_t size() { return args.size(); }
-	objects::M_BaseObject* operator[](std::size_t idx) { return args[idx]; }
+	void parse(objects::M_BaseObject* first, Signature& sig, std::vector<objects::M_BaseObject*>& scope) {
+		std::vector<objects::M_BaseObject*> defaults;
+		parse(first, sig, scope, defaults);
+	}
+
+	void parse(objects::M_BaseObject* first, Signature& sig, std::vector<objects::M_BaseObject*>& scope, std::vector<objects::M_BaseObject*>& defaults);
 };
 
 }

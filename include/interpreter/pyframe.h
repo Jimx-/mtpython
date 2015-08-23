@@ -18,6 +18,7 @@ protected:
 	mtpython::objects::M_BaseObject* globals;
 
 	std::stack<mtpython::objects::M_BaseObject*> value_stack;
+	std::vector<mtpython::objects::M_BaseObject*> local_vars;
 	
 	int pc;
 
@@ -42,10 +43,30 @@ protected:
 		return tmp; 
 	}
 
-	mtpython::objects::M_BaseObject* get_const(int index);
+	void pop_values_untrack(int n, std::vector<mtpython::objects::M_BaseObject*>& v) 
+	{
+		v.resize(n);
+		n--;
+		while (n >= 0) {
+			mtpython::objects::M_BaseObject* tmp = value_stack.top(); 
+			context->gc_untrack_object(tmp);
+			value_stack.pop();
+			v[n--] = tmp;
+		}
+	}
 
+	mtpython::objects::M_BaseObject* get_const(int index);
+	mtpython::objects::M_BaseObject* get_name(int index);
+
+	virtual void pop_top(int arg, int next_pc);
 	virtual void load_const(int arg, int next_pc);
 	virtual void binary_add(int arg, int next_pc);
+	virtual void load_fast(int arg, int next_pc);
+	virtual void store_fast(int arg, int next_pc);
+	virtual void load_global(int arg, int next_pc);
+	virtual void call_function(int arg, int next_pc);
+
+	virtual void call_function_common(int arg, M_BaseObject* star=nullptr, M_BaseObject* starstar=nullptr);
 public:
 	PyFrame(vm::ThreadContext* context, Code* code, mtpython::objects::M_BaseObject* globals);
 
@@ -53,8 +74,8 @@ public:
 	objects::M_BaseObject* execute_frame();
 
 	objects::M_BaseObject* dispatch(vm::ThreadContext* context, Code* code, int next_pc);
-	int execute_bytecode(vm::ThreadContext* context, std::vector<char>& bytecode, int next_pc);
-	int dispatch_bytecode(vm::ThreadContext* context, std::vector<char>& bytecode, int next_pc);
+	int execute_bytecode(vm::ThreadContext* context, std::vector<unsigned char>& bytecode, int next_pc);
+	int dispatch_bytecode(vm::ThreadContext* context, std::vector<unsigned char>& bytecode, int next_pc);
 };
 
 }

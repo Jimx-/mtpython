@@ -26,8 +26,9 @@ public:
     virtual mtpython::tree::ASTNode* visit_assign(mtpython::tree::AssignNode* node);
     /*virtual ASTNode* visit_augassign(AugAssignNode* node);*/
     virtual mtpython::tree::ASTNode* visit_binop(mtpython::tree::BinOpNode* node);
-    /*virtual ASTNode* visit_break(BreakNode* node);
-    virtual ASTNode* visit_compare(CompareNode* node);
+    /*virtual ASTNode* visit_break(BreakNode* node); */
+    virtual mtpython::tree::ASTNode* visit_call(mtpython::tree::CallNode* node);
+    /*virtual ASTNode* visit_compare(CompareNode* node);
     virtual ASTNode* visit_continue(ContinueNode* node);
     virtual ASTNode* visit_delete(DeleteNode* node);
     virtual ASTNode* visit_for(ForNode* node);*/

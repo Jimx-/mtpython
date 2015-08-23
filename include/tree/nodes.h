@@ -27,5 +27,7 @@
 #include "tree/nodes/if_node.h"
 #include "tree/nodes/for_node.h"
 #include "tree/nodes/while_node.h"
+#include "tree/nodes/call_node.h"
+#include "tree/nodes/keyword_node.h"
 
 #endif /* _NODES_H_ */

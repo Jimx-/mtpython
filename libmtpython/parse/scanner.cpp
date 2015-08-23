@@ -588,7 +588,7 @@ Token Scanner::get_token()
 	string error_msg("unknown character: \"");
 	error_msg += last_char;
 	error_msg += "(#";
-	ss >> error_msg;
+	error_msg += ss.str();
 	error_msg += ")";
 
 	diagnostics->error(line, col, error_msg);

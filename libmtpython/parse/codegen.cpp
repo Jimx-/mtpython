@@ -8,6 +8,7 @@ using namespace mtpython::objects;
 
 static std::unordered_map<int, int> name_ops_default = {{EC_LOAD, LOAD_NAME}, {EC_STORE, STORE_NAME}, {EC_DEL, DELETE_NAME}};
 static std::unordered_map<int, int> name_ops_fast = {{EC_LOAD, LOAD_FAST}, {EC_STORE, STORE_FAST}, {EC_DEL, DELETE_FAST}};
+static std::unordered_map<int, int> name_ops_global = {{EC_LOAD, LOAD_GLOBAL}, {EC_STORE, STORE_GLOBAL}, {EC_DEL, DELETE_GLOBAL}};
 
 BaseCodeGenerator::BaseCodeGenerator(std::string& name, ObjSpace* space, ASTNode* module, SymtableVisitor* symtab, int lineno, CompileInfo* info) : CodeBuilder(name, space, symtab->find_scope(module), lineno, info)
 {
@@ -54,6 +55,30 @@ ASTNode* BaseCodeGenerator::visit_binop(BinOpNode* node)
 	return node;
 }
 
+ASTNode* BaseCodeGenerator::visit_call(CallNode* node)
+{
+	set_lineno(node->get_line());
+	node->get_func()->visit(this);
+	std::vector<ASTNode*>& func_args = node->get_args();
+	
+	int arg = func_args.size();
+	for (auto func_arg : func_args) func_arg->visit(this);
+
+	std::vector<KeywordNode*>& keywords = node->get_keywords();
+	int call_type = 0;
+	if (keywords.size() > 0) {
+		for (auto keyword : keywords) keyword->visit(this);
+		arg |= keywords.size() << 8;
+	}
+
+	unsigned char op = 0;
+	if (call_type == 0) op = (unsigned char)CALL_FUNCTION;
+
+	emit_op_arg(op, arg);
+
+	return node;
+}
+
 void BaseCodeGenerator::gen_name(std::string& name, ExprContext ctx)
 {
 	int scope = this->scope->lookup(name);
@@ -63,10 +88,14 @@ void BaseCodeGenerator::gen_name(std::string& name, ExprContext ctx)
 	if (scope == SCOPE_LOCAL) {
 		op = name_ops_fast[ctx];
 		arg = add_name(varnames, name);
+	} else if (scope == SCOPE_GLOBAL_IMPLICIT) {
+		op = name_ops_global[ctx];
+		arg = add_name(names, name);
 	}
 
 	if (op == NOP) {
 		op = name_ops_default[ctx];
+		arg = add_name(names, name);
 	}
 
 	emit_op_arg(op, arg);

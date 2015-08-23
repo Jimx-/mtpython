@@ -3,7 +3,7 @@
 
 using namespace mtpython::parse;
 
-static std::unordered_map<char, int> static_opcode_stack_effect = {
+static std::unordered_map<unsigned char, int> static_opcode_stack_effect = {
 	{ POP_TOP, -1 },
 	{ ROT_TWO, 0 },
 	{ ROT_THREE, 0 },
@@ -93,29 +93,29 @@ static std::unordered_map<char, int> static_opcode_stack_effect = {
 	{ LOAD_CLASSDEREF, 1 },
 };
 
-static std::unordered_map<char, int (*)(int)> dyn_opcode_stack_effect = {
+static std::unordered_map<unsigned char, int (*)(int)> dyn_opcode_stack_effect = {
 	{ UNPACK_SEQUENCE, [](int arg){ return arg - 1; } },
 };
 
-void CodeBlock::get_code(std::vector<char>& code)
+void CodeBlock::get_code(std::vector<unsigned char>& code)
 {
 	for (Instruction* inst : instructions) {
-		char opcode = inst->get_op();
+		unsigned char opcode = inst->get_op();
 
 		if (opcode >= HAVE_ARGUMENT) {
 			int arg = inst->get_arg();
 			if (arg > 0xffff) {
 				int ext = arg >> 16;
-				code.push_back((char)EXTENDED_ARG);
-				code.push_back((char)(ext & 0xff));
-				code.push_back((char)(ext >> 8));
+				code.push_back((unsigned char)EXTENDED_ARG);
+				code.push_back((unsigned char)(ext & 0xff));
+				code.push_back((unsigned char)(ext >> 8));
 				arg &= 0xff;
 			}
-			code.push_back((char)opcode);
-			code.push_back((char)(arg & 0xff));
-			code.push_back((char)(arg >> 8));
+			code.push_back((unsigned char)opcode);
+			code.push_back((unsigned char)(arg & 0xff));
+			code.push_back((unsigned char)(arg >> 8));
 		} else {
-			code.push_back((char)opcode);
+			code.push_back((unsigned char)opcode);
 		}
 	}
 }
@@ -175,7 +175,7 @@ int CodeBuilder::add_name(std::unordered_map<std::string, int>& container, std::
 	return -1;
 }
 
-void CodeBuilder::emit_op(char op)
+void CodeBuilder::emit_op(unsigned char op)
 {
 	Instruction* inst = new Instruction(op);
 	if (!lineno_set) {
@@ -186,7 +186,7 @@ void CodeBuilder::emit_op(char op)
 	append_instruction(inst);
 }
 
-void CodeBuilder::emit_op_arg(char op, int arg)
+void CodeBuilder::emit_op_arg(unsigned char op, int arg)
 {
 	Instruction* inst = new Instruction(op, arg);
 	if (!lineno_set) {
@@ -219,7 +219,7 @@ void CodeBuilder::load_const(mtpython::objects::M_BaseObject* obj)
 	emit_op_arg(LOAD_CONST, index);
 }
 
-int CodeBuilder::opcode_stack_effect(char op, int arg)
+int CodeBuilder::opcode_stack_effect(unsigned char op, int arg)
 {
 	auto got = static_opcode_stack_effect.find(op);
 
@@ -260,7 +260,7 @@ int CodeBuilder::get_stacksize(std::vector<CodeBlock*>& blocks)
 	return max_depth;
 }
 
-void CodeBuilder::build_lnotab(std::vector<CodeBlock*>& blocks, std::vector<char>& lnotab)
+void CodeBuilder::build_lnotab(std::vector<CodeBlock*>& blocks, std::vector<unsigned char>& lnotab)
 {
 	lnotab.clear();
 	int current_line = first_lineno;
@@ -285,20 +285,20 @@ void CodeBuilder::build_lnotab(std::vector<CodeBlock*>& blocks, std::vector<char
 
 				if (line > 0 || addr > 0) {
 					while (addr > 255) {
-						lnotab.push_back((char)255);
-						lnotab.push_back((char)0);
+						lnotab.push_back((unsigned char)255);
+						lnotab.push_back((unsigned char)0);
 						addr -= 255;
 					}
 
 					while (line > 255) {
-						lnotab.push_back((char)addr);
-						lnotab.push_back((char)255);
+						lnotab.push_back((unsigned char)addr);
+						lnotab.push_back((unsigned char)255);
 						line -= 255;
 						addr = 0;
 					}
 				}
-				lnotab.push_back((char)addr);
-				lnotab.push_back((char)line);
+				lnotab.push_back((unsigned char)addr);
+				lnotab.push_back((unsigned char)line);
 
 				current_line = lineno;
 				current_off = offset;
@@ -320,6 +320,12 @@ static void map2vector(std::unordered_map<T, int>& map, std::vector<T>& vec)
 
 mtpython::interpreter::PyCode* CodeBuilder::build()
 {
+	/* add return if there is not */
+	if (!current_block->have_return()) {
+		load_const(space->wrap_None());
+		emit_op(RETURN_VALUE);
+	}
+
 	/* update first lineno */
 	if (first_lineno == -1) {
 		std::vector<Instruction*> insts = first_block->get_instructions();
@@ -333,7 +339,7 @@ mtpython::interpreter::PyCode* CodeBuilder::build()
 	first_block->get_block_list(blocks);
 
 	/* build lnotab */
-	std::vector<char> lnotab;
+	std::vector<unsigned char> lnotab;
 	build_lnotab(blocks, lnotab);
 
 	int stacksize = get_stacksize(blocks);
@@ -353,7 +359,7 @@ mtpython::interpreter::PyCode* CodeBuilder::build()
 	std::vector<std::string> cellvars_array;
 	map2vector<std::string>(this->cellvars, cellvars_array);
 
-	std::vector<char> code;
+	std::vector<unsigned char> code;
 	for(CodeBlock* block : blocks) {
 		block->get_code(code);
 	}

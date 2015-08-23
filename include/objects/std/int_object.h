@@ -8,7 +8,7 @@ namespace mtpython {
 namespace objects {
 
 class M_StdIntObject : public M_BaseObject {
-private:
+protected:
 	int intval;
 public:
 	M_StdIntObject(int x);
@@ -18,11 +18,11 @@ public:
 
 	static M_BaseObject* __add__(mtpython::vm::ThreadContext* context, mtpython::objects::M_BaseObject* self, mtpython::objects::M_BaseObject* other);
 
-
 	static interpreter::Typedef* _int_typedef();
 	virtual interpreter::Typedef* get_typedef();
 
 	virtual int to_int(ObjSpace* space, bool allow_conversion) { return intval; }
+	virtual std::string to_string(ObjSpace* space) { return std::to_string(intval); }
 
 	virtual void dbg_print();
 };

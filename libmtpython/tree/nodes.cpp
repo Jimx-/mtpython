@@ -131,3 +131,14 @@ NODE_CONSTRUCTOR(NumberNode)
 {
 	value = nullptr;
 }
+
+NODE_CONSTRUCTOR(CallNode)
+{
+	func = nullptr;
+}
+
+NODE_CONSTRUCTOR(KeywordNode)
+{
+	arg = nullptr;
+	value = nullptr;
+}

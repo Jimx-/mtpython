@@ -18,6 +18,7 @@ namespace parse {
 
 #define SCOPE_UNKNOWN	0
 #define SCOPE_LOCAL		1
+#define SCOPE_GLOBAL_IMPLICIT	2
 
 class Scope {
 protected:

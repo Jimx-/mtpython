@@ -58,10 +58,13 @@ namespace mtpython {
 			mtpython::tree::ASTNode* term();
 			mtpython::tree::ASTNode* factor();
 			mtpython::tree::ASTNode* power();
+			mtpython::tree::ASTNode* trailer(mtpython::tree::ASTNode* left);
 			mtpython::tree::ASTNode* atom();
 			mtpython::tree::ASTNode* parse_number();
 			mtpython::tree::ASTNode* yield_expr();
 			mtpython::tree::ASTNode* name();
+			mtpython::tree::ASTNode* call(mtpython::tree::ASTNode* callable);
+			mtpython::tree::ASTNode* argument();
 		public:
 			Parser(mtpython::objects::ObjSpace* space, const std::string& source, CompileInfo* info);
 			~Parser();

@@ -7,6 +7,8 @@
 namespace mtpython {
 namespace objects {
 
+#define M_STDSTROBJECT(obj) (dynamic_cast<M_StdStrObject*>(obj))
+	
 class M_AbstractStdStrObject : public M_BaseObject {
 };
 
@@ -16,10 +18,16 @@ private:
 public:
 	M_StdStrObject(std::string& s);
 
+	virtual bool i_is(ObjSpace* space, M_BaseObject* other) { return (M_STDSTROBJECT(other) != nullptr); }
+
 	static M_BaseObject* __repr__(mtpython::vm::ThreadContext* context, mtpython::objects::M_BaseObject* self);
+	static M_BaseObject* __hash__(mtpython::vm::ThreadContext* context, mtpython::objects::M_BaseObject* self);
+	static M_BaseObject* __eq__(mtpython::vm::ThreadContext* context, mtpython::objects::M_BaseObject* self, mtpython::objects::M_BaseObject* other);
 
 	static interpreter::Typedef* _str_typedef();
 	virtual interpreter::Typedef* get_typedef();
+
+	virtual std::string to_string(ObjSpace* space) { return value; }
 
 	virtual void dbg_print();
 };

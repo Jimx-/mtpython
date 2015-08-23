@@ -83,6 +83,7 @@ int SourceBuffer::load_file(const string& filename)
 			if (str.eof()) break;
 			str.read(&tmp, 1);
 		}
+		if (tmp == 0) break;
 		buf.push_back(tmp);
 	}
 
@@ -104,7 +105,9 @@ mtpython::parse::SourceType SourceBuffer::get_src_type()
 char SourceBuffer::read()
 {
 	if (eof()) return -1;
-	return buf[pos++];
+	char c = buf[pos++];
+	if (c == '\0') return -1;
+	return c;
 }
 
 int SourceBuffer::tell_pos()
