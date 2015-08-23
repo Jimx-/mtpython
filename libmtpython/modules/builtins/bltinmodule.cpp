@@ -1,4 +1,5 @@
 #include "modules/builtins/bltinmodule.h"
+#include "objects/bltin_exceptions.h"
 #include "interpreter/gateway.h"
 #include "interpreter/signature.h"
 #include "vm/vm.h"
@@ -37,10 +38,12 @@ static M_BaseObject* builtin_print(mtpython::vm::ThreadContext* context, M_BaseO
 
 BuiltinsModule::BuiltinsModule(ObjSpace* space, M_BaseObject* name) : Module(space, name)
 {
+	/* constants */
 	add_def(std::string("None"), space->wrap_None());
 	add_def(std::string("True"), space->wrap_True());
 	add_def(std::string("False"), space->wrap_False());
 
+	/* builtin type */
 	add_def(std::string("bool"), space->bool_type());
 	add_def(std::string("dict"), space->dict_type());
 	add_def(std::string("int"), space->int_type());
@@ -48,6 +51,13 @@ BuiltinsModule::BuiltinsModule(ObjSpace* space, M_BaseObject* name) : Module(spa
 	add_def(std::string("str"), space->str_type());
 	add_def(std::string("tuple"), space->tuple_type());
 	add_def(std::string("type"), space->type_type());
+
+	/* builtin exceptions */
+#define ADD_EXCEPTION(name) add_def(std::string(#name), BaseException::get_bltin_exception_type(space, std::string(#name)))
+
+	ADD_EXCEPTION(BaseException);
+	ADD_EXCEPTION(Exception);
+	ADD_EXCEPTION(TypeError);
 
 	add_def(std::string("__import__"), new InterpFunctionWrapper(builtin___import__, Signature(std::initializer_list<std::string>{"name", "globals", "locals", "from_list", "level"})));
 	

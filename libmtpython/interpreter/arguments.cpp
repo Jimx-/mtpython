@@ -1,5 +1,6 @@
 #include "interpreter/arguments.h"
 #include "objects/obj_space.h"
+#include "interpreter/error.h"
 
 using namespace mtpython::interpreter;
 using namespace mtpython::objects;
@@ -45,8 +46,7 @@ void Arguments::parse(M_BaseObject* first, Signature& sig, std::vector<M_BaseObj
 				if (sig.get_varargname() == "*") {	
 					/* if the next unfilled slot is a vararg slot, and it does
            				not have a name, then it is an error. */
-
-
+					throw InterpError::format(space, space->TypeError_type(), "function takes %d arguments but %d arguments were given", argcount, args_avail);
 				}
 				starargs.insert(starargs.end(), args.begin() + left, args.end());
 			}
@@ -56,6 +56,6 @@ void Arguments::parse(M_BaseObject* first, Signature& sig, std::vector<M_BaseObj
 		M_BaseObject* wrapped_starargs = space->new_tuple(starargs);
 		scope[argcount] = wrapped_starargs;
 	} else if (args_avail > argcount) {	/* error */
-
+		throw InterpError::format(space, space->TypeError_type(), "function takes %d arguments but %d arguments were given", argcount, args_avail);
 	}
 }

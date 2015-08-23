@@ -10,6 +10,7 @@ SET(LIBMTPYTHON_SRCLIST
 		utils/source_buffer.cpp
 		objects/obj_space.cpp
 		objects/base_object.cpp
+		objects/bltin_exceptions.cpp
 		objects/std/bool_object.cpp
 		objects/std/dict_object.cpp
 		objects/std/int_object.cpp

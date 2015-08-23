@@ -20,7 +20,6 @@ Code* PyCompiler::compile(std::string& source, std::string& filename, mtpython::
 	Parser parser(space, source, &info);
 
 	mtpython::tree::ASTNode* module = parser.parse();
-	module->print(0);
 	SymtableVisitor symtab(space, module);
 	ModuleCodeGenerator codegen(space, module, &symtab, &info);
 	mtpython::interpreter::PyCode* code = codegen.build();

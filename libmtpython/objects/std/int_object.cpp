@@ -3,6 +3,7 @@
 #include <unordered_map>
 #include "interpreter/typedef.h"
 #include "interpreter/gateway.h"
+#include "interpreter/error.h"
 #include "objects/std/int_object.h"
 #include "exceptions.h"
 
@@ -45,10 +46,12 @@ M_BaseObject* M_StdIntObject::__repr__(mtpython::vm::ThreadContext* context, M_B
 
 M_BaseObject* M_StdIntObject::__add__(mtpython::vm::ThreadContext* context, M_BaseObject* self, M_BaseObject* other)
 {
+	ObjSpace* space = context->get_space();
+
 	M_StdIntObject* self_as_int = dynamic_cast<M_StdIntObject*>(self);
-	if (!self_as_int) throw TypeError("Object is not int");
+	if (!self_as_int) throw InterpError(space->TypeError_type(), space->wrap_str("object is not int"));
 	M_StdIntObject* other_as_int = dynamic_cast<M_StdIntObject*>(other);
-	if (!other_as_int) throw TypeError("Object is not int");
+	if (!self_as_int) throw InterpError(space->TypeError_type(), space->wrap_str("object is not int"));
 
 	int x = self_as_int->intval;
 	int y = other_as_int->intval;

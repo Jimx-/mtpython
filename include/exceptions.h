@@ -5,6 +5,7 @@
 
 namespace mtpython {
 
+/* Interpreter-level exceptions */
 class NotImplementedException:public std::runtime_error
 {
 public:
@@ -24,13 +25,6 @@ class SyntaxError:public std::runtime_error
 public:
     SyntaxError (const char * error_msg) :runtime_error(error_msg){}
     virtual ~SyntaxError() throw() {}
-};
-
-class TypeError:public std::runtime_error
-{
-public:
-    TypeError (const char * error_msg) :runtime_error(error_msg){}
-    virtual ~TypeError() throw() {}
 };
 
 }

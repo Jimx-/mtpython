@@ -15,7 +15,6 @@ Module::Module(ObjSpace* space, M_BaseObject* name, M_BaseObject* dict)
 	}
 }
 
-
 void Module::install()
 {
 	std::string s_name = space->unwrap_str(name);

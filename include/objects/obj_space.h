@@ -24,6 +24,10 @@ class PyVM;
 namespace objects {
 
 class ObjSpace {
+private:
+	M_BaseObject* type_TypeError;
+
+	void init_builtin_exceptions();
 protected:
 	mtpython::vm::PyVM* vm;
 	vm::ThreadContext* dummy_context;	/* used only in initialization, when VM is not set */
@@ -68,6 +72,8 @@ public:
 	virtual M_BaseObject* tuple_type() { return nullptr; }
 	virtual M_BaseObject* type_type() { return nullptr; }
 
+	M_BaseObject* TypeError_type() { return type_TypeError; }
+
 	virtual M_BaseObject* wrap(int x) { return wrap_int(x); }
 	virtual M_BaseObject* wrap(std::string& x) { return wrap_str(x); }
 	virtual M_BaseObject* wrap(M_BaseObject* obj) { return obj; }
@@ -76,6 +82,7 @@ public:
 	virtual M_BaseObject* wrap_int(std::string& x) { return nullptr; }
 
 	virtual M_BaseObject* wrap_str(std::string& x) { return nullptr; }
+	virtual M_BaseObject* wrap_str(const char* x) { return wrap_str(std::string(x)); }
 
 	virtual M_BaseObject* wrap_None() { return nullptr; }
 	virtual M_BaseObject* wrap_True() { return nullptr; }

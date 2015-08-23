@@ -1,6 +1,7 @@
 #include "vm/vm.h"
 #include "interpreter/compiler.h"
 #include "interpreter/function.h"
+#include "interpreter/error.h"
 #include "objects/obj_space.h"
 
 #include "modules/builtins/bltinmodule.h"
@@ -37,6 +38,14 @@ void ObjSpace::make_builtins()
 	builtins_mod->install();
 	builtin = builtins_mod;
 	setitem(builtins_mod->get_dict(), wrap(std::string("__builtins__")), wrap(builtins_mod));
+
+	init_builtin_exceptions();
+}
+
+void ObjSpace::init_builtin_exceptions()
+{
+#define SET_EXCEPTION_TYPE(name) type_##name = builtin->get_dict_value(this, std::string(#name));
+	SET_EXCEPTION_TYPE(TypeError); 
 }
 
 BaseCompiler* ObjSpace::get_compiler(ThreadContext* context)
@@ -162,7 +171,7 @@ M_BaseObject* ObjSpace::getitem(M_BaseObject* obj, M_BaseObject* key)
 {
 	M_BaseObject* descr = lookup(obj, std::string("__getitem__"));
 
-	if (!descr) throw mtpython::TypeError("object is not subscriptable");
+	if (!descr) throw InterpError(TypeError_type(), wrap_str("object is not subscriptable"));
 
 	return get_and_call_function(current_thread(), descr, {obj, key});
 }
@@ -171,7 +180,7 @@ void ObjSpace::setitem(M_BaseObject* obj, M_BaseObject* key, M_BaseObject* value
 {
 	M_BaseObject* descr = lookup(obj, std::string("__setitem__"));
 
-	if (!descr) throw mtpython::TypeError("object item assignment not supported");
+	if (!descr) throw InterpError(TypeError_type(), wrap_str("object item assignment not supported"));
 
 	get_and_call_function(current_thread(), descr, {obj, key, value});
 }

@@ -4,6 +4,7 @@
 #include "objects/base_object.h"
 #include "interpreter/code.h"
 #include "interpreter/pycode.h"
+#include "interpreter/error.h"
 #include "vm/vm.h"
 #include <string>
 #include <stack>
@@ -57,6 +58,8 @@ protected:
 
 	mtpython::objects::M_BaseObject* get_const(int index);
 	mtpython::objects::M_BaseObject* get_name(int index);
+
+	int handle_interp_error(InterpError& exc);
 
 	virtual void pop_top(int arg, int next_pc);
 	virtual void load_const(int arg, int next_pc);

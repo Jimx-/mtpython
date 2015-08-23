@@ -19,8 +19,6 @@ M_BaseObject* BuiltinCode1::funcrun_obj(ThreadContext* context, M_BaseObject* fu
 {
 	std::vector<M_BaseObject*> scope;
 	args.parse(obj, sig, scope);
-	
-	if (scope.size() != 1) throw TypeError("function takes exactly 1 arguments");
 
 	return this->func(context, scope[0]);
 }
@@ -30,8 +28,6 @@ M_BaseObject* BuiltinCode2::funcrun_obj(ThreadContext* context, M_BaseObject* fu
 	std::vector<M_BaseObject*> scope;
 	args.parse(obj, sig, scope);
 
-	if (scope.size() != 2) throw TypeError("function takes exactly 2 arguments");
-
 	return this->func(context, scope[0], scope[1]);
 }
 
@@ -39,8 +35,6 @@ M_BaseObject* BuiltinCode3::funcrun_obj(ThreadContext* context, M_BaseObject* fu
 {
 	std::vector<M_BaseObject*> scope;
 	args.parse(obj, sig, scope);
-
-	if (scope.size() != 3) throw TypeError("function takes exactly 3 arguments");
 
 	return this->func(context, scope[0], scope[1], scope[2]);
 }

@@ -72,11 +72,16 @@ int PyFrame::execute_bytecode(ThreadContext* context, std::vector<unsigned char>
 	try {
 		next_pc = dispatch_bytecode(context, bytecode, next_pc);
 	}
-	catch (...) {
-		throw;
+	catch (const InterpError& e) {
+		next_pc = handle_interp_error(e);
 	}
 
 	return next_pc;
+}
+
+int PyFrame::handle_interp_error(InterpError& exc)
+{
+	context->gc_track_object(exc.get_value());
 }
 
 int PyFrame::dispatch_bytecode(ThreadContext* context, std::vector<unsigned char>& bytecode, int next_pc)
@@ -179,6 +184,7 @@ void PyFrame::load_global(int arg, int next_pc)
 	M_BaseObject* value = space->getitem(globals, name);
 	if (!value) {
 		value = space->get_builtin()->get_dict_value(space, unwrapped_name);
+		if (!value) throw InterpError::format(space, space->TypeError_type(), "global name %s not found", unwrapped_name.c_str());
 	}
 
 	push_value(value);
