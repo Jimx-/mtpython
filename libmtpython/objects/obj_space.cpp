@@ -176,6 +176,12 @@ M_BaseObject* ObjSpace::getitem(M_BaseObject* obj, M_BaseObject* key)
 	return get_and_call_function(current_thread(), descr, {obj, key});
 }
 
+void ObjSpace::setitem_str(M_BaseObject* obj, std::string& key, M_BaseObject* value)
+{
+	M_BaseObject* wrapped_key = wrap_str(key);
+	setitem(obj, wrapped_key, value);
+}
+
 void ObjSpace::setitem(M_BaseObject* obj, M_BaseObject* key, M_BaseObject* value)
 {
 	M_BaseObject* descr = lookup(obj, std::string("__setitem__"));

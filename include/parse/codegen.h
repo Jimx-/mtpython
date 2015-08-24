@@ -35,6 +35,7 @@ public:
     //virtual mtpython::tree::ASTNode* visit_functiondef(mtpython::tree::FunctionDefNode* node);
     /*virtual ASTNode* visit_if(IfNode* node);
     virtual ASTNode* visit_ifexp(IfExpNode* node);*/
+    virtual mtpython::tree::ASTNode* visit_keyword(mtpython::tree::KeywordNode* node);
     virtual mtpython::tree::ASTNode* visit_name(mtpython::tree::NameNode* node);
     virtual mtpython::tree::ASTNode* visit_number(mtpython::tree::NumberNode* node);
     virtual mtpython::tree::ASTNode* visit_string(mtpython::tree::StringNode* node);

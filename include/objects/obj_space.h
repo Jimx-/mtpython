@@ -104,6 +104,7 @@ public:
 	virtual M_BaseObject* getitem(M_BaseObject* obj, M_BaseObject* key);
 	virtual M_BaseObject* getitem_str(M_BaseObject* obj, std::string& key);
 	virtual void setitem(M_BaseObject* obj, M_BaseObject* key, M_BaseObject* value);
+	virtual void setitem_str(M_BaseObject* obj, std::string& key, M_BaseObject* value);
 	
 	virtual M_BaseObject* hash(M_BaseObject* obj);
 

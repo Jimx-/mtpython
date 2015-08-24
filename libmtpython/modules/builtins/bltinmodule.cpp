@@ -21,8 +21,11 @@ static M_BaseObject* builtin_print(mtpython::vm::ThreadContext* context, M_BaseO
 	std::vector<M_BaseObject*> values;
 	ObjSpace* space = context->get_space();
 
-	std::string seq = " ";
-	std::string end = "\n";
+	M_BaseObject* wrapped_seq = space->getitem_str(kwargs, std::string("seq"));
+	std::string seq = wrapped_seq ? space->unwrap_str(wrapped_seq) : " ";
+
+	M_BaseObject* wrapped_end = space->getitem_str(kwargs, std::string("end"));
+	std::string end = wrapped_end ? space->unwrap_str(wrapped_end) : "\n";
 
 	space->unwrap_tuple(args, values);
 
@@ -32,6 +35,9 @@ static M_BaseObject* builtin_print(mtpython::vm::ThreadContext* context, M_BaseO
 	}
 
 	std::cout << end;
+
+	context->gc_track_object(args);
+	context->gc_track_object(kwargs);
 
 	return nullptr;
 }

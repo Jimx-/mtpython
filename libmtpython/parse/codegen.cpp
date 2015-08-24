@@ -109,6 +109,14 @@ ASTNode* BaseCodeGenerator::visit_name(NameNode* node)
 	return node;
 }
 
+ASTNode* BaseCodeGenerator::visit_keyword(KeywordNode* node)
+{
+	load_const(space->wrap_str(node->get_arg()));
+	node->get_value()->visit(this);
+
+	return node;
+}
+
 ASTNode* BaseCodeGenerator::visit_number(NumberNode* node)
 {
 	set_lineno(node->get_line());

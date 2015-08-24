@@ -657,7 +657,10 @@ ASTNode* Parser::argument()
 	if (cur_tok == TOK_EQL) {
 		KeywordNode* keyword = new KeywordNode(s.get_line());
 
-		keyword->set_arg(node);
+		NameNode* name_node = dynamic_cast<NameNode*>(node);
+		if (!name_node) diag.error(s.get_line(), s.get_col(), "invalid syntax");
+
+		keyword->set_arg(name_node->get_name());
 		match(TOK_EQL);
 		keyword->set_value(test());
 

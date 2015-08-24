@@ -24,5 +24,7 @@ Code* PyCompiler::compile(std::string& source, std::string& filename, mtpython::
 	ModuleCodeGenerator codegen(space, module, &symtab, &info);
 	mtpython::interpreter::PyCode* code = codegen.build();
 
+	SAFE_DELETE(module);
+
 	return code;
 }

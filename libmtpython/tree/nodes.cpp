@@ -144,6 +144,5 @@ NODE_CONSTRUCTOR(CallNode)
 
 NODE_CONSTRUCTOR(KeywordNode)
 {
-	arg = nullptr;
 	value = nullptr;
 }

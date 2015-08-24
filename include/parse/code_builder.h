@@ -62,7 +62,6 @@ public:
 
 class CodeBuilder : public mtpython::tree::GenericVisitor {
 private:
-	mtpython::objects::ObjSpace* space;
 	std::string name;
 	int first_lineno;
 	int lineno;
@@ -86,6 +85,7 @@ private:
 	void build_lnotab(std::vector<CodeBlock*>& blocks, std::vector<unsigned char>& lnotab);
 
 protected:
+	mtpython::objects::ObjSpace* space;
 	CompileInfo* compile_info;
 	
 	std::unordered_map<std::string, int> names;

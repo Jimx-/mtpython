@@ -198,15 +198,29 @@ void PyFrame::call_function_common(int arg, M_BaseObject* star, M_BaseObject* st
 	int nkwargs = (arg >> 8) & 0xff;
 
 	std::vector<M_BaseObject*> args;
-	pop_values_untrack(arg, args);
 
-	std::vector<M_BaseObject*> keywords;
+	std::vector<std::string> keywords;
 	std::vector<M_BaseObject*> keyword_values;
 
-	Arguments arguments(space, args);
+	if (nkwargs > 0) {
+		keywords.resize(nkwargs);
+		keyword_values.resize(nkwargs);
+		while (true) {
+			nkwargs--;
+			if (nkwargs < 0) break;
 
+			M_BaseObject* value = pop_value_untrack();
+			M_BaseObject* key = pop_value_untrack();
+
+			keywords[nkwargs] = space->unwrap_str(key);
+			keyword_values[nkwargs] = value;
+		}
+	}
+
+	pop_values_untrack(nargs, args);
+
+	Arguments arguments(space, args, keywords, keyword_values);
 	M_BaseObject* func = pop_value_untrack();
-	
 	M_BaseObject* result = space->call_args(context, func, arguments);
 	push_value(result);
 }

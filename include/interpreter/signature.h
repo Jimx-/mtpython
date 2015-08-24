@@ -4,6 +4,7 @@
 #include "objects/base_object.h"
 #include <vector>
 #include <initializer_list>
+#include <algorithm>
 
 namespace mtpython {
 namespace interpreter {
@@ -25,6 +26,13 @@ public:
 
 	bool has_vararg() { return (varargname != ""); }
 	bool has_kwarg() { return (kwargname != ""); }
+
+	int find_argname(std::string& name) 
+	{
+		std::vector<std::string>::iterator it = std::find(argnames.begin(), argnames.end(), name);
+		if (it == argnames.end()) return -1;
+		else return it - argnames.begin(); 
+	}
 
 	std::string& get_varargname() { return varargname; }
 
