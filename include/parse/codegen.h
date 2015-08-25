@@ -33,16 +33,16 @@ public:
     virtual ASTNode* visit_delete(DeleteNode* node);
     virtual ASTNode* visit_for(ForNode* node);*/
     //virtual mtpython::tree::ASTNode* visit_functiondef(mtpython::tree::FunctionDefNode* node);
-    /*virtual ASTNode* visit_if(IfNode* node);
-    virtual ASTNode* visit_ifexp(IfExpNode* node);*/
+    virtual mtpython::tree::ASTNode* visit_if(mtpython::tree::IfNode* node);
+    /*virtual ASTNode* visit_ifexp(IfExpNode* node);*/
     virtual mtpython::tree::ASTNode* visit_keyword(mtpython::tree::KeywordNode* node);
     virtual mtpython::tree::ASTNode* visit_name(mtpython::tree::NameNode* node);
     virtual mtpython::tree::ASTNode* visit_number(mtpython::tree::NumberNode* node);
     virtual mtpython::tree::ASTNode* visit_string(mtpython::tree::StringNode* node);
     /*virtual ASTNode* visit_pass(PassNode* node);
-    virtual ASTNode* visit_raise(RaiseNode* node);
-    virtual ASTNode* visit_return(ReturnNode* node);
-    virtual ASTNode* visit_tuple(TupleNode* node);
+    virtual ASTNode* visit_raise(RaiseNode* node);*/
+    virtual mtpython::tree::ASTNode* visit_return(mtpython::tree::ReturnNode* node);
+    /*virtual ASTNode* visit_tuple(TupleNode* node);
     virtual ASTNode* visit_unaryop(UnaryOpNode* node);
     virtual ASTNode* visit_while(WhileNode* node);
     virtual ASTNode* visit_yield(YieldNode* node);

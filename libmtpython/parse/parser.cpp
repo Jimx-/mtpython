@@ -98,10 +98,12 @@ ASTNode* Parser::module()
 
 	ASTNode* body = stmt();
 	if (cur_tok == TOK_SEMICOLON) match(TOK_SEMICOLON);
+	if (cur_tok != TOK_EOF) match(TOK_NEWLINE);
 	ASTNode* tn = body;
 	while (cur_tok != TOK_EOF) {
 		ASTNode* n = stmt();
 		if (cur_tok == TOK_SEMICOLON) match(TOK_SEMICOLON);
+		if (cur_tok != TOK_EOF) match(TOK_NEWLINE);
 		if (n != nullptr) {
 			if (tn == nullptr)
 				body = tn = n;
@@ -123,15 +125,18 @@ ASTNode* Parser::suite()
 {
 	ASTNode* node;
 
-	if (cur_tok == TOK_INDENT) {
+	if (cur_tok == TOK_NEWLINE) {
+		match(TOK_NEWLINE);
 		match(TOK_INDENT);
 
 		node = stmt();
 		if (cur_tok == TOK_SEMICOLON) match(TOK_SEMICOLON);
+		if (cur_tok != TOK_DEDENT) match(TOK_NEWLINE);
 		ASTNode* tn = node;
 		while (cur_tok != TOK_DEDENT) {
 			ASTNode* n = stmt();
 			if (cur_tok == TOK_SEMICOLON) match(TOK_SEMICOLON);
+			if (cur_tok != TOK_DEDENT) match(TOK_NEWLINE);
 			if (n != nullptr) {
 				if (tn == nullptr)
 					node = tn = n;
@@ -194,6 +199,8 @@ ASTNode* Parser::stmt()
 		break;
 	case TOK_INDENT:
 		diag.error(s.get_line(), s.get_col(), "unexpected indent");
+		break;
+	case TOK_NEWLINE:
 		break;
 	default:
 		diag.error(s.get_line(), s.get_col(), "unexpected token " + tok2str(cur_tok));
@@ -288,6 +295,8 @@ ASTNode* Parser::test()
 		return nullptr;
 	} else {
 		node = or_test();
+		if (!node) return node;
+
 		if (cur_tok == TOK_IF) {
 			match(TOK_IF);
 			IfExpNode* if_exp = new IfExpNode(s.get_line());

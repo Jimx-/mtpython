@@ -12,6 +12,7 @@ using namespace mtpython::interpreter;
 
 static mtpython::interpreter::Typedef int_typedef(std::string("int"), std::unordered_map<std::string, M_BaseObject*>{
 	{ "__repr__", new InterpFunctionWrapper(M_StdIntObject::__repr__) },
+	{ "__bool__", new InterpFunctionWrapper(M_StdIntObject::__bool__) },
 	{ "__add__", new InterpFunctionWrapper(M_StdIntObject::__add__) },
 });
 
@@ -42,6 +43,15 @@ M_BaseObject* M_StdIntObject::__repr__(mtpython::vm::ThreadContext* context, M_B
 	int i = space->unwrap_int(self);
 
 	return space->wrap_str(std::to_string(i)); 
+}
+
+M_BaseObject* M_StdIntObject::__bool__(mtpython::vm::ThreadContext* context, M_BaseObject* self)
+{
+	ObjSpace* space = context->get_space();
+	M_StdIntObject* as_int = M_STDINTOBJECT(self);
+	if (!as_int) throw InterpError(space->TypeError_type(), space->wrap_str("object is not int"));
+
+	return space->new_bool(as_int->intval != 0);
 }
 
 M_BaseObject* M_StdIntObject::__add__(mtpython::vm::ThreadContext* context, M_BaseObject* self, M_BaseObject* other)

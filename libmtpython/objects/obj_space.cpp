@@ -75,8 +75,15 @@ M_BaseObject* ObjSpace::hash(M_BaseObject* obj)
 
 bool ObjSpace::is_true(M_BaseObject* obj)
 {
-	if (i_is(obj, wrap_True())) return true;
-	if (i_is(obj, wrap_False())) return false;
+	M_BaseObject* descr = lookup(obj, std::string("__bool__"));
+	if (!descr) return true;
+
+	M_BaseObject* result = get_and_call_function(current_thread(), descr, {obj});
+
+	if (i_is(result, wrap_True())) return true;
+	if (i_is(result, wrap_False())) return false;
+
+	throw InterpError(TypeError_type(), wrap_str("__bool__ should return bool"));
 
 	return false;
 }

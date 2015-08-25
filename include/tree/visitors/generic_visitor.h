@@ -104,6 +104,10 @@ public:
 
 	virtual ASTNode* visit_if(IfNode* node) 
 	{
+		node->get_test()->visit(this);
+		node->get_body()->visit(this);
+		node->get_orelse()->visit(this);
+		
 		return node; 
 	}
 	

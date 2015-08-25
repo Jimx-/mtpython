@@ -16,6 +16,7 @@ Scanner::Scanner(SourceBuffer* sb, Diagnostics* diag) : buf(sb), diagnostics(dia
 	indentation.push(0);
 	dedentation_count = 0;
 	at_start = true;
+	update_indent = false;
 }
 
 /* read_char: read a char from input stream, -1 if eof */
@@ -253,10 +254,12 @@ Token Scanner::get_token()
 
 	last_word = "";
 	//first skip any empty character
-	while ((last_char == ' ') || (last_char == '\t') ||
-          (last_char == 0)) {
-		last_char = read_char();
-    }
+	if (!update_indent) {
+		while ((last_char == ' ') || (last_char == '\t') ||
+			(last_char == 0)) {
+			last_char = read_char();
+		}
+	}
 
     /* encounted a new line */
     if ((last_char == '\n') || (last_char == '\r')) {
@@ -270,7 +273,13 @@ Token Scanner::get_token()
 		last_char = read_char();
     }
 
-    if (new_line) {	/* calculate indentation */
+    if (new_line) {
+    	update_indent = true;
+    	return TOK_NEWLINE;
+    }
+
+    if (update_indent) {	/* calculate indentation */
+    	update_indent = false;
     	int indentation_level = 0;
     	char indentation_char = last_char;
     	while ((last_char == ' ') || (last_char == '\t')) {
@@ -325,6 +334,10 @@ Token Scanner::get_token()
 				return scan_number(16);
 			}
 		} else {
+			if (!isdigit(last_char)) {
+				last_strnum = "0";
+				return TOK_INTLITERAL;
+			}
 			return scan_number(8);
 		}
 	}
@@ -436,8 +449,8 @@ Token Scanner::get_token()
 	}
 
 	if (last_char == '#') {	// single line comment
-		while (last_char != '\n' && last_char != '\r') last_char = read_char();	/* skip until '\n''\r' */
-		return get_token();
+		while (last_char != '\n' && last_char != '\r' && last_char != -1) last_char = read_char();	/* skip until '\n''\r' */
+		if (last_char != -1) return get_token();
 	}
 
 	/* "/" - divide, "/*" - comment */

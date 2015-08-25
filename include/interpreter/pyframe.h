@@ -68,6 +68,9 @@ protected:
 	virtual void store_fast(int arg, int next_pc);
 	virtual void load_global(int arg, int next_pc);
 	virtual void call_function(int arg, int next_pc);
+	virtual int jump_absolute(int arg);
+	virtual int jump_forward(int arg, int next_pc);
+	virtual int pop_jump_if_false(int arg, int next_pc);
 
 	virtual void call_function_common(int arg, M_BaseObject* star=nullptr, M_BaseObject* starstar=nullptr);
 public:

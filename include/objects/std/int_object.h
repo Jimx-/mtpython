@@ -7,6 +7,8 @@
 namespace mtpython {
 namespace objects {
 
+#define M_STDINTOBJECT(obj) (dynamic_cast<M_StdIntObject*>(obj))
+
 class M_StdIntObject : public M_BaseObject {
 protected:
 	int intval;
@@ -15,7 +17,7 @@ public:
 	M_StdIntObject(std::string& x);
 
 	static M_BaseObject* __repr__(mtpython::vm::ThreadContext* context, mtpython::objects::M_BaseObject* self);
-
+	static M_BaseObject* __bool__(mtpython::vm::ThreadContext* context, mtpython::objects::M_BaseObject* self);
 	static M_BaseObject* __add__(mtpython::vm::ThreadContext* context, mtpython::objects::M_BaseObject* self, mtpython::objects::M_BaseObject* other);
 
 	static interpreter::Typedef* _int_typedef();

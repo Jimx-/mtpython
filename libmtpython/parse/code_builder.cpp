@@ -1,6 +1,8 @@
 #include "parse/code_builder.h"
 #include "tools/opcode.h"
 
+#include <algorithm>
+
 using namespace mtpython::parse;
 
 static std::unordered_map<unsigned char, int> static_opcode_stack_effect = {
@@ -120,10 +122,26 @@ void CodeBlock::get_code(std::vector<unsigned char>& code)
 	}
 }
 
+void CodeBlock::dfs(std::vector<CodeBlock*>& blocks)
+{
+	if (seen) return;
+	seen = true;
+
+	if (next) next->dfs(blocks);
+
+	for (Instruction* inst : instructions) {
+		if (inst->has_jump()) inst->get_target()->dfs(blocks);
+	}
+
+	blocks.push_back(this);
+}
+
 void CodeBlock::get_block_list(std::vector<CodeBlock*>& blocks)
 {
 	blocks.clear();
-	blocks.push_back(this);
+
+	dfs(blocks);
+	std::reverse(blocks.begin(), blocks.end());
 }
 
 template <typename T>
@@ -139,12 +157,14 @@ CodeBuilder::CodeBuilder(std::string& name, mtpython::objects::ObjSpace* space, 
 	this->first_lineno = first_lineno;
 	this->space = space;
 	compile_info = info;
-	this->first_block = new CodeBlock();
-	set_block(this->first_block);
+	this->first_block = new_block();
+	use_block(this->first_block);
 	lineno = 0;
 	lineno_set = false;
 	argcount = 0;
 	kwonlyargcount = 0;
+
+	auto_add_return_value = true;
 
 	vector2map<std::string>(scope->get_varnames(), varnames);
 }
@@ -153,6 +173,16 @@ void CodeBuilder::set_lineno(int lineno)
 {
 	this->lineno = lineno;
 	lineno_set = false;
+}
+
+CodeBlock* CodeBuilder::use_next_block(CodeBlock* block)
+{
+	if (!block) block = new_block();
+
+	current_block->set_next(block);
+	use_block(block);
+
+	return block;
 }
 
 void CodeBuilder::append_instruction(Instruction* inst)
@@ -175,7 +205,7 @@ int CodeBuilder::add_name(std::unordered_map<std::string, int>& container, std::
 	return -1;
 }
 
-void CodeBuilder::emit_op(unsigned char op)
+Instruction* CodeBuilder::emit_op(unsigned char op)
 {
 	Instruction* inst = new Instruction(op);
 	if (!lineno_set) {
@@ -184,9 +214,11 @@ void CodeBuilder::emit_op(unsigned char op)
 	}
 
 	append_instruction(inst);
+
+	return inst;
 }
 
-void CodeBuilder::emit_op_arg(unsigned char op, int arg)
+Instruction* CodeBuilder::emit_op_arg(unsigned char op, int arg)
 {
 	Instruction* inst = new Instruction(op, arg);
 	if (!lineno_set) {
@@ -195,6 +227,13 @@ void CodeBuilder::emit_op_arg(unsigned char op, int arg)
 	}
 
 	append_instruction(inst);
+
+	return inst;
+}
+
+void CodeBuilder::emit_jump(unsigned char op, CodeBlock* target, bool absolute)
+{
+	emit_op(op)->jump_to(target, absolute);
 }
 
 int CodeBuilder::add_const(mtpython::objects::M_BaseObject* obj)
@@ -235,6 +274,40 @@ int CodeBuilder::opcode_stack_effect(unsigned char op, int arg)
 	return got2->second(arg);
 }
 
+void CodeBuilder::patch_jump(std::vector<CodeBlock*>& blocks)
+{
+	int ext_arg_count, last_ext_arg_count = 0;
+
+	while (true) { 
+		ext_arg_count = 0;
+		int block_off = 0;
+		for (CodeBlock* block : blocks) {
+			block->set_offset(block_off);
+			block_off += block->code_size();
+		}
+
+		for (CodeBlock* block : blocks) {
+			int offset = block->get_offset();
+			for (Instruction* inst : block->get_instructions()) {
+				offset += inst->size();
+
+				if (inst->has_jump()) {
+					CodeBlock* target = inst->get_target();
+
+					int jump_arg = target->get_offset() - (inst->is_absolute() ? 0 : offset);
+					inst->set_arg(jump_arg);
+					if (jump_arg > 0xffff) ext_arg_count++;
+				}
+			}
+		}
+
+		if (ext_arg_count == last_ext_arg_count)	/* code size didn't change */
+			break;
+		else
+			last_ext_arg_count = ext_arg_count;
+	}
+}
+
 int CodeBuilder::get_stacksize(std::vector<CodeBlock*>& blocks)
 {
 	int max_depth = 0;
@@ -265,12 +338,6 @@ void CodeBuilder::build_lnotab(std::vector<CodeBlock*>& blocks, std::vector<unsi
 	lnotab.clear();
 	int current_line = first_lineno;
 	int current_off = 0;
-
-	int block_off = 0;
-	for (CodeBlock* block : blocks) {
-		block->set_offset(block_off);
-		block_off += block->code_size();
-	}
 
 	for (CodeBlock* block : blocks) {
 		int offset = block->get_offset();
@@ -322,7 +389,7 @@ mtpython::interpreter::PyCode* CodeBuilder::build()
 {
 	/* add return if there is not */
 	if (!current_block->have_return()) {
-		load_const(space->wrap_None());
+		if (auto_add_return_value) load_const(space->wrap_None());
 		emit_op(RETURN_VALUE);
 	}
 
@@ -337,6 +404,7 @@ mtpython::interpreter::PyCode* CodeBuilder::build()
 	/* build code */
 	std::vector<CodeBlock*> blocks;
 	first_block->get_block_list(blocks);
+	patch_jump(blocks);
 
 	/* build lnotab */
 	std::vector<unsigned char> lnotab;

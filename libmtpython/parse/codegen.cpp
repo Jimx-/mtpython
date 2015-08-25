@@ -47,6 +47,8 @@ ASTNode* BaseCodeGenerator::visit_assign(AssignNode* node)
 
 ASTNode* BaseCodeGenerator::visit_binop(BinOpNode* node)
 {
+	auto_add_return_value = false;
+	
 	set_lineno(node->get_line());
 	node->get_left()->visit(this);
 	node->get_right()->visit(this);
@@ -101,6 +103,29 @@ void BaseCodeGenerator::gen_name(std::string& name, ExprContext ctx)
 	emit_op_arg(op, arg);
 }
 
+ASTNode* BaseCodeGenerator::visit_if(IfNode* node)
+{
+	set_lineno(node->get_line());
+	CodeBlock* end_block = new_block();
+
+	ASTNode* orelse = node->get_orelse();
+	CodeBlock* otherwise = orelse ? new_block() : end_block;
+
+	node->get_test()->visit(this);
+	emit_jump(POP_JUMP_IF_FALSE, otherwise, true);
+	node->get_body()->visit(this);
+	emit_jump(JUMP_FORWARD, end_block);
+
+	if (orelse) {
+		use_next_block(otherwise);
+		orelse->visit(this);
+	}
+
+	use_next_block(end_block);
+
+	return node;
+}
+
 ASTNode* BaseCodeGenerator::visit_name(NameNode* node)
 {
 	set_lineno(node->get_line());
@@ -121,6 +146,21 @@ ASTNode* BaseCodeGenerator::visit_number(NumberNode* node)
 {
 	set_lineno(node->get_line());
 	load_const(node->get_value());
+
+	return node;
+}
+
+ASTNode* BaseCodeGenerator::visit_return(ReturnNode* node)
+{
+	set_lineno(node->get_line());
+	ASTNode* value = node->get_value();
+	if (value) {
+		value->visit(this);
+	} else {
+		load_const(space->wrap_None());
+	}
+
+	emit_op(RETURN_VALUE);
 
 	return node;
 }

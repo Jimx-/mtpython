@@ -14,6 +14,8 @@ public:
 	M_StdBoolObject::M_StdBoolObject(bool x);
 
 	virtual bool i_is(ObjSpace* space, M_BaseObject* other);
+	
+	static M_BaseObject* __bool__(mtpython::vm::ThreadContext* context, mtpython::objects::M_BaseObject* self);
 
 	static interpreter::Typedef* _bool_typedef();
 	virtual interpreter::Typedef* get_typedef();

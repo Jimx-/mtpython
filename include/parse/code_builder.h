@@ -14,19 +14,30 @@
 namespace mtpython {
 namespace parse {
 
+class CodeBlock;
+
 class Instruction {
 private:
 	unsigned char op;
 	int arg;
 	int lineno;
+
+	CodeBlock* jump;
+	bool absolute_jump;
 public:
-	Instruction(unsigned char op, int arg=0) { this->op = op; this->arg = arg; this->lineno = 0; }
+	Instruction(unsigned char op, int arg=0) { this->op = op; this->arg = arg; this->lineno = 0; jump = nullptr; }
 	void set_lineno(int lineno) { this->lineno = lineno; }
 
 	int size() { if (op >= HAVE_ARGUMENT) { if (arg > 0xffff) return 6; else return 3; } return 1; }
 	unsigned char get_op() { return op; }
 	int get_arg() { return arg; }
+	void set_arg(int arg) { this->arg = arg; }
 	int get_lineno() { return lineno; }
+
+	void jump_to(CodeBlock* target, bool absolute=false) { jump = target; absolute_jump = absolute; }
+	bool has_jump() { return (jump != nullptr); }
+	bool is_absolute() { return absolute_jump; }
+	CodeBlock* get_target() { return jump; }
 };
 
 class CodeBlock {
@@ -35,10 +46,13 @@ private:
 	CodeBlock* next;
 	int depth;
 	int offset;
+	bool seen;
 
 	bool _have_return;
+
+	void dfs(std::vector<CodeBlock*>& blocks);
 public:
-	CodeBlock() { _have_return = false; next = nullptr; }
+	CodeBlock() { _have_return = false; next = nullptr; seen = false; }
 	
 	std::vector<Instruction*>& get_instructions() { return instructions; }
 	void append_instruction(Instruction* inst) { instructions.push_back(inst); }
@@ -56,6 +70,7 @@ public:
 	void set_have_return(bool v) { _have_return = v; }
 
 	CodeBlock* get_next() { return next; }
+	void set_next(CodeBlock* block) { next = block; }
 
 	void get_block_list(std::vector<CodeBlock*>& blocks);
 };
@@ -83,10 +98,13 @@ private:
 	int add_const(mtpython::objects::M_BaseObject* obj);
 	int get_stacksize(std::vector<CodeBlock*>& blocks);
 	void build_lnotab(std::vector<CodeBlock*>& blocks, std::vector<unsigned char>& lnotab);
+	void patch_jump(std::vector<CodeBlock*>& blocks);
 
 protected:
 	mtpython::objects::ObjSpace* space;
 	CompileInfo* compile_info;
+	
+	bool auto_add_return_value;
 	
 	std::unordered_map<std::string, int> names;
 	std::unordered_map<std::string, int> varnames;
@@ -95,19 +113,22 @@ protected:
 
 	int add_name(std::unordered_map<std::string, int>& container, std::string& id);
 
-	void emit_op(unsigned char op);
-	void emit_op_arg(unsigned char op, int arg);
+	Instruction* emit_op(unsigned char op);
+	Instruction* emit_op_arg(unsigned char op, int arg);
+	void emit_jump(unsigned char op, CodeBlock* target, bool absolute=false);
 
 	int opcode_stack_effect(unsigned char op, int arg);
+
+	CodeBlock* new_block() { return new CodeBlock(); }
+	void use_block(CodeBlock* block) { current_block = block; }
+	CodeBlock* use_next_block(CodeBlock* block=nullptr);
+	void set_lineno(int lineno);
+
+	void load_const(mtpython::objects::M_BaseObject* obj);
 public:
 	CodeBuilder(std::string& name, mtpython::objects::ObjSpace* space, Scope* scope, int first_lineno, CompileInfo* info);
 
 	mtpython::interpreter::PyCode* build();
-
-	void set_block(CodeBlock* block) { current_block = block; }
-	void set_lineno(int lineno);
-
-	void load_const(mtpython::objects::M_BaseObject* obj);
 };
 
 }

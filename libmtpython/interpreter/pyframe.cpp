@@ -113,7 +113,9 @@ int PyFrame::dispatch_bytecode(ThreadContext* context, std::vector<unsigned char
 			throw ReturnException();
 		}
 
-		if (opcode == POP_TOP)
+		if (opcode == JUMP_ABSOLUTE)
+			return jump_absolute(arg);
+		else if (opcode == POP_TOP)
 			pop_top(arg, next_pc);
 		else if (opcode == BINARY_ADD)
 			binary_add(arg, next_pc);
@@ -123,6 +125,10 @@ int PyFrame::dispatch_bytecode(ThreadContext* context, std::vector<unsigned char
 			load_fast(arg, next_pc);
 		else if (opcode == STORE_FAST)
 			store_fast(arg, next_pc);
+		else if (opcode == JUMP_FORWARD)
+			next_pc = jump_forward(arg, next_pc);
+		else if (opcode == POP_JUMP_IF_FALSE)
+			next_pc = pop_jump_if_false(arg, next_pc);
 		else if (opcode == LOAD_GLOBAL)
 			load_global(arg, next_pc);
 		else if (opcode == CALL_FUNCTION)
@@ -228,4 +234,26 @@ void PyFrame::call_function_common(int arg, M_BaseObject* star, M_BaseObject* st
 void PyFrame::call_function(int arg, int next_pc)
 {
 	call_function_common(arg);
+}
+
+int PyFrame::jump_absolute(int arg)
+{
+	return arg;
+}
+
+int PyFrame::jump_forward(int arg, int next_pc)
+{
+	next_pc += arg;
+	return next_pc;
+}
+
+int PyFrame::pop_jump_if_false(int arg, int next_pc)
+{
+	M_BaseObject* value = pop_value_untrack();
+	if (!context->get_space()->is_true(value)) {
+		next_pc = arg;
+	}
+
+	context->gc_track_object(value);
+	return next_pc;
 }

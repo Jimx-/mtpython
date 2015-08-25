@@ -24,6 +24,7 @@ namespace mtpython {
 			std::stack<int> indentation;
 			/* if dedentation_count > 0, throw a DEDENT token and dedentation_count-- */
 			int dedentation_count;
+			bool update_indent;
 
 			int peek_start_pos;
 			bool at_start;
