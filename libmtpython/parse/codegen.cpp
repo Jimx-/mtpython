@@ -111,14 +111,22 @@ ASTNode* BaseCodeGenerator::visit_if(IfNode* node)
 	ASTNode* orelse = node->get_orelse();
 	CodeBlock* otherwise = orelse ? new_block() : end_block;
 
-	node->get_test()->visit(this);
-	emit_jump(POP_JUMP_IF_FALSE, otherwise, true);
-	node->get_body()->visit(this);
-	emit_jump(JUMP_FORWARD, end_block);
+	int constant = expr_constant(node->get_test());
 
-	if (orelse) {
-		use_next_block(otherwise);
-		orelse->visit(this);
+	if (constant == 0) {
+		if (orelse) orelse->visit(this);
+	} else if (constant == 1) {
+		node->get_body()->visit(this);
+	} else {
+		node->get_test()->visit(this);
+		emit_jump(POP_JUMP_IF_FALSE, otherwise, true);
+		node->get_body()->visit(this);
+		emit_jump(JUMP_FORWARD, end_block);
+
+		if (orelse) {
+			use_next_block(otherwise);
+			orelse->visit(this);
+		}
 	}
 
 	use_next_block(end_block);

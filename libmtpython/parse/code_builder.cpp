@@ -251,6 +251,20 @@ int CodeBuilder::add_const(mtpython::objects::M_BaseObject* obj)
 	return -1;
 }
 
+int CodeBuilder::expr_constant(mtpython::tree::ASTNode* node)
+{
+	mtpython::tree::NodeType tag = node->get_tag();
+	switch (tag) {
+	case mtpython::tree::NodeType::NT_NUMBER:
+	{
+		mtpython::tree::NumberNode* number_node = dynamic_cast<mtpython::tree::NumberNode*>(node);
+		return space->is_true(number_node->get_value()) ? 1 : 0;
+	}
+	}
+
+	return -1;
+}
+
 void CodeBuilder::load_const(mtpython::objects::M_BaseObject* obj)
 {
 	int index = add_const(obj);

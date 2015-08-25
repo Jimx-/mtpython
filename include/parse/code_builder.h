@@ -124,6 +124,8 @@ protected:
 	CodeBlock* use_next_block(CodeBlock* block=nullptr);
 	void set_lineno(int lineno);
 
+	int expr_constant(mtpython::tree::ASTNode* node);
+	
 	void load_const(mtpython::objects::M_BaseObject* obj);
 public:
 	CodeBuilder(std::string& name, mtpython::objects::ObjSpace* space, Scope* scope, int first_lineno, CompileInfo* info);
