@@ -60,7 +60,7 @@ M_BaseObject* PyCode::funcrun_obj(ThreadContext* context, M_BaseObject* func, M_
 	PyFrame* frame = space->create_frame(context, this, as_func->get_globals());
 	if (!frame) return nullptr;
 
-	args.parse(obj, signature, frame->get_local_vars());
+	args.parse(as_func->get_name(), obj, signature, frame->get_local_vars());
 
 	return frame->exec();
 }

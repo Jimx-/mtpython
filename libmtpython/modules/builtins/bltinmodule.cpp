@@ -65,7 +65,7 @@ BuiltinsModule::BuiltinsModule(ObjSpace* space, M_BaseObject* name) : Module(spa
 	ADD_EXCEPTION(Exception);
 	ADD_EXCEPTION(TypeError);
 
-	add_def(std::string("__import__"), new InterpFunctionWrapper(builtin___import__, Signature(std::initializer_list<std::string>{"name", "globals", "locals", "from_list", "level"})));
+	add_def(std::string("__import__"), new InterpFunctionWrapper(std::string("__import__"), builtin___import__, Signature(std::initializer_list<std::string>{"name", "globals", "locals", "from_list", "level"})));
 	
-	add_def(std::string("print"), new InterpFunctionWrapper(builtin_print, Signature(std::string("args"), std::string("kwargs"))));	
+	add_def(std::string("print"), new InterpFunctionWrapper(std::string("print"), builtin_print, Signature(std::string("args"), std::string("kwargs"))));
 }

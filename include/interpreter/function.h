@@ -23,7 +23,8 @@ public:
 	Code* get_code() { return code; }
 
 	objects::M_BaseObject* get_globals() { return func_globals; }
-	
+	std::string& get_name() { return name; }
+
 	objects::M_BaseObject* call_args(vm::ThreadContext* context, Arguments& args);
 	objects::M_BaseObject* call_obj_args(vm::ThreadContext* context, objects::M_BaseObject* obj, Arguments& args);
 };

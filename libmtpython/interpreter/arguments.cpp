@@ -1,3 +1,5 @@
+#include <memory>
+
 #include "interpreter/arguments.h"
 #include "objects/obj_space.h"
 #include "interpreter/error.h"
@@ -5,8 +7,27 @@
 using namespace mtpython::interpreter;
 using namespace mtpython::objects;
 
+template<typename ... Args>
+static std::string string_format(const char* format, Args ... args)
+{
+	size_t size = snprintf(nullptr, 0, format, args ...) + 1;
+	std::unique_ptr<char[]> buf(new char[size]); 
+	snprintf(buf.get(), size, format, args ...);
+	return std::string(buf.get(), buf.get() + size - 1);
+}
+
+static std::string argcount_err_msg(std::string& name, int nargs, int nkwargs, Signature& sig)
+{
+	int n = sig.get_nargs();
+
+	char* plural = (n > 1) ? "s" : "";
+	char* plural2 = ((nargs + nkwargs) > 1) ? "were" : "was";
+
+	return string_format("%s() takes %d positional argument%s but %d %s given", name.c_str(), n, plural, (nargs + nkwargs), plural2);
+}
+
 /* TODO: support keyword only argument(PEP 3102) */
-void Arguments::parse(M_BaseObject* first, Signature& sig, std::vector<M_BaseObject*>& scope, std::vector<M_BaseObject*>& defaults)
+void Arguments::parse(std::string& fname, M_BaseObject* first, Signature& sig, std::vector<M_BaseObject*>& scope, std::vector<M_BaseObject*>& defaults)
 {
 	int argcount = sig.get_nargs();
 
@@ -48,7 +69,7 @@ void Arguments::parse(M_BaseObject* first, Signature& sig, std::vector<M_BaseObj
 				if (sig.get_varargname() == "*") {	
 					/* if the next unfilled slot is a vararg slot, and it does
            				not have a name, then it is an error. */
-					throw InterpError::format(space, space->TypeError_type(), "function takes %d arguments but %d arguments were given", argcount, args_avail);
+					throw InterpError(space->TypeError_type(), space->wrap_str(argcount_err_msg(fname, nargs, nkwargs, sig)));
 				}
 				starargs.insert(starargs.end(), args.begin() + left, args.end());
 			}
@@ -58,7 +79,7 @@ void Arguments::parse(M_BaseObject* first, Signature& sig, std::vector<M_BaseObj
 		M_BaseObject* wrapped_starargs = space->new_tuple(starargs);
 		scope[argcount] = wrapped_starargs;
 	} else if (args_avail > argcount) {	/* error */
-		throw InterpError::format(space, space->TypeError_type(), "function takes %d arguments but %d arguments were given", argcount, args_avail);
+		throw InterpError(space->TypeError_type(), space->wrap_str(argcount_err_msg(fname, nargs, nkwargs, sig)));
 	}
 
 	/* create kwarg dict */
@@ -82,7 +103,7 @@ void Arguments::parse(M_BaseObject* first, Signature& sig, std::vector<M_BaseObj
 
 			/* multiple values */
 			if (index < input_argcount) {
-				if (index != -1) throw InterpError::format(space, space->TypeError_type(), "got multiple values for argument '%s'", keyword_name.c_str());
+				if (index != -1) throw InterpError::format(space, space->TypeError_type(), "%s() got multiple values for argument '%s'", fname.c_str(), keyword_name.c_str());
 			} else {
 				kwarg_index[index - input_argcount] = i;
 				remaining_kwargs--;
@@ -100,7 +121,7 @@ void Arguments::parse(M_BaseObject* first, Signature& sig, std::vector<M_BaseObj
 					}
 				}
 			} else {
-				throw InterpError(space->TypeError_type(), space->wrap_str("got unexpected keyword arguments"));
+				throw InterpError::format(space, space->TypeError_type(), "%s() got %d unexpected keyword argument%s", fname.c_str(), remaining_kwargs, (remaining_kwargs > 1) ? "s" : "");
 			}
 		}
 	}

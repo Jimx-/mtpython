@@ -11,9 +11,9 @@ using namespace mtpython::objects;
 using namespace mtpython::interpreter;
 
 static mtpython::interpreter::Typedef int_typedef(std::string("int"), std::unordered_map<std::string, M_BaseObject*>{
-	{ "__repr__", new InterpFunctionWrapper(M_StdIntObject::__repr__) },
-	{ "__bool__", new InterpFunctionWrapper(M_StdIntObject::__bool__) },
-	{ "__add__", new InterpFunctionWrapper(M_StdIntObject::__add__) },
+	{ "__repr__", new InterpFunctionWrapper(std::string("__repr__"), M_StdIntObject::__repr__) },
+	{ "__bool__", new InterpFunctionWrapper(std::string("__bool__"), M_StdIntObject::__bool__) },
+	{ "__add__", new InterpFunctionWrapper(std::string("__add__"), M_StdIntObject::__add__) },
 });
 
 M_StdIntObject::M_StdIntObject(int x)
