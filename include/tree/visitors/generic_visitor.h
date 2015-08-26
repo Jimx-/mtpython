@@ -87,6 +87,13 @@ public:
 		return node; 
 	}
 
+	virtual ASTNode* visit_expr(ExprNode* node)
+	{
+		node->get_value()->visit(this);
+
+		return node;
+	}
+
 	virtual ASTNode* visit_for(ForNode* node) 
 	{
 		node->get_target()->visit(this);

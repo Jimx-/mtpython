@@ -30,5 +30,6 @@
 #include "tree/nodes/call_node.h"
 #include "tree/nodes/keyword_node.h"
 #include "tree/nodes/string_node.h"
+#include "tree/nodes/expr_node.h"
 
 #endif /* _NODES_H_ */

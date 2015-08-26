@@ -48,11 +48,11 @@ private:
 	int offset;
 	bool seen;
 
-	bool _have_return;
+	bool _has_return;
 
 	void dfs(std::vector<CodeBlock*>& blocks);
 public:
-	CodeBlock() { _have_return = false; next = nullptr; seen = false; }
+	CodeBlock() { _has_return = false; next = nullptr; seen = false; }
 	
 	std::vector<Instruction*>& get_instructions() { return instructions; }
 	void append_instruction(Instruction* inst) { instructions.push_back(inst); }
@@ -66,8 +66,8 @@ public:
 	int get_offset() { return offset; }
 	void set_offset(int offset) { this->offset = offset; }
 
-	bool have_return() { return _have_return; }
-	void set_have_return(bool v) { _have_return = v; }
+	bool has_return() { return _has_return; }
+	void set_has_return(bool v) { _has_return = v; }
 
 	CodeBlock* get_next() { return next; }
 	void set_next(CodeBlock* block) { next = block; }
@@ -103,8 +103,8 @@ private:
 protected:
 	mtpython::objects::ObjSpace* space;
 	CompileInfo* compile_info;
-	
-	bool auto_add_return_value;
+
+	mtpython::objects::M_BaseObject* qualname;
 	
 	std::unordered_map<std::string, int> names;
 	std::unordered_map<std::string, int> varnames;
@@ -125,10 +125,14 @@ protected:
 	void set_lineno(int lineno);
 
 	int expr_constant(mtpython::tree::ASTNode* node);
-	
+
 	void load_const(mtpython::objects::M_BaseObject* obj);
 public:
 	CodeBuilder(std::string& name, mtpython::objects::ObjSpace* space, Scope* scope, int first_lineno, CompileInfo* info);
+
+	void set_argcount(int argcount) { this->argcount = argcount; }
+
+	mtpython::objects::M_BaseObject* get_qualname() { return qualname; }
 
 	mtpython::interpreter::PyCode* build();
 };

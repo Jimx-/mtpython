@@ -1,5 +1,6 @@
 #include "interpreter/pyframe.h"
 #include "interpreter/pycode.h"
+#include "interpreter/function.h"
 #include "tools/opcode.h"
 
 #include <exception>
@@ -47,7 +48,7 @@ M_BaseObject* PyFrame::execute_frame()
 		throw;
 	}
 
-	return nullptr;
+	return retval;
 }
 
 M_BaseObject* PyFrame::dispatch(ThreadContext* context, Code* code, int next_pc)
@@ -133,6 +134,8 @@ int PyFrame::dispatch_bytecode(ThreadContext* context, std::vector<unsigned char
 			load_global(arg, next_pc);
 		else if (opcode == CALL_FUNCTION)
 			call_function(arg, next_pc);
+		else if (opcode == MAKE_FUNCTION)
+			make_function(arg, next_pc);
 	}
 }
 
@@ -234,6 +237,19 @@ void PyFrame::call_function_common(int arg, M_BaseObject* star, M_BaseObject* st
 void PyFrame::call_function(int arg, int next_pc)
 {
 	call_function_common(arg);
+}
+
+void PyFrame::make_function(int arg, int next_pc)
+{
+	ObjSpace* space = context->get_space();
+	M_BaseObject* qualname = pop_value_untrack();
+	M_BaseObject* code_obj = pop_value_untrack();
+
+	PyCode* code = dynamic_cast<PyCode*>(code_obj);
+	if (!code) throw InterpError(space->TypeError_type(), space->wrap_str("expected code object"));
+
+	M_BaseObject* func = new Function(space, code, globals);
+	push_value(space->wrap(func));
 }
 
 int PyFrame::jump_absolute(int arg)

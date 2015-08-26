@@ -1,5 +1,7 @@
 #include "interpreter/pycode.h"
 #include "interpreter/pyframe.h"
+#include "interpreter/function.h"
+#include "interpreter/error.h"
 
 using namespace mtpython::interpreter;
 using namespace mtpython::objects;
@@ -19,6 +21,24 @@ PyCode::PyCode(mtpython::objects::ObjSpace* space, int argcount, int kwonlyargco
 	for (auto& _name : names) {
 		co_names.push_back(space->new_interned_str(_name));
 	}
+
+	generate_signature();
+}
+
+void PyCode::generate_signature()
+{
+	int argcount = co_argcount;
+
+	std::vector<std::string> argnames(co_varnames.begin(), co_varnames.begin() + argcount);
+	std::string varargname;
+	std::string kwargname;
+
+	varargname = "";
+	kwargname = "";
+
+	std::vector<std::string> kwonlyargnames;
+
+	signature = Signature(argnames, varargname, kwargname, kwonlyargnames);
 }
 
 M_BaseObject* PyCode::exec_code(ThreadContext* context, M_BaseObject* globals, M_BaseObject* locals)
@@ -27,5 +47,20 @@ M_BaseObject* PyCode::exec_code(ThreadContext* context, M_BaseObject* globals, M
 	PyFrame* frame = space->create_frame(context, this, globals);
 	if (!frame) return nullptr;
 	
+	return frame->exec();
+}
+
+M_BaseObject* PyCode::funcrun_obj(ThreadContext* context, M_BaseObject* func, M_BaseObject* obj, Arguments& args)
+{
+	ObjSpace* space = context->get_space();
+
+	Function* as_func = dynamic_cast<Function*>(func);
+	if (!as_func)
+		throw InterpError(space->TypeError_type(), space->wrap_str("expected Functon object"));
+	PyFrame* frame = space->create_frame(context, this, as_func->get_globals());
+	if (!frame) return nullptr;
+
+	args.parse(obj, signature, frame->get_local_vars());
+
 	return frame->exec();
 }

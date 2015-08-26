@@ -3,8 +3,8 @@
 using namespace mtpython::objects;
 using namespace mtpython::interpreter;
 
-Function::Function(ObjSpace* space, Code* code)
-	: space(space), name(code->get_name()), code(code) 
+Function::Function(ObjSpace* space, Code* code, M_BaseObject* globals)
+	: space(space), name(code->get_name()), code(code), func_globals(globals)
 {
 
 }

@@ -3,6 +3,7 @@
 #include "tools/opcode.h"
 
 using namespace mtpython::parse;
+using namespace mtpython::interpreter;
 using namespace mtpython::tree;
 using namespace mtpython::objects;
 
@@ -46,9 +47,7 @@ ASTNode* BaseCodeGenerator::visit_assign(AssignNode* node)
 }
 
 ASTNode* BaseCodeGenerator::visit_binop(BinOpNode* node)
-{
-	auto_add_return_value = false;
-	
+{	
 	set_lineno(node->get_line());
 	node->get_left()->visit(this);
 	node->get_right()->visit(this);
@@ -81,6 +80,19 @@ ASTNode* BaseCodeGenerator::visit_call(CallNode* node)
 	return node;
 }
 
+ASTNode* BaseCodeGenerator::visit_expr(ExprNode* node)
+{
+	set_lineno(node->get_line());
+	ASTNode* value = node->get_value();
+
+	if ((value->get_tag() != NodeType::NT_NUMBER) && (value->get_tag() != NodeType::NT_STRING)) {
+		value->visit(this);
+		emit_op(POP_TOP);
+	}
+
+	return node;
+}
+
 void BaseCodeGenerator::gen_name(std::string& name, ExprContext ctx)
 {
 	int scope = this->scope->lookup(name);
@@ -101,6 +113,35 @@ void BaseCodeGenerator::gen_name(std::string& name, ExprContext ctx)
 	}
 
 	emit_op_arg(op, arg);
+}
+
+void BaseCodeGenerator::make_closure(mtpython::interpreter::PyCode* code, int args, mtpython::objects::M_BaseObject* qualname)
+{
+	int nfree = code->get_nfreevars();
+
+	if (!qualname) {
+		qualname = space->wrap_str(code->get_name());
+	}
+
+	if (nfree == 0) {
+		load_const(code);
+		load_const(qualname);
+		emit_op_arg(MAKE_FUNCTION, args);
+	}
+}
+
+ASTNode* BaseCodeGenerator::visit_functiondef(FunctionDefNode* node)
+{
+	set_lineno(node->get_line());
+	FunctionCodeGenerator sub_gen(node->get_name(), space, node, symtab, node->get_line(), compile_info);
+	PyCode* code = sub_gen.build();
+
+	int arglength = 0;
+
+	make_closure(code, arglength, get_qualname());
+	
+	gen_name(node->get_name(), ExprContext::EC_STORE);
+	return node;
 }
 
 ASTNode* BaseCodeGenerator::visit_if(IfNode* node)
@@ -189,4 +230,20 @@ ModuleCodeGenerator::ModuleCodeGenerator(mtpython::objects::ObjSpace* space, mtp
 void ModuleCodeGenerator::compile(ASTNode* module)
 {
 	module->visit(this);
+}
+
+FunctionCodeGenerator::FunctionCodeGenerator(std::string& name, mtpython::objects::ObjSpace* space, mtpython::tree::ASTNode* tree, SymtableVisitor* symtab, int lineno, CompileInfo* info) : BaseCodeGenerator(name, space, tree, symtab, lineno, info)
+{
+	compile(tree);
+}
+
+void FunctionCodeGenerator::compile(ASTNode* tree)
+{
+	FunctionDefNode* funcdef = dynamic_cast<FunctionDefNode*>(tree);
+	ArgumentsNode* arguments = dynamic_cast<ArgumentsNode*>(funcdef->get_args());
+
+	set_argcount(arguments->get_args().size());
+	ASTNode* body = funcdef->get_body();
+
+	if (body) visit_sequence(body);
 }

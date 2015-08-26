@@ -3,6 +3,7 @@
 
 #include "objects/obj_space.h"
 #include "interpreter/code.h"
+#include "interpreter/signature.h"
 #include "vm/vm.h"
 #include <vector>
 
@@ -26,6 +27,9 @@ private:
 	std::string co_filename;
 	int co_firstlineno;
 	std::vector<unsigned char> co_lnotab;
+
+	Signature signature;
+	void generate_signature();
 public:
 	PyCode(mtpython::objects::ObjSpace* space, int argcount, int kwonlyargcount, int nlocals, int stacksize, int flags,
 			std::vector<unsigned char>& code, std::vector<mtpython::objects::M_BaseObject*>& consts, 
@@ -36,8 +40,16 @@ public:
 	std::vector<mtpython::objects::M_BaseObject*>& get_consts() { return co_consts; }
 	std::vector<mtpython::objects::M_BaseObject*>& get_names() { return co_names; }
 	int get_nlocals() { return co_nlocals; }
-
+	int get_nfreevars() { return co_freevars.size(); }
+	
 	virtual objects::M_BaseObject* exec_code(vm::ThreadContext* context, objects::M_BaseObject* globals, objects::M_BaseObject* locals);
+
+	virtual mtpython::objects::M_BaseObject* funcrun(vm::ThreadContext* context, mtpython::objects::M_BaseObject* func, Arguments& args)
+	{
+		return funcrun_obj(context, func, nullptr, args);
+	}
+
+	virtual mtpython::objects::M_BaseObject* funcrun_obj(vm::ThreadContext* context, mtpython::objects::M_BaseObject* func, mtpython::objects::M_BaseObject* obj, Arguments& args);
 };
 
 }

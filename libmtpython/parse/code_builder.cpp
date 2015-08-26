@@ -164,7 +164,7 @@ CodeBuilder::CodeBuilder(std::string& name, mtpython::objects::ObjSpace* space, 
 	argcount = 0;
 	kwonlyargcount = 0;
 
-	auto_add_return_value = true;
+	qualname = space->wrap_None();
 
 	vector2map<std::string>(scope->get_varnames(), varnames);
 }
@@ -213,7 +213,10 @@ Instruction* CodeBuilder::emit_op(unsigned char op)
 		lineno_set = true;
 	}
 
+	if (current_block->has_return()) return inst;
+
 	append_instruction(inst);
+	if (op == RETURN_VALUE) current_block->set_has_return(true);
 
 	return inst;
 }
@@ -402,8 +405,8 @@ static void map2vector(std::unordered_map<T, int>& map, std::vector<T>& vec)
 mtpython::interpreter::PyCode* CodeBuilder::build()
 {
 	/* add return if there is not */
-	if (!current_block->have_return()) {
-		if (auto_add_return_value) load_const(space->wrap_None());
+	if (!current_block->has_return()) {
+		load_const(space->wrap_None());
 		emit_op(RETURN_VALUE);
 	}
 

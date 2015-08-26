@@ -26,7 +26,7 @@ protected:
 	void push_value(mtpython::objects::M_BaseObject* value) 
 	{ 
 		value_stack.push(value); 
-		context->gc_track_object(value);
+		if (value) context->gc_track_object(value);
 	}
 
 	mtpython::objects::M_BaseObject* pop_value() 
@@ -68,6 +68,7 @@ protected:
 	virtual void store_fast(int arg, int next_pc);
 	virtual void load_global(int arg, int next_pc);
 	virtual void call_function(int arg, int next_pc);
+	virtual void make_function(int arg, int next_pc);
 	virtual int jump_absolute(int arg);
 	virtual int jump_forward(int arg, int next_pc);
 	virtual int pop_jump_if_false(int arg, int next_pc);
@@ -78,6 +79,8 @@ public:
 
 	objects::M_BaseObject* exec();
 	objects::M_BaseObject* execute_frame();
+
+	std::vector<mtpython::objects::M_BaseObject*>& get_local_vars() { return local_vars; }
 
 	objects::M_BaseObject* dispatch(vm::ThreadContext* context, Code* code, int next_pc);
 	int execute_bytecode(vm::ThreadContext* context, std::vector<unsigned char>& bytecode, int next_pc);

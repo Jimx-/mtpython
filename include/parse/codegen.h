@@ -17,6 +17,8 @@ protected:
 	char _binop(BinaryOper op);
 	void gen_name(std::string& name, mtpython::tree::ExprContext ctx);
 
+    void make_closure(mtpython::interpreter::PyCode* code, int args, mtpython::objects::M_BaseObject* qualname);
+
     virtual int get_code_flags() { return 0; }
 public:
 	BaseCodeGenerator(std::string& name, mtpython::objects::ObjSpace* space, mtpython::tree::ASTNode* module, SymtableVisitor* symtab, int lineno, CompileInfo* info);
@@ -30,9 +32,10 @@ public:
     virtual mtpython::tree::ASTNode* visit_call(mtpython::tree::CallNode* node);
     /*virtual ASTNode* visit_compare(CompareNode* node);
     virtual ASTNode* visit_continue(ContinueNode* node);
-    virtual ASTNode* visit_delete(DeleteNode* node);
-    virtual ASTNode* visit_for(ForNode* node);*/
-    //virtual mtpython::tree::ASTNode* visit_functiondef(mtpython::tree::FunctionDefNode* node);
+    virtual ASTNode* visit_delete(DeleteNode* node); */
+	virtual mtpython::tree::ASTNode* visit_expr(mtpython::tree::ExprNode* node);
+    /*virtual ASTNode* visit_for(ForNode* node);*/
+    virtual mtpython::tree::ASTNode* visit_functiondef(mtpython::tree::FunctionDefNode* node);
     virtual mtpython::tree::ASTNode* visit_if(mtpython::tree::IfNode* node);
     /*virtual ASTNode* visit_ifexp(IfExpNode* node);*/
     virtual mtpython::tree::ASTNode* visit_keyword(mtpython::tree::KeywordNode* node);
@@ -54,6 +57,14 @@ private:
 	virtual void compile(mtpython::tree::ASTNode* node);
 public:
 	ModuleCodeGenerator(mtpython::objects::ObjSpace* space, mtpython::tree::ASTNode* module, SymtableVisitor* symtab, CompileInfo* info);
+};
+
+class FunctionCodeGenerator : public BaseCodeGenerator {
+private:
+    int argcount;
+    virtual void compile(mtpython::tree::ASTNode* tree);
+public:
+    FunctionCodeGenerator(std::string& name, mtpython::objects::ObjSpace* space, mtpython::tree::ASTNode* tree, SymtableVisitor* symtab, int lineno, CompileInfo* info);
 };
 
 }

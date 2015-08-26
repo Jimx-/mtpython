@@ -146,3 +146,8 @@ NODE_CONSTRUCTOR(KeywordNode)
 {
 	value = nullptr;
 }
+
+NODE_CONSTRUCTOR(ExprNode)
+{
+	value = nullptr;
+}

@@ -98,12 +98,10 @@ ASTNode* Parser::module()
 
 	ASTNode* body = stmt();
 	if (cur_tok == TOK_SEMICOLON) match(TOK_SEMICOLON);
-	if (cur_tok != TOK_EOF) match(TOK_NEWLINE);
 	ASTNode* tn = body;
 	while (cur_tok != TOK_EOF) {
 		ASTNode* n = stmt();
 		if (cur_tok == TOK_SEMICOLON) match(TOK_SEMICOLON);
-		if (cur_tok != TOK_EOF) match(TOK_NEWLINE);
 		if (n != nullptr) {
 			if (tn == nullptr)
 				body = tn = n;
@@ -131,12 +129,10 @@ ASTNode* Parser::suite()
 
 		node = stmt();
 		if (cur_tok == TOK_SEMICOLON) match(TOK_SEMICOLON);
-		if (cur_tok != TOK_DEDENT) match(TOK_NEWLINE);
 		ASTNode* tn = node;
 		while (cur_tok != TOK_DEDENT) {
 			ASTNode* n = stmt();
 			if (cur_tok == TOK_SEMICOLON) match(TOK_SEMICOLON);
-			if (cur_tok != TOK_DEDENT) match(TOK_NEWLINE);
 			if (n != nullptr) {
 				if (tn == nullptr)
 					node = tn = n;
@@ -158,18 +154,23 @@ ASTNode* Parser::suite()
 ASTNode* Parser::stmt()
 {
 	ASTNode* node = nullptr;
+	bool compound_stmt = false;
 
 	switch (cur_tok) {
 	case TOK_DEF:
+		compound_stmt = true;
 		node = function_def();
 		break;
 	case TOK_IF:
+		compound_stmt = true;
 		node = if_stmt();
 		break;
 	case TOK_FOR:
+		compound_stmt = true;
 		node = for_stmt();
 		break;
 	case TOK_WHILE:
+		compound_stmt = true;
 		node = while_stmt();
 		break;
 	case TOK_BREAK:
@@ -207,6 +208,10 @@ ASTNode* Parser::stmt()
 		break;
 	}
 
+	if (!compound_stmt) {
+		if (cur_tok != TOK_EOF) match(TOK_NEWLINE);
+	}
+
 	return node;
 }
 
@@ -241,6 +246,10 @@ ASTNode* Parser::expr_stmt()
 		asgn->set_value(testlist());
 
 		expression = asgn;
+	} else {
+		ExprNode* expr = new ExprNode(s.get_line());
+		expr->set_value(expression);
+		expression = expr;
 	}
 
 	return expression;

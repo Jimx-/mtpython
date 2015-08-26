@@ -50,6 +50,10 @@ void Scope::finalize()
 	for (auto iter = id2flags.begin(); iter != id2flags.end(); iter++) {
 		finalize_name(iter->first, iter->second);
 	}
+
+	for (auto child : children) {
+		child->finalize();
+	}
 }
 
 SymtableVisitor::SymtableVisitor(mtpython::objects::ObjSpace* space, ASTNode* module)
