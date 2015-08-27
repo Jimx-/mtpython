@@ -31,6 +31,7 @@ public:
     /*virtual ASTNode* visit_break(BreakNode* node); */
     virtual mtpython::tree::ASTNode* visit_call(mtpython::tree::CallNode* node);
     virtual mtpython::tree::ASTNode* visit_compare(mtpython::tree::CompareNode* node);
+    virtual mtpython::tree::ASTNode* visit_const(mtpython::tree::ConstNode* node);
     /*virtual ASTNode* visit_continue(ContinueNode* node);
     virtual ASTNode* visit_delete(DeleteNode* node); */
 	virtual mtpython::tree::ASTNode* visit_expr(mtpython::tree::ExprNode* node);
@@ -42,8 +43,8 @@ public:
     virtual mtpython::tree::ASTNode* visit_name(mtpython::tree::NameNode* node);
     virtual mtpython::tree::ASTNode* visit_number(mtpython::tree::NumberNode* node);
     virtual mtpython::tree::ASTNode* visit_string(mtpython::tree::StringNode* node);
-    /*virtual ASTNode* visit_pass(PassNode* node);
-    virtual ASTNode* visit_raise(RaiseNode* node);*/
+    virtual mtpython::tree::ASTNode* visit_pass(mtpython::tree::PassNode* node);
+    /*virtual ASTNode* visit_raise(RaiseNode* node);*/
     virtual mtpython::tree::ASTNode* visit_return(mtpython::tree::ReturnNode* node);
     /*virtual ASTNode* visit_tuple(TupleNode* node);
     virtual ASTNode* visit_unaryop(UnaryOpNode* node);

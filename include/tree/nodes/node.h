@@ -14,7 +14,7 @@ typedef enum {
 	NT_CATCH, NT_FINALLY, NT_CASE, NT_RETURN, NT_BREAK, NT_CONTINUE, NT_EXPRSTMT,
 	NT_WHEN, NT_IDENT, NT_UNARY, NT_BINARY, NT_LITERAL, NT_ARGUMENTS, NT_CALL,
     NT_MODULE, NT_FUNCDEF, NT_NUMBER, NT_BINOP, NT_COMPARE, NT_IFEXP, NT_TUPLE, NT_DELETE,
-    NT_YIELD, NT_YIELDFROM, NT_RAISE, NT_PASS, NT_KEYWORD, NT_STRING, NT_EXPR,
+    NT_YIELD, NT_YIELDFROM, NT_RAISE, NT_PASS, NT_KEYWORD, NT_STRING, NT_EXPR, NT_CONST,
 } NodeType;
 
 class ASTVisitor;
@@ -58,6 +58,7 @@ class BinOpNode;
 class BreakNode;
 class CallNode;
 class CompareNode;
+class ConstNode;
 class ContinueNode;
 class DeleteNode;
 class ExprNode;
@@ -96,6 +97,7 @@ public:
     virtual ASTNode* visit_break(BreakNode* node) { return nullptr; }
     virtual ASTNode* visit_call(CallNode* node) { return nullptr; }
     virtual ASTNode* visit_compare(CompareNode* node) { return nullptr; }
+    virtual ASTNode* visit_const(ConstNode* node) { return nullptr; }
     virtual ASTNode* visit_continue(ContinueNode* node) { return nullptr; }
     virtual ASTNode* visit_delete(DeleteNode* node) { return nullptr; }
     virtual ASTNode* visit_expr(ExprNode* node) { return nullptr; }

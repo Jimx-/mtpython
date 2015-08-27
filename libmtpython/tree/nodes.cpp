@@ -151,3 +151,8 @@ NODE_CONSTRUCTOR(ExprNode)
 {
 	value = nullptr;
 }
+
+NODE_CONSTRUCTOR(ConstNode)
+{
+	value = nullptr;
+}

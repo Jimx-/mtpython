@@ -72,6 +72,8 @@ public:
 	}
 
 	virtual ASTNode* visit_compare(CompareNode* node) { return node; }
+
+	virtual ASTNode* visit_const(ConstNode* node) { return node; }
 	
 	virtual ASTNode* visit_continue(ContinueNode* node) 
 	{

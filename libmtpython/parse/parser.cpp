@@ -630,10 +630,29 @@ ASTNode* Parser::atom()
 		break;
 	}
     case TOK_TRUE:
-    case TOK_FALSE:
+	{
+		ConstNode* const_node = new ConstNode(s.get_line());
+		const_node->set_value(space->new_bool(true));
+		match(TOK_TRUE);
+		node = const_node;
+		break;
+	}
+	case TOK_FALSE:
+	{
+		ConstNode* const_node = new ConstNode(s.get_line());
+		const_node->set_value(space->new_bool(false));
+		match(TOK_FALSE);
+		node = const_node;
+		break;
+	}
     case TOK_NONE:
-         node = nullptr;
-         break;
+	{
+		ConstNode* const_node = new ConstNode(s.get_line());
+		const_node->set_value(space->wrap_None());
+		match(TOK_NONE);
+		node = const_node;
+		break;
+	}
     default:
 		return nullptr;
     }

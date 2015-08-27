@@ -250,10 +250,25 @@ ASTNode* BaseCodeGenerator::visit_keyword(KeywordNode* node)
 	return node;
 }
 
+ASTNode* BaseCodeGenerator::visit_const(ConstNode* node)
+{
+	set_lineno(node->get_line());
+	load_const(node->get_value());
+
+	return node;
+}
+
 ASTNode* BaseCodeGenerator::visit_number(NumberNode* node)
 {
 	set_lineno(node->get_line());
 	load_const(node->get_value());
+
+	return node;
+}
+
+ASTNode* BaseCodeGenerator::visit_pass(PassNode* node)
+{
+	set_lineno(node->get_line());
 
 	return node;
 }
