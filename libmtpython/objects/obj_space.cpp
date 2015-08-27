@@ -126,6 +126,11 @@ std::size_t ObjSpace::i_hash(M_BaseObject* obj)
 DEF_BINARY_OPER(add, __add__, __radd__)
 
 DEF_CMP_OPER(eq, __eq__, __eq__)
+DEF_CMP_OPER(lt, __lt__, __lt__)
+DEF_CMP_OPER(le, __le__, __le__)
+DEF_CMP_OPER(gt, __gt__, __gt__)
+DEF_CMP_OPER(ge, __ge__, __ge__)
+DEF_CMP_OPER(ne, __ne__, __ne__)
 
 M_BaseObject* ObjSpace::new_interned_str(const std::string& x)
 {

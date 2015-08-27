@@ -113,6 +113,11 @@ public:
 	virtual bool i_eq(M_BaseObject* obj1, M_BaseObject* obj2);
 	virtual std::size_t i_hash(M_BaseObject* obj);
 
+	virtual M_BaseObject* lt(M_BaseObject* obj1, M_BaseObject* obj2);
+	virtual M_BaseObject* le(M_BaseObject* obj1, M_BaseObject* obj2);
+	virtual M_BaseObject* gt(M_BaseObject* obj1, M_BaseObject* obj2);
+	virtual M_BaseObject* ge(M_BaseObject* obj1, M_BaseObject* obj2);
+	virtual M_BaseObject* ne(M_BaseObject* obj1, M_BaseObject* obj2);
 	virtual M_BaseObject* eq(M_BaseObject* obj1, M_BaseObject* obj2);
 
 	virtual M_BaseObject* add(M_BaseObject* obj1, M_BaseObject* obj2);

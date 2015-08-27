@@ -56,6 +56,11 @@ protected:
 		}
 	}
 
+	mtpython::objects::M_BaseObject* peek_value()
+	{
+		return value_stack.top();
+	}
+
 	mtpython::objects::M_BaseObject* get_const(int index);
 	mtpython::objects::M_BaseObject* get_name(int index);
 
@@ -72,8 +77,13 @@ protected:
 	virtual int jump_absolute(int arg);
 	virtual int jump_forward(int arg, int next_pc);
 	virtual int pop_jump_if_false(int arg, int next_pc);
+	virtual void dup_top(int arg, int next_pc);
+	virtual void rot_two(int arg, int next_pc);
+	virtual void rot_three(int arg, int next_pc);
+	virtual void compare_op(int arg, int next_pc);
+	virtual int jump_if_false_or_pop(int arg, int next_pc);
 
-	virtual void call_function_common(int arg, M_BaseObject* star=nullptr, M_BaseObject* starstar=nullptr);
+	virtual void call_function_common(int arg, mtpython::objects::M_BaseObject* star=nullptr, mtpython::objects::M_BaseObject* starstar=nullptr);
 public:
 	PyFrame(vm::ThreadContext* context, Code* code, mtpython::objects::M_BaseObject* globals);
 

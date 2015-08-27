@@ -113,7 +113,8 @@ public:
 	{
 		node->get_test()->visit(this);
 		node->get_body()->visit(this);
-		node->get_orelse()->visit(this);
+		if (ASTNode* orelse = node->get_orelse())
+			orelse->visit(this);
 		
 		return node; 
 	}

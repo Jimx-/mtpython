@@ -96,16 +96,16 @@ int PyFrame::dispatch_bytecode(ThreadContext* context, std::vector<unsigned char
 
 		int arg = 0;
 		if (opcode >= HAVE_ARGUMENT) {
-			char lo = bytecode[next_pc++];
-			char hi = bytecode[next_pc++];
+			unsigned char lo = bytecode[next_pc++];
+			unsigned char hi = bytecode[next_pc++];
 
 			arg = (hi << 8) | lo;
 		}
 
 		while (opcode == EXTENDED_ARG) {
 			opcode = bytecode[next_pc++];
-			char lo = bytecode[next_pc++];
-			char hi = bytecode[next_pc++];
+			unsigned char lo = bytecode[next_pc++];
+			unsigned char hi = bytecode[next_pc++];
 
 			arg = (arg << 16) | (hi << 8) | lo;
 		}
@@ -136,6 +136,16 @@ int PyFrame::dispatch_bytecode(ThreadContext* context, std::vector<unsigned char
 			call_function(arg, next_pc);
 		else if (opcode == MAKE_FUNCTION)
 			make_function(arg, next_pc);
+		else if (opcode == DUP_TOP)
+			dup_top(arg, next_pc);
+		else if (opcode == ROT_THREE)
+			rot_three(arg, next_pc);
+		else if (opcode == ROT_TWO)
+			rot_two(arg, next_pc);
+		else if (opcode == COMPARE_OP)
+			compare_op(arg, next_pc);
+		else if (opcode == JUMP_IF_FALSE_OR_POP)
+			next_pc = jump_if_false_or_pop(arg, next_pc);
 	}
 }
 
@@ -272,4 +282,74 @@ int PyFrame::pop_jump_if_false(int arg, int next_pc)
 
 	context->gc_track_object(value);
 	return next_pc;
+}
+
+void PyFrame::dup_top(int arg, int next_pc)
+{
+	push_value(peek_value());
+}
+
+void PyFrame::rot_three(int arg, int next_pc)
+{
+	M_BaseObject* v1 = pop_value_untrack();
+	M_BaseObject* v2 = pop_value_untrack();
+	M_BaseObject* v3 = pop_value_untrack();
+	push_value(v1);
+	push_value(v3);
+	push_value(v2);
+}
+
+void PyFrame::compare_op(int arg, int next_pc)
+{
+	M_BaseObject* v2 = pop_value_untrack();
+	M_BaseObject* v1 = pop_value_untrack();
+
+	ObjSpace* space = context->get_space();
+
+	M_BaseObject* result;
+	switch (arg) {
+	case 0:
+		result = space->lt(v1, v2);
+		break;
+	case 1:
+		result = space->le(v1, v2);
+		break;
+	case 2:
+		result = space->eq(v1, v2);
+		break;
+	case 3:
+		result = space->ne(v1, v2);
+		break;
+	case 4:
+		result = space->gt(v1, v2);
+		break;
+	case 5:
+		result = space->ge(v1, v2);
+		break;
+	}
+
+	push_value(result);
+	context->gc_track_object(v1);
+	context->gc_track_object(v2);
+}
+
+int PyFrame::jump_if_false_or_pop(int arg, int next_pc)
+{
+	M_BaseObject* value = pop_value_untrack();
+	int result;
+	if (!context->get_space()->is_true(value))
+		result = arg;
+	else
+		result = next_pc;
+	context->gc_track_object(value);
+
+	return result;
+}
+
+void PyFrame::rot_two(int arg, int next_pc)
+{
+	M_BaseObject* v1 = pop_value_untrack();
+	M_BaseObject* v2 = pop_value_untrack();
+	push_value(v1);
+	push_value(v2);
 }

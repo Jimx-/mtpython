@@ -113,6 +113,67 @@ void BaseCodeGenerator::gen_name(const std::string& name, ExprContext ctx)
 	emit_op_arg(op, arg);
 }
 
+static int compare_operation(CmpOper op)
+{
+	switch (op) {
+	case OP_LSS:
+		return 0;
+	case OP_GTR:
+		return 4;
+	case OP_LSSEQ:
+		return 1;
+	case OP_GTREQ:
+		return 5;
+	case OP_EQ:
+		return 2;
+	case OP_NOTEQ:
+		return 3;
+	}
+
+	return 0;
+}
+
+ASTNode* BaseCodeGenerator::visit_compare(CompareNode *node) {
+	set_lineno(node->get_line());
+
+	node->get_left()->visit(this);
+	std::vector<CmpOper>& ops = node->get_ops();
+	int opcount = ops.size();
+	CodeBlock* cleanup = nullptr;
+
+	std::vector<ASTNode*>& comparators = node->get_comparators();
+
+	if (opcount > 1) {
+		cleanup = new_block();
+		comparators[0]->visit(this);
+	}
+	for (unsigned int i = 1; i < opcount; i++) {
+		emit_op(DUP_TOP);
+		emit_op(ROT_THREE);
+		int arg = compare_operation(ops[i - 1]);
+		emit_op_arg(COMPARE_OP, arg);
+		emit_jump(JUMP_IF_FALSE_OR_POP, cleanup, true);
+		if (i < opcount - 1) comparators[i]->visit(this);
+	}
+
+	CmpOper last_op = ops.back();
+	ASTNode* last_comparator = comparators.back();
+
+	last_comparator->visit(this);
+	emit_op_arg(COMPARE_OP, compare_operation(last_op));
+
+	if (opcount > 1) {
+		CodeBlock* end = new_block();
+		emit_jump(JUMP_FORWARD, end);
+		use_next_block(cleanup);
+		emit_op(ROT_TWO);
+		emit_op(POP_TOP);
+		use_next_block(end);
+	}
+
+	return node;
+}
+
 void BaseCodeGenerator::make_closure(mtpython::interpreter::PyCode* code, int args, mtpython::objects::M_BaseObject* qualname)
 {
 	int nfree = code->get_nfreevars();
@@ -245,3 +306,4 @@ void FunctionCodeGenerator::compile(ASTNode* tree)
 
 	if (body) visit_sequence(body);
 }
+

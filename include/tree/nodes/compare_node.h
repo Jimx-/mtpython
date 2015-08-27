@@ -22,7 +22,9 @@ public:
 	ASTNode* get_left() { return this->left; }
 	void set_left(ASTNode* left) { this->left = left; }
 	void push_op(mtpython::parse::CmpOper op) { ops.push_back(op); }
+	std::vector<mtpython::parse::CmpOper>& get_ops() { return ops; }
 	void push_comparator(ASTNode* comparator) { comparators.push_back(comparator); }
+	std::vector<ASTNode*>& get_comparators() { return comparators; }
 
 	virtual void print(const int padding) {
 		std::string blank(padding, ' ');

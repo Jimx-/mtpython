@@ -30,8 +30,8 @@ public:
     virtual mtpython::tree::ASTNode* visit_binop(mtpython::tree::BinOpNode* node);
     /*virtual ASTNode* visit_break(BreakNode* node); */
     virtual mtpython::tree::ASTNode* visit_call(mtpython::tree::CallNode* node);
-    /*virtual ASTNode* visit_compare(CompareNode* node);
-    virtual ASTNode* visit_continue(ContinueNode* node);
+    virtual mtpython::tree::ASTNode* visit_compare(mtpython::tree::CompareNode* node);
+    /*virtual ASTNode* visit_continue(ContinueNode* node);
     virtual ASTNode* visit_delete(DeleteNode* node); */
 	virtual mtpython::tree::ASTNode* visit_expr(mtpython::tree::ExprNode* node);
     /*virtual ASTNode* visit_for(ForNode* node);*/
