@@ -26,7 +26,7 @@ private:
 	InterpFunction func;
 	Signature sig;
 public:
-	BuiltinCode(const std::string& name, InterpFunction f, Signature& sig) : Code(name), sig(sig) { func = f; }
+	BuiltinCode(const std::string& name, InterpFunction f, const Signature& sig) : Code(name), sig(sig) { func = f; }
 
 	virtual mtpython::objects::M_BaseObject* funcrun(vm::ThreadContext* context, mtpython::objects::M_BaseObject* func, Arguments& args)
 	{
@@ -42,7 +42,7 @@ private:
 	Signature sig;
 public:
 	BuiltinCode1(const std::string& name, InterpFunction1 f) : Code(name), sig(std::initializer_list<std::string>{"arg0"}) { func = f; }
-	BuiltinCode1(const std::string& name, InterpFunction1 f, Signature& sig) : Code(name), sig(sig) { func = f; }
+	BuiltinCode1(const std::string& name, InterpFunction1 f, const Signature& sig) : Code(name), sig(sig) { func = f; }
 
 	virtual mtpython::objects::M_BaseObject* funcrun(vm::ThreadContext* context, mtpython::objects::M_BaseObject* func, Arguments& args)
 	{
@@ -58,7 +58,7 @@ private:
 	Signature sig;
 public:
 	BuiltinCode2(const std::string& name, InterpFunction2 f) : Code(name), sig(std::initializer_list<std::string>{"arg0", "arg1"}) { func = f; }
-	BuiltinCode2(const std::string& name, InterpFunction2 f, Signature& sig) : Code(name), sig(sig) { func = f; }
+	BuiltinCode2(const std::string& name, InterpFunction2 f, const Signature& sig) : Code(name), sig(sig) { func = f; }
 
 	virtual mtpython::objects::M_BaseObject* funcrun(vm::ThreadContext* context, mtpython::objects::M_BaseObject* func, Arguments& args)
 	{
@@ -74,7 +74,7 @@ private:
 	Signature sig;
 public:
 	BuiltinCode3(const std::string& name, InterpFunction3 f) : Code(name), sig(std::initializer_list<std::string>{"arg0", "arg1", "arg2"}) { func = f; }
-	BuiltinCode3(const std::string& name, InterpFunction3 f, Signature& sig) : Code(name), sig(sig) { func = f; }
+	BuiltinCode3(const std::string& name, InterpFunction3 f, const Signature& sig) : Code(name), sig(sig) { func = f; }
 
 	virtual mtpython::objects::M_BaseObject* funcrun(vm::ThreadContext* context, mtpython::objects::M_BaseObject* func, Arguments& args)
 	{
@@ -88,13 +88,13 @@ class InterpFunctionWrapper : public mtpython::objects::M_BaseObject {
 protected:
 	Code* code;
 public:
-	InterpFunctionWrapper(const std::string& name, InterpFunction f, Signature& sig);
+	InterpFunctionWrapper(const std::string& name, InterpFunction f, const Signature& sig);
 	InterpFunctionWrapper(const std::string& name, InterpFunction1 f);
-	InterpFunctionWrapper(const std::string& name, InterpFunction1 f, Signature& sig);
+	InterpFunctionWrapper(const std::string& name, InterpFunction1 f, const Signature& sig);
 	InterpFunctionWrapper(const std::string& name, InterpFunction2 f);
-	InterpFunctionWrapper(const std::string& name, InterpFunction2 f, Signature& sig);
+	InterpFunctionWrapper(const std::string& name, InterpFunction2 f, const Signature& sig);
 	InterpFunctionWrapper(const std::string& name, InterpFunction3 f);
-	InterpFunctionWrapper(const std::string& name, InterpFunction3 f, Signature& sig);
+	InterpFunctionWrapper(const std::string& name, InterpFunction3 f, const Signature& sig);
 	~InterpFunctionWrapper() { SAFE_DELETE(code); }
 
 	virtual M_BaseObject* bind_space(objects::ObjSpace* space) { return space->get_gateway_cache(this); }

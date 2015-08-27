@@ -154,7 +154,7 @@ M_BaseObject* PyFrame::get_name(int index)
 	{ \
 		M_BaseObject* obj2 = pop_value_untrack(); \
 		M_BaseObject* obj1 = pop_value_untrack(); \
-		M_BaseObject* result = context->get_space()->##name(obj1, obj2); \
+		M_BaseObject* result = context->get_space()->name(obj1, obj2); \
 		push_value(result);	\
 		context->gc_track_object(obj1);	\
 		context->gc_track_object(obj2);	\

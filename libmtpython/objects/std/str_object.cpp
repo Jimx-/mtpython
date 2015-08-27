@@ -49,7 +49,7 @@ M_BaseObject* M_StdStrObject::__eq__(mtpython::vm::ThreadContext* context, mtpyt
 	M_StdStrObject* self_as_str = M_STDSTROBJECT(self);
 	M_StdStrObject* other_as_str = M_STDSTROBJECT(other);
 
-	if (!self_as_str || !other_as_str) return false;
+	if (!self_as_str || !other_as_str) return context->get_space()->new_bool(false);
 
 	return context->get_space()->new_bool(self_as_str->value == other_as_str->value);
 }

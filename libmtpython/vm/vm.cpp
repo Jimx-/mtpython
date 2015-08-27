@@ -33,6 +33,4 @@ void PyVM::run_file(std::string& filename)
     file.close();
 
     main_thread.get_compiler()->compile(source, filename, mtpython::parse::SourceType::ST_FILE_INPUT, 0)->exec_code(&main_thread, space->new_dict(), nullptr);
-
-	while(1);
 }

@@ -20,8 +20,8 @@ static std::string argcount_err_msg(const std::string& name, int nargs, int nkwa
 {
 	int n = sig.get_nargs();
 
-	char* plural = (n > 1) ? "s" : "";
-	char* plural2 = ((nargs + nkwargs) > 1) ? "were" : "was";
+	const char* plural = (n > 1) ? "s" : "";
+	const char* plural2 = ((nargs + nkwargs) > 1) ? "were" : "was";
 
 	return string_format("%s() takes %d positional argument%s but %d %s given", name.c_str(), n, plural, (nargs + nkwargs), plural2);
 }
