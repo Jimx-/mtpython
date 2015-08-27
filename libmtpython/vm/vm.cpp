@@ -1,7 +1,5 @@
 #include "utils/source_buffer.h"
 #include "interpreter/compiler.h"
-#include "vm/vm.h"
-#include "exceptions.h"
 #include <fstream>
 
 #include "interpreter/module.h"

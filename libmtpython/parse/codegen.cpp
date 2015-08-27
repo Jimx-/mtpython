@@ -1,6 +1,4 @@
 #include "parse/codegen.h"
-#include "parse/token.h"
-#include "tools/opcode.h"
 
 using namespace mtpython::parse;
 using namespace mtpython::interpreter;

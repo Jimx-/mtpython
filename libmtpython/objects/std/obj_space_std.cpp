@@ -1,6 +1,5 @@
 #include <string>
 #include "interpreter/code.h"
-#include "objects/base_object.h"
 #include "objects/std/obj_space_std.h"
 #include "objects/std/type_object.h"
 #include "objects/std/int_object.h"

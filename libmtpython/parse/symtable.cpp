@@ -1,6 +1,4 @@
 #include "parse/symtable.h"
-#include "exceptions.h"
-#include <iostream>
 
 using namespace mtpython::parse;
 using namespace mtpython::tree;

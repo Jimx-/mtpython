@@ -1,8 +1,6 @@
 #include "parse/parser.h"
 #include "parse/symtable.h"
 #include "parse/codegen.h"
-#include "interpreter/pycode.h"
-#include "parse/compile_info.h"
 #include "interpreter/compiler.h"
 
 using namespace mtpython::interpreter;

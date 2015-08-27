@@ -1,5 +1,4 @@
 #include "objects/bltin_exceptions.h"
-#include "interpreter/typedef.h"
 
 using namespace mtpython::objects;
 using namespace mtpython::interpreter;

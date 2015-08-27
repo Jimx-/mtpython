@@ -3,7 +3,6 @@
 #include "interpreter/typedef.h"
 #include "interpreter/gateway.h"
 #include "objects/std/tuple_object.h"
-#include "exceptions.h"
 
 using namespace mtpython::objects;
 using namespace mtpython::interpreter;

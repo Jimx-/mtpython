@@ -1,7 +1,4 @@
 #include "parse/code_builder.h"
-#include "tools/opcode.h"
-
-#include <algorithm>
 
 using namespace mtpython::parse;
 
@@ -113,11 +110,11 @@ void CodeBlock::get_code(std::vector<unsigned char>& code)
 				code.push_back((unsigned char)(ext >> 8));
 				arg &= 0xff;
 			}
-			code.push_back((unsigned char)opcode);
+			code.push_back(opcode);
 			code.push_back((unsigned char)(arg & 0xff));
 			code.push_back((unsigned char)(arg >> 8));
 		} else {
-			code.push_back((unsigned char)opcode);
+			code.push_back(opcode);
 		}
 	}
 }
@@ -250,8 +247,6 @@ int CodeBuilder::add_const(mtpython::objects::M_BaseObject* obj)
 	} else {
 		return got->second;
 	}
-
-	return -1;
 }
 
 int CodeBuilder::expr_constant(mtpython::tree::ASTNode* node)

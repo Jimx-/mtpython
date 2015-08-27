@@ -1,7 +1,5 @@
 #include "parse/scanner.h"
 #include <sstream>
-#include <cctype>
-#include <iostream>
 
 using namespace std;
 using namespace mtpython::parse;
