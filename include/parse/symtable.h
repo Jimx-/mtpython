@@ -34,11 +34,11 @@ protected:
 	void finalize_name(const std::string& id, int flags);
 
 public:
-	Scope(std::string& name, int line, int col) : name(name), line(line), col(col) { }
+	Scope(const std::string& name, int line, int col) : name(name), line(line), col(col) { }
 
 	void add_child(Scope* child);
-	std::string& add_name(std::string& id, int flags);
-	int lookup(std::string& id);
+	const std::string& add_name(const std::string& id, int flags);
+	int lookup(const std::string& id);
 
 	std::vector<std::string>& get_varnames() { return varnames; }
 
@@ -47,12 +47,12 @@ public:
 
 class ModuleScope : public Scope {
 public:
-	ModuleScope(std::string& name) : Scope(name, 0, 0) { }
+	ModuleScope(const std::string& name) : Scope(name, 0, 0) { }
 };
 
 class FunctionScope : public Scope {
 public:
-	FunctionScope(std::string& name, int line, int col) : Scope(name, line, col) { }
+	FunctionScope(const std::string& name, int line, int col) : Scope(name, line, col) { }
 };
 
 class SymtableVisitor : public mtpython::tree::GenericVisitor {
@@ -66,7 +66,7 @@ private:
 	void push_scope(Scope* scope, mtpython::tree::ASTNode* node);
 	void pop_scope();
 
-	void add_name(std::string& id, int flags);
+	void add_name(const std::string& id, int flags);
 
 public:
 	SymtableVisitor(mtpython::objects::ObjSpace* space, mtpython::tree::ASTNode* module);

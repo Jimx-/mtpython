@@ -19,19 +19,19 @@ protected:
 	std::vector<std::string> kwonlyargnames;
 public:
 	Signature() { }
-	Signature(std::initializer_list<std::string>& argnames) : argnames(argnames), varargname(""), kwargname("") { }
-	Signature(std::string& varargname, std::string& kwargname) : varargname(varargname), kwargname(kwargname) { }
-	Signature(std::initializer_list<std::string>& argnames, std::string& varargname, std::string& kwargname, 
-		std::initializer_list<std::string>& kwonlyargnames) : 
+	Signature(const std::initializer_list<std::string>& argnames) : argnames(argnames), varargname(""), kwargname("") { }
+	Signature(const std::string& varargname, const std::string& kwargname) : varargname(varargname), kwargname(kwargname) { }
+	Signature(const std::initializer_list<std::string>& argnames, const std::string& varargname, const std::string& kwargname,
+			  const std::initializer_list<std::string>& kwonlyargnames) :
 		argnames(argnames), varargname(varargname), kwargname(kwargname), kwonlyargnames(kwonlyargnames) { }
-	Signature(std::vector<std::string>& argnames, std::string& varargname, std::string& kwargname, 
-		std::vector<std::string>& kwonlyargnames) : 
+	Signature(const std::vector<std::string>& argnames, const std::string& varargname, const std::string& kwargname,
+			  const std::vector<std::string>& kwonlyargnames) :
 		argnames(argnames), varargname(varargname), kwargname(kwargname), kwonlyargnames(kwonlyargnames) { }
 
 	bool has_vararg() { return (varargname != ""); }
 	bool has_kwarg() { return (kwargname != ""); }
 
-	int find_argname(std::string& name) 
+	int find_argname(const std::string& name)
 	{
 		std::vector<std::string>::iterator it = std::find(argnames.begin(), argnames.end(), name);
 		if (it == argnames.end()) return -1;

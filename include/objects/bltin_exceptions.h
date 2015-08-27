@@ -9,7 +9,7 @@ namespace objects {
 class BaseException : public M_BaseObject {
 public:
 
-	static M_BaseObject* get_bltin_exception_type(ObjSpace* space, std::string& name);
+	static M_BaseObject* get_bltin_exception_type(ObjSpace* space, const std::string& name);
 };
 
 }

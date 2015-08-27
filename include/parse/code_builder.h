@@ -111,7 +111,7 @@ protected:
 	std::unordered_map<std::string, int> freevars;
 	std::unordered_map<std::string, int> cellvars;
 
-	int add_name(std::unordered_map<std::string, int>& container, std::string& id);
+	int add_name(std::unordered_map<std::string, int>& container, const std::string& id);
 
 	Instruction* emit_op(unsigned char op);
 	Instruction* emit_op_arg(unsigned char op, int arg);
@@ -128,7 +128,7 @@ protected:
 
 	void load_const(mtpython::objects::M_BaseObject* obj);
 public:
-	CodeBuilder(std::string& name, mtpython::objects::ObjSpace* space, Scope* scope, int first_lineno, CompileInfo* info);
+	CodeBuilder(const std::string& name, mtpython::objects::ObjSpace* space, Scope* scope, int first_lineno, CompileInfo* info);
 
 	void set_argcount(int argcount) { this->argcount = argcount; }
 

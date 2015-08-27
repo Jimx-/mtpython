@@ -2,6 +2,8 @@
 #define _STD_INT_OBJECT_H_
 
 #include <string>
+#include <sstream>
+
 #include "objects/base_object.h"
 
 namespace mtpython {
@@ -14,7 +16,7 @@ protected:
 	int intval;
 public:
 	M_StdIntObject(int x);
-	M_StdIntObject(std::string& x);
+	M_StdIntObject(const std::string& x);
 
 	static M_BaseObject* __repr__(mtpython::vm::ThreadContext* context, mtpython::objects::M_BaseObject* self);
 	static M_BaseObject* __bool__(mtpython::vm::ThreadContext* context, mtpython::objects::M_BaseObject* self);
@@ -24,7 +26,12 @@ public:
 	virtual interpreter::Typedef* get_typedef();
 
 	virtual int to_int(ObjSpace* space, bool allow_conversion) { return intval; }
-	virtual std::string to_string(ObjSpace* space) { return std::to_string(intval); }
+	virtual std::string to_string(ObjSpace* space)
+	{
+		std::ostringstream stm;
+		stm << intval;
+		return stm.str();
+	}
 
 	virtual void dbg_print();
 };

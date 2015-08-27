@@ -7,6 +7,7 @@
 #include "objects/base_object.h"
 #include "interpreter/arguments.h"
 #include "objects/space_cache.h"
+#include "exceptions.h"
 
 namespace mtpython {
 
@@ -56,42 +57,41 @@ public:
 	M_BaseObject* get_gateway_cache(M_BaseObject* key) { return gateway_cache.get(key); }
 
 	virtual interpreter::BaseCompiler* get_compiler(vm::ThreadContext* context);
-	virtual interpreter::PyFrame* create_frame(vm::ThreadContext* context, interpreter::Code* code, M_BaseObject* globals) { return nullptr; }
+	virtual interpreter::PyFrame* create_frame(vm::ThreadContext* context, interpreter::Code* code, M_BaseObject* globals) { throw NotImplementedException("Abstract"); }
 
 	virtual M_BaseObject* get_typeobject(interpreter::Typedef* def) { return typedef_cache->get(def); }
-	virtual M_BaseObject* type(M_BaseObject* obj) { return nullptr; }
+	virtual M_BaseObject* type(M_BaseObject* obj) { throw NotImplementedException("Abstract"); }
 
-	virtual M_BaseObject* lookup(M_BaseObject* obj, std::string& name) { return nullptr; }
-	virtual M_BaseObject* lookup_type_cls(M_BaseObject* obj, std::string& attr, M_BaseObject*& cls) { return nullptr; }
+	virtual M_BaseObject* lookup(M_BaseObject* obj, const std::string& name) { throw NotImplementedException("Abstract"); }
+	virtual M_BaseObject* lookup_type_cls(M_BaseObject* obj, const std::string& attr, M_BaseObject*& cls) { throw NotImplementedException("Abstract"); }
 
-	virtual M_BaseObject* bool_type() { return nullptr; }
-	virtual M_BaseObject* dict_type() { return nullptr; }
-	virtual M_BaseObject* int_type() { return nullptr; }
-	virtual M_BaseObject* object_type() { return nullptr; }
-	virtual M_BaseObject* str_type() { return nullptr; }
-	virtual M_BaseObject* tuple_type() { return nullptr; }
-	virtual M_BaseObject* type_type() { return nullptr; }
+	virtual M_BaseObject* bool_type() { throw NotImplementedException("Abstract"); }
+	virtual M_BaseObject* dict_type() { throw NotImplementedException("Abstract"); }
+	virtual M_BaseObject* int_type() { throw NotImplementedException("Abstract"); }
+	virtual M_BaseObject* object_type() { throw NotImplementedException("Abstract"); }
+	virtual M_BaseObject* str_type() { throw NotImplementedException("Abstract"); }
+	virtual M_BaseObject* tuple_type() { throw NotImplementedException("Abstract"); }
+	virtual M_BaseObject* type_type() { throw NotImplementedException("Abstract"); }
 
 	M_BaseObject* TypeError_type() { return type_TypeError; }
 
 	virtual M_BaseObject* wrap(int x) { return wrap_int(x); }
-	virtual M_BaseObject* wrap(std::string& x) { return wrap_str(x); }
+	virtual M_BaseObject* wrap(const std::string& x) { return wrap_str(x); }
 	virtual M_BaseObject* wrap(M_BaseObject* obj) { return obj; }
 
-	virtual M_BaseObject* wrap_int(int x) { return nullptr; }
-	virtual M_BaseObject* wrap_int(std::string& x) { return nullptr; }
+	virtual M_BaseObject* wrap_int(int x) { throw NotImplementedException("Abstract"); }
+	virtual M_BaseObject* wrap_int(const std::string& x) { throw NotImplementedException("Abstract"); }
 
-	virtual M_BaseObject* wrap_str(std::string& x) { return nullptr; }
-	virtual M_BaseObject* wrap_str(const char* x) { return wrap_str(std::string(x)); }
+	virtual M_BaseObject* wrap_str(const std::string& x) { throw NotImplementedException("Abstract"); }
 
-	virtual M_BaseObject* wrap_None() { return nullptr; }
-	virtual M_BaseObject* wrap_True() { return nullptr; }
-	virtual M_BaseObject* wrap_False() { return nullptr; }
+	virtual M_BaseObject* wrap_None() { throw NotImplementedException("Abstract"); }
+	virtual M_BaseObject* wrap_True() { throw NotImplementedException("Abstract"); }
+	virtual M_BaseObject* wrap_False() { throw NotImplementedException("Abstract"); }
 
 	virtual M_BaseObject* new_bool(bool x) { if (x) return wrap_True(); else return wrap_False(); }
-	virtual M_BaseObject* new_interned_str(std::string& x);
-	virtual M_BaseObject* new_tuple(std::vector<M_BaseObject*>& items) { return nullptr; }
-	virtual M_BaseObject* new_dict() { return nullptr; }
+	virtual M_BaseObject* new_interned_str(const std::string& x);
+	virtual M_BaseObject* new_tuple(std::vector<M_BaseObject*>& items) { throw NotImplementedException("Abstract"); }
+	virtual M_BaseObject* new_dict() { throw NotImplementedException("Abstract"); }
 
 	virtual int unwrap_int(M_BaseObject* obj, bool allow_conversion=true) { return obj->to_int(this, allow_conversion); }
 	virtual std::string unwrap_str(M_BaseObject* obj) { return obj->to_string(this); }
@@ -102,9 +102,9 @@ public:
 	virtual M_BaseObject* call_function(vm::ThreadContext* context, M_BaseObject* func, std::initializer_list<M_BaseObject*> args);
 
 	virtual M_BaseObject* getitem(M_BaseObject* obj, M_BaseObject* key);
-	virtual M_BaseObject* getitem_str(M_BaseObject* obj, std::string& key);
+	virtual M_BaseObject* getitem_str(M_BaseObject* obj, const std::string& key);
 	virtual void setitem(M_BaseObject* obj, M_BaseObject* key, M_BaseObject* value);
-	virtual void setitem_str(M_BaseObject* obj, std::string& key, M_BaseObject* value);
+	virtual void setitem_str(M_BaseObject* obj, const std::string& key, M_BaseObject* value);
 	
 	virtual M_BaseObject* hash(M_BaseObject* obj);
 

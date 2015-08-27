@@ -24,10 +24,10 @@ public:
 
 	static interpreter::Typedef* _type_typedef();
 
-	virtual M_BaseObject* get_dict_value(ObjSpace* space, std::string& attr);
+	virtual M_BaseObject* get_dict_value(ObjSpace* space, const std::string& attr);
 
-	virtual M_BaseObject* lookup(std::string& name);
-	virtual M_BaseObject* lookup_cls(std::string& attr, M_BaseObject*& cls);
+	virtual M_BaseObject* lookup(const std::string& name);
+	virtual M_BaseObject* lookup_cls(const std::string& attr, M_BaseObject*& cls);
 };
 
 class StdTypedefCache : public TypedefCache {

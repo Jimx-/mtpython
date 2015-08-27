@@ -8,7 +8,7 @@
 using namespace mtpython::objects;
 using namespace mtpython::interpreter;
 
-static mtpython::interpreter::Typedef tuple_typedef(std::string("tuple"), std::unordered_map<std::string, M_BaseObject*>{
+static mtpython::interpreter::Typedef tuple_typedef("tuple", std::unordered_map<std::string, M_BaseObject*>{
 
 });
 

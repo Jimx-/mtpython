@@ -11,7 +11,7 @@ namespace objects {
 
 class M_StdBoolObject : public M_StdIntObject {
 public:
-	M_StdBoolObject::M_StdBoolObject(bool x);
+	M_StdBoolObject(bool x);
 
 	virtual bool i_is(ObjSpace* space, M_BaseObject* other);
 	

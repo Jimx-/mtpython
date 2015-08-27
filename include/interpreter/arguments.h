@@ -29,12 +29,12 @@ public:
 		std::vector<std::string>& keywords, std::vector<objects::M_BaseObject*>& keyword_values) : 
 		space(space), args(args), keywords(keywords), keyword_values(keyword_values) { }
 
-	void parse(std::string& fname, objects::M_BaseObject* first, Signature& sig, std::vector<objects::M_BaseObject*>& scope) {
+	void parse(const std::string& fname, objects::M_BaseObject* first, Signature& sig, std::vector<objects::M_BaseObject*>& scope) {
 		std::vector<objects::M_BaseObject*> defaults;
 		parse(fname, first, sig, scope, defaults);
 	}
 
-	void parse(std::string& fname, objects::M_BaseObject* first, Signature& sig, std::vector<objects::M_BaseObject*>& scope, std::vector<objects::M_BaseObject*>& defaults);
+	void parse(const std::string& fname, objects::M_BaseObject* first, Signature& sig, std::vector<objects::M_BaseObject*>& scope, std::vector<objects::M_BaseObject*>& defaults);
 };
 
 }

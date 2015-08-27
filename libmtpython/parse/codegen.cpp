@@ -11,7 +11,7 @@ static std::unordered_map<int, int> name_ops_default = {{EC_LOAD, LOAD_NAME}, {E
 static std::unordered_map<int, int> name_ops_fast = {{EC_LOAD, LOAD_FAST}, {EC_STORE, STORE_FAST}, {EC_DEL, DELETE_FAST}};
 static std::unordered_map<int, int> name_ops_global = {{EC_LOAD, LOAD_GLOBAL}, {EC_STORE, STORE_GLOBAL}, {EC_DEL, DELETE_GLOBAL}};
 
-BaseCodeGenerator::BaseCodeGenerator(std::string& name, ObjSpace* space, ASTNode* module, SymtableVisitor* symtab, int lineno, CompileInfo* info) : CodeBuilder(name, space, symtab->find_scope(module), lineno, info)
+BaseCodeGenerator::BaseCodeGenerator(const std::string& name, ObjSpace* space, ASTNode* module, SymtableVisitor* symtab, int lineno, CompileInfo* info) : CodeBuilder(name, space, symtab->find_scope(module), lineno, info)
 {
 	this->scope = symtab->find_scope(module);
 	this->symtab = symtab;
@@ -93,7 +93,7 @@ ASTNode* BaseCodeGenerator::visit_expr(ExprNode* node)
 	return node;
 }
 
-void BaseCodeGenerator::gen_name(std::string& name, ExprContext ctx)
+void BaseCodeGenerator::gen_name(const std::string& name, ExprContext ctx)
 {
 	int scope = this->scope->lookup(name);
 	char op = NOP;
@@ -222,7 +222,7 @@ ASTNode* BaseCodeGenerator::visit_string(StringNode* node)
 	return node;
 }
 
-ModuleCodeGenerator::ModuleCodeGenerator(mtpython::objects::ObjSpace* space, mtpython::tree::ASTNode* module, SymtableVisitor* symtab, CompileInfo* info) : BaseCodeGenerator(std::string("module"), space, module, symtab, -1, info)
+ModuleCodeGenerator::ModuleCodeGenerator(mtpython::objects::ObjSpace* space, mtpython::tree::ASTNode* module, SymtableVisitor* symtab, CompileInfo* info) : BaseCodeGenerator("module", space, module, symtab, -1, info)
 {
 	compile(module);
 }
@@ -232,7 +232,7 @@ void ModuleCodeGenerator::compile(ASTNode* module)
 	module->visit(this);
 }
 
-FunctionCodeGenerator::FunctionCodeGenerator(std::string& name, mtpython::objects::ObjSpace* space, mtpython::tree::ASTNode* tree, SymtableVisitor* symtab, int lineno, CompileInfo* info) : BaseCodeGenerator(name, space, tree, symtab, lineno, info)
+FunctionCodeGenerator::FunctionCodeGenerator(const std::string& name, mtpython::objects::ObjSpace* space, mtpython::tree::ASTNode* tree, SymtableVisitor* symtab, int lineno, CompileInfo* info) : BaseCodeGenerator(name, space, tree, symtab, lineno, info)
 {
 	compile(tree);
 }

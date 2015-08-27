@@ -23,8 +23,8 @@ public:
 
 	virtual interpreter::PyFrame* create_frame(vm::ThreadContext* context, interpreter::Code* code, M_BaseObject* globals);
 	
-	M_BaseObject* lookup(M_BaseObject* obj, std::string& name);
-	virtual M_BaseObject* lookup_type_cls(M_BaseObject* obj, std::string& attr, M_BaseObject*& where);
+	virtual M_BaseObject* lookup(M_BaseObject* obj, const std::string& name);
+	virtual M_BaseObject* lookup_type_cls(M_BaseObject* obj, const std::string& attr, M_BaseObject*& where);
 
 	virtual M_BaseObject* type(M_BaseObject* obj) { return obj->get_class(this); }
 
@@ -39,9 +39,9 @@ public:
 	virtual M_BaseObject* wrap(M_BaseObject* obj) { return obj->bind_space(this); }
 
 	virtual M_BaseObject* wrap_int(int x);
-	virtual M_BaseObject* wrap_int(std::string& x);
+	virtual M_BaseObject* wrap_int(const std::string& x);
 
-	virtual M_BaseObject* wrap_str(std::string& x);
+	virtual M_BaseObject* wrap_str(const std::string& x);
 
 	virtual M_BaseObject* wrap_None() { return wrapped_None; }
 	virtual M_BaseObject* wrap_True() { return wrapped_True; }

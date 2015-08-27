@@ -9,8 +9,8 @@
 using namespace mtpython::objects;
 using namespace mtpython::interpreter;
 
-static mtpython::interpreter::Typedef bool_typedef(std::string("bool"), std::unordered_map<std::string, M_BaseObject*>{
-	{ "__bool__", new InterpFunctionWrapper(std::string("__bool__"), M_StdBoolObject::__bool__) },
+static mtpython::interpreter::Typedef bool_typedef("bool", std::unordered_map<std::string, M_BaseObject*>{
+	{ "__bool__", new InterpFunctionWrapper("__bool__", M_StdBoolObject::__bool__) },
 });
 
 M_StdBoolObject::M_StdBoolObject(bool x) : M_StdIntObject(x ? 1 : 0)

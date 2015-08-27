@@ -60,37 +60,37 @@ M_BaseObject* BuiltinCode3::funcrun_obj(ThreadContext* context, M_BaseObject* fu
 	return this->func(context, scope[0], scope[1], scope[2]);
 }
 
-InterpFunctionWrapper::InterpFunctionWrapper(std::string& name, InterpFunction f, Signature& sig)
+InterpFunctionWrapper::InterpFunctionWrapper(const std::string& name, InterpFunction f, Signature& sig)
 {
 	code = new BuiltinCode(name, f, sig);
 }
 
-InterpFunctionWrapper::InterpFunctionWrapper(std::string& name, InterpFunction1 f)
+InterpFunctionWrapper::InterpFunctionWrapper(const std::string& name, InterpFunction1 f)
 {
 	code = new BuiltinCode1(name, f);
 }
 
-InterpFunctionWrapper::InterpFunctionWrapper(std::string& name, InterpFunction1 f, Signature& sig)
+InterpFunctionWrapper::InterpFunctionWrapper(const std::string& name, InterpFunction1 f, Signature& sig)
 {
 	code = new BuiltinCode1(name, f, sig);
 }
 
-InterpFunctionWrapper::InterpFunctionWrapper(std::string& name, InterpFunction2 f)
+InterpFunctionWrapper::InterpFunctionWrapper(const std::string& name, InterpFunction2 f)
 {
 	code = new BuiltinCode2(name, f);
 }
 
-InterpFunctionWrapper::InterpFunctionWrapper(std::string& name, InterpFunction2 f, Signature& sig)
+InterpFunctionWrapper::InterpFunctionWrapper(const std::string& name, InterpFunction2 f, Signature& sig)
 {
 	code = new BuiltinCode2(name, f, sig);
 }
 
-InterpFunctionWrapper::InterpFunctionWrapper(std::string& name, InterpFunction3 f)
+InterpFunctionWrapper::InterpFunctionWrapper(const std::string& name, InterpFunction3 f)
 {
 	code = new BuiltinCode3(name, f);
 }
 
-InterpFunctionWrapper::InterpFunctionWrapper(std::string& name, InterpFunction3 f, Signature& sig)
+InterpFunctionWrapper::InterpFunctionWrapper(const std::string& name, InterpFunction3 f, Signature& sig)
 {
 	code = new BuiltinCode3(name, f, sig);
 }

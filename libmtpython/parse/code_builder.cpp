@@ -152,7 +152,7 @@ static void vector2map(std::vector<T>& vec, std::unordered_map<T, int>& map)
 	}
 }
 
-CodeBuilder::CodeBuilder(std::string& name, mtpython::objects::ObjSpace* space, Scope* scope, int first_lineno, CompileInfo* info) : name(name)
+CodeBuilder::CodeBuilder(const std::string& name, mtpython::objects::ObjSpace* space, Scope* scope, int first_lineno, CompileInfo* info) : name(name)
 {
 	this->first_lineno = first_lineno;
 	this->space = space;
@@ -190,7 +190,7 @@ void CodeBuilder::append_instruction(Instruction* inst)
 	current_block->append_instruction(inst);
 }
 
-int CodeBuilder::add_name(std::unordered_map<std::string, int>& container, std::string& id)
+int CodeBuilder::add_name(std::unordered_map<std::string, int>& container, const std::string& id)
 {
 	auto got = container.find(id);
 

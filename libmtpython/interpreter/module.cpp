@@ -11,7 +11,7 @@ Module::Module(ObjSpace* space, M_BaseObject* name, M_BaseObject* dict)
 	this->dict = (dict != nullptr) ? dict : space->new_dict();
 
 	if (name) {
-		space->setitem(this->dict, space->new_interned_str(std::string("__name__")), name);
+		space->setitem(this->dict, space->new_interned_str("__name__"), name);
 	}
 }
 
@@ -22,7 +22,7 @@ void Module::install()
 	space->set_builtin_module(s_name, wrapped);
 }
 
-M_BaseObject* Module::get_dict_value(ObjSpace* space, std::string& attr)
+M_BaseObject* Module::get_dict_value(ObjSpace* space, const std::string& attr)
 {
 	return space->getitem_str(dict, attr);
 }

@@ -19,7 +19,7 @@ public:
 	~FunctionDefNode() { SAFE_DELETE(body); }
 
 	std::string get_name() { return this->name; }
-	void set_name(std::string& name) { this->name = name; }
+	void set_name(const std::string& name) { this->name = name; }
 	ASTNode* get_args() { return this->args; }
 	void set_args(ASTNode* args) { this->args = args; }
 	ASTNode* get_body() { return this->body; }

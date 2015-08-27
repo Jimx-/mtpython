@@ -17,7 +17,7 @@ protected:
 	objects::M_BaseObject* name;
 	objects::M_BaseObject* dict;
 
-	void add_def(std::string& name, objects::M_BaseObject* value)
+	void add_def(const std::string& name, objects::M_BaseObject* value)
 	{
 		space->setitem(dict, space->new_interned_str(name), space->wrap(value));
 	}
@@ -25,7 +25,7 @@ public:
 	Module(objects::ObjSpace* space, objects::M_BaseObject* name, objects::M_BaseObject* dict=nullptr);
 
 	objects::M_BaseObject* get_dict() { return dict; }
-	virtual objects::M_BaseObject* get_dict_value(objects::ObjSpace* space, std::string& attr);
+	virtual objects::M_BaseObject* get_dict_value(objects::ObjSpace* space, const std::string& attr);
 	
 	virtual void install();
 };

@@ -11,7 +11,7 @@ void Scope::add_child(Scope* child)
 	children.push_back(child);
 }
 
-std::string& Scope::add_name(std::string& id, int flags)
+const std::string& Scope::add_name(const std::string& id, int flags)
 {
 	auto iter = id2flags.find(id);
 	if (iter != id2flags.end()) {
@@ -28,7 +28,7 @@ std::string& Scope::add_name(std::string& id, int flags)
 	return id;
 }
 
-int Scope::lookup(std::string& id)
+int Scope::lookup(const std::string& id)
 {
 	auto got = symbols.find(id);
 	if (got == symbols.end()) return SCOPE_UNKNOWN;
@@ -97,9 +97,9 @@ void SymtableVisitor::pop_scope()
 		current = nullptr;
 }
 
-void SymtableVisitor::add_name(std::string& id, int flags)
+void SymtableVisitor::add_name(const std::string& id, int flags)
 {
-	std::string& name = current->add_name(id, flags);
+	const std::string& name = current->add_name(id, flags);
 
 	if (flags & SYM_GLOB) root->add_name(id, flags);
 }

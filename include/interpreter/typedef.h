@@ -16,13 +16,13 @@ private:
 	std::vector<Typedef*> bases;
 	std::unordered_map<std::string, objects::M_BaseObject*> dict;
 public:
-	Typedef(std::string& name, std::unordered_map<std::string, objects::M_BaseObject*>& dict);
-	Typedef(std::string& name, std::vector<Typedef*>& bases, std::unordered_map<std::string, objects::M_BaseObject*>& dict);
+	Typedef(const std::string& name, const std::unordered_map<std::string, objects::M_BaseObject*>& dict);
+	Typedef(const std::string& name, const std::vector<Typedef*>& bases, const std::unordered_map<std::string, objects::M_BaseObject*>& dict);
 
 	std::string& get_name() { return name; }
 	std::vector<Typedef*>& get_bases() { return bases; }
 	std::unordered_map<std::string, objects::M_BaseObject*>& get_dict() { return dict; }
-	void add_entries(std::unordered_map<std::string, objects::M_BaseObject*>& dict);
+	void add_entries(const std::unordered_map<std::string, objects::M_BaseObject*>& dict);
 };
 
 }

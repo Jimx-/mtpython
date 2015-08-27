@@ -14,7 +14,7 @@ class Code : public mtpython::objects::M_BaseObject {
 protected:
 	std::string co_name;
 public:
-	Code(std::string& name) : co_name(name) { }
+	Code(const std::string& name) : co_name(name) { }
 
 	std::string& get_name() { return co_name; }
 

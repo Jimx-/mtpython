@@ -20,7 +20,7 @@ public:
 	~KeywordNode() {}
 
 	std::string& get_arg() { return arg; }
-	void set_arg(std::string& arg) { this->arg = arg; }
+	void set_arg(const std::string& arg) { this->arg = arg; }
 	ASTNode* get_value() { return value; }
 	void set_value(ASTNode* value) { this->value = value; }
 

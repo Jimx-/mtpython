@@ -39,7 +39,7 @@ mtpython::interpreter::PyFrame* StdObjSpace::create_frame(ThreadContext* context
 	return new StdFrame(context, code, globals);
 }
 
-M_BaseObject* StdObjSpace::lookup(M_BaseObject* obj, std::string& name)
+M_BaseObject* StdObjSpace::lookup(M_BaseObject* obj, const std::string& name)
 {
 	StdTypeObject* obj_type = dynamic_cast<StdTypeObject*>(type(obj));
 	if (!obj_type) return nullptr;
@@ -47,7 +47,7 @@ M_BaseObject* StdObjSpace::lookup(M_BaseObject* obj, std::string& name)
 	return obj_type->lookup(name);
 }
 
-M_BaseObject* StdObjSpace::lookup_type_cls(M_BaseObject* obj, std::string& attr, M_BaseObject*& where)
+M_BaseObject* StdObjSpace::lookup_type_cls(M_BaseObject* obj, const std::string& attr, M_BaseObject*& where)
 {
 	StdTypeObject* type = dynamic_cast<StdTypeObject*>(obj);
 	if (!type) return nullptr;
@@ -64,12 +64,12 @@ M_BaseObject* StdObjSpace::wrap_int(int x)
 	return new M_StdIntObject(x);
 }
 
-M_BaseObject* StdObjSpace::wrap_int(std::string& x)
+M_BaseObject* StdObjSpace::wrap_int(const std::string& x)
 {
 	return new M_StdIntObject(x);
 }
 
-M_BaseObject* StdObjSpace::wrap_str(std::string& x)
+M_BaseObject* StdObjSpace::wrap_str(const std::string& x)
 {
 	return new M_StdStrObject(x);
 }

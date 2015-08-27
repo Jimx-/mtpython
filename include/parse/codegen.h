@@ -15,13 +15,13 @@ protected:
 	Scope* scope;
 
 	char _binop(BinaryOper op);
-	void gen_name(std::string& name, mtpython::tree::ExprContext ctx);
+	void gen_name(const std::string& name, mtpython::tree::ExprContext ctx);
 
     void make_closure(mtpython::interpreter::PyCode* code, int args, mtpython::objects::M_BaseObject* qualname);
 
     virtual int get_code_flags() { return 0; }
 public:
-	BaseCodeGenerator(std::string& name, mtpython::objects::ObjSpace* space, mtpython::tree::ASTNode* module, SymtableVisitor* symtab, int lineno, CompileInfo* info);
+	BaseCodeGenerator(const std::string& name, mtpython::objects::ObjSpace* space, mtpython::tree::ASTNode* module, SymtableVisitor* symtab, int lineno, CompileInfo* info);
 
 	/*virtual ASTNode* visit_module(ModuleNode* node); */
     //virtual mtpython::tree::ASTNode* visit_arguments(mtpython::tree::ArgumentsNode* node);
@@ -64,7 +64,7 @@ private:
     int argcount;
     virtual void compile(mtpython::tree::ASTNode* tree);
 public:
-    FunctionCodeGenerator(std::string& name, mtpython::objects::ObjSpace* space, mtpython::tree::ASTNode* tree, SymtableVisitor* symtab, int lineno, CompileInfo* info);
+    FunctionCodeGenerator(const std::string& name, mtpython::objects::ObjSpace* space, mtpython::tree::ASTNode* tree, SymtableVisitor* symtab, int lineno, CompileInfo* info);
 };
 
 }

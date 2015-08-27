@@ -16,7 +16,7 @@ static std::string string_format(const char* format, Args ... args)
 	return std::string(buf.get(), buf.get() + size - 1);
 }
 
-static std::string argcount_err_msg(std::string& name, int nargs, int nkwargs, Signature& sig)
+static std::string argcount_err_msg(const std::string& name, int nargs, int nkwargs, Signature& sig)
 {
 	int n = sig.get_nargs();
 
@@ -27,7 +27,7 @@ static std::string argcount_err_msg(std::string& name, int nargs, int nkwargs, S
 }
 
 /* TODO: support keyword only argument(PEP 3102) */
-void Arguments::parse(std::string& fname, M_BaseObject* first, Signature& sig, std::vector<M_BaseObject*>& scope, std::vector<M_BaseObject*>& defaults)
+void Arguments::parse(const std::string& fname, M_BaseObject* first, Signature& sig, std::vector<M_BaseObject*>& scope, std::vector<M_BaseObject*>& defaults)
 {
 	int argcount = sig.get_nargs();
 

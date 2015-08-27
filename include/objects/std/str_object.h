@@ -16,7 +16,7 @@ class M_StdStrObject : public M_AbstractStdStrObject {
 private:
 	std::string value;
 public:
-	M_StdStrObject(std::string& s);
+	M_StdStrObject(const std::string& s);
 
 	virtual bool i_is(ObjSpace* space, M_BaseObject* other) { return (M_STDSTROBJECT(other) != nullptr); }
 

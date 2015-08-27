@@ -9,13 +9,13 @@
 using namespace mtpython::objects;
 using namespace mtpython::interpreter;
 
-static mtpython::interpreter::Typedef str_typedef(std::string("str"), std::unordered_map<std::string, M_BaseObject*>{
-	{ "__repr__", new InterpFunctionWrapper(std::string("__repr__"), M_StdStrObject::__repr__) },
-	{ "__hash__", new InterpFunctionWrapper(std::string("__hash__"), M_StdStrObject::__hash__) },
-	{ "__eq__", new InterpFunctionWrapper(std::string("__eq__"), M_StdStrObject::__eq__) },
+static mtpython::interpreter::Typedef str_typedef("str", std::unordered_map<std::string, M_BaseObject*>{
+	{ "__repr__", new InterpFunctionWrapper("__repr__", M_StdStrObject::__repr__) },
+	{ "__hash__", new InterpFunctionWrapper("__hash__", M_StdStrObject::__hash__) },
+	{ "__eq__", new InterpFunctionWrapper("__eq__", M_StdStrObject::__eq__) },
 });
 
-M_StdStrObject::M_StdStrObject(std::string& s)
+M_StdStrObject::M_StdStrObject(const std::string& s)
 {
 	value = s;
 }

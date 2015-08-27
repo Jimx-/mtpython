@@ -10,10 +10,10 @@
 using namespace mtpython::objects;
 using namespace mtpython::interpreter;
 
-static mtpython::interpreter::Typedef int_typedef(std::string("int"), std::unordered_map<std::string, M_BaseObject*>{
-	{ "__repr__", new InterpFunctionWrapper(std::string("__repr__"), M_StdIntObject::__repr__) },
-	{ "__bool__", new InterpFunctionWrapper(std::string("__bool__"), M_StdIntObject::__bool__) },
-	{ "__add__", new InterpFunctionWrapper(std::string("__add__"), M_StdIntObject::__add__) },
+static mtpython::interpreter::Typedef int_typedef("int", std::unordered_map<std::string, M_BaseObject*>{
+	{ "__repr__", new InterpFunctionWrapper("__repr__", M_StdIntObject::__repr__) },
+	{ "__bool__", new InterpFunctionWrapper("__bool__", M_StdIntObject::__bool__) },
+	{ "__add__", new InterpFunctionWrapper("__add__", M_StdIntObject::__add__) },
 });
 
 M_StdIntObject::M_StdIntObject(int x)
@@ -21,7 +21,7 @@ M_StdIntObject::M_StdIntObject(int x)
 	intval = x;
 }
 
-M_StdIntObject::M_StdIntObject(std::string& x)
+M_StdIntObject::M_StdIntObject(const std::string& x)
 {
 	intval = std::stoi(x, nullptr, 0);
 }

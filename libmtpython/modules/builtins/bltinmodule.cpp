@@ -21,10 +21,10 @@ static M_BaseObject* builtin_print(mtpython::vm::ThreadContext* context, M_BaseO
 	std::vector<M_BaseObject*> values;
 	ObjSpace* space = context->get_space();
 
-	M_BaseObject* wrapped_seq = space->getitem_str(kwargs, std::string("seq"));
+	M_BaseObject* wrapped_seq = space->getitem_str(kwargs, "seq");
 	std::string seq = wrapped_seq ? space->unwrap_str(wrapped_seq) : " ";
 
-	M_BaseObject* wrapped_end = space->getitem_str(kwargs, std::string("end"));
+	M_BaseObject* wrapped_end = space->getitem_str(kwargs, "end");
 	std::string end = wrapped_end ? space->unwrap_str(wrapped_end) : "\n";
 
 	space->unwrap_tuple(args, values);
@@ -45,27 +45,27 @@ static M_BaseObject* builtin_print(mtpython::vm::ThreadContext* context, M_BaseO
 BuiltinsModule::BuiltinsModule(ObjSpace* space, M_BaseObject* name) : Module(space, name)
 {
 	/* constants */
-	add_def(std::string("None"), space->wrap_None());
-	add_def(std::string("True"), space->wrap_True());
-	add_def(std::string("False"), space->wrap_False());
+	add_def("None", space->wrap_None());
+	add_def("True", space->wrap_True());
+	add_def("False", space->wrap_False());
 
 	/* builtin type */
-	add_def(std::string("bool"), space->bool_type());
-	add_def(std::string("dict"), space->dict_type());
-	add_def(std::string("int"), space->int_type());
-	add_def(std::string("object"), space->object_type());
-	add_def(std::string("str"), space->str_type());
-	add_def(std::string("tuple"), space->tuple_type());
-	add_def(std::string("type"), space->type_type());
+	add_def("bool", space->bool_type());
+	add_def("dict", space->dict_type());
+	add_def("int", space->int_type());
+	add_def("object", space->object_type());
+	add_def("str", space->str_type());
+	add_def("tuple", space->tuple_type());
+	add_def("type", space->type_type());
 
 	/* builtin exceptions */
-#define ADD_EXCEPTION(name) add_def(std::string(#name), BaseException::get_bltin_exception_type(space, std::string(#name)))
+#define ADD_EXCEPTION(name) add_def(#name, BaseException::get_bltin_exception_type(space, #name))
 
 	ADD_EXCEPTION(BaseException);
 	ADD_EXCEPTION(Exception);
 	ADD_EXCEPTION(TypeError);
 
-	add_def(std::string("__import__"), new InterpFunctionWrapper(std::string("__import__"), builtin___import__, Signature(std::initializer_list<std::string>{"name", "globals", "locals", "from_list", "level"})));
+	add_def("__import__", new InterpFunctionWrapper("__import__", builtin___import__, Signature(std::initializer_list<std::string>{"name", "globals", "locals", "from_list", "level"})));
 	
-	add_def(std::string("print"), new InterpFunctionWrapper(std::string("print"), builtin_print, Signature(std::string("args"), std::string("kwargs"))));
+	add_def("print", new InterpFunctionWrapper("print", builtin_print, Signature("args", "kwargs")));
 }

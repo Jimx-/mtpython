@@ -6,7 +6,7 @@
 
 using namespace mtpython::objects;
 
-static mtpython::interpreter::Typedef type_typedef(std::string("type"), std::unordered_map<std::string, M_BaseObject*>({}));
+static mtpython::interpreter::Typedef type_typedef("type", std::unordered_map<std::string, M_BaseObject*>({}));
 
 StdTypeObject::StdTypeObject(ObjSpace* space, std::string& name, std::vector<M_BaseObject*>& bases, std::unordered_map<std::string, M_BaseObject*>& dict) :
 			space(space), name(name), bases(bases), dict(dict)
@@ -63,7 +63,7 @@ void StdTypeObject::init_mro()
 	}
 }
 
-M_BaseObject* StdTypeObject::get_dict_value(ObjSpace* space, std::string& attr)
+M_BaseObject* StdTypeObject::get_dict_value(ObjSpace* space, const std::string& attr)
 {
 	auto got = dict.find(attr);
 	if (got == dict.end()) return nullptr;
@@ -71,7 +71,7 @@ M_BaseObject* StdTypeObject::get_dict_value(ObjSpace* space, std::string& attr)
 	return got->second;
 }
 
-M_BaseObject* StdTypeObject::lookup(std::string& name)
+M_BaseObject* StdTypeObject::lookup(const std::string& name)
 {
 	for (auto base : mro) {
 		M_BaseObject* value = base->get_dict_value(space, name);
@@ -83,7 +83,7 @@ M_BaseObject* StdTypeObject::lookup(std::string& name)
 	return nullptr;
 }
 
-M_BaseObject* StdTypeObject::lookup_cls(std::string& attr, M_BaseObject*& cls)
+M_BaseObject* StdTypeObject::lookup_cls(const std::string& attr, M_BaseObject*& cls)
 {
 	for (auto base : mro) {
 		M_BaseObject* value = base->get_dict_value(space, attr);
