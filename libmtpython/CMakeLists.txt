@@ -14,6 +14,7 @@ SET(LIBMTPYTHON_SRCLIST
 		objects/std/bool_object.cpp
 		objects/std/dict_object.cpp
 		objects/std/int_object.cpp
+		objects/std/iter_object.cpp
 		objects/std/object_object.cpp
 		objects/std/str_object.cpp
 		objects/std/tuple_object.cpp

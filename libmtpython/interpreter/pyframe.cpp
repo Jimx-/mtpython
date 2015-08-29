@@ -2,6 +2,7 @@
 #include "interpreter/pycode.h"
 #include "interpreter/function.h"
 #include "tools/opcode.h"
+#include "macros.h"
 
 #include <exception>
 
@@ -15,6 +16,7 @@ class ReturnException : public ExitFrameException { };
 PyFrame::PyFrame(ThreadContext* context, Code* code, M_BaseObject* globals)
 {
 	this->context = context;
+    space = context->get_space();
 	
 	this->pycode = dynamic_cast<PyCode*>(code);
 	int nlocals = pycode->get_nlocals();
@@ -146,6 +148,16 @@ int PyFrame::dispatch_bytecode(ThreadContext* context, std::vector<unsigned char
 			compare_op(arg, next_pc);
 		else if (opcode == JUMP_IF_FALSE_OR_POP)
 			next_pc = jump_if_false_or_pop(arg, next_pc);
+		else if (opcode == BUILD_TUPLE)
+			build_tuple(arg, next_pc);
+        else if (opcode == SETUP_LOOP)
+            setup_loop(arg, next_pc);
+        else if (opcode == GET_ITER)
+            get_iter(arg, next_pc);
+        else if (opcode == FOR_ITER)
+            next_pc = for_iter(arg, next_pc);
+        else if (opcode == POP_BLOCK)
+            _pop_block(arg, next_pc);
 	}
 }
 
@@ -164,7 +176,7 @@ M_BaseObject* PyFrame::get_name(int index)
 	{ \
 		M_BaseObject* obj2 = pop_value_untrack(); \
 		M_BaseObject* obj1 = pop_value_untrack(); \
-		M_BaseObject* result = context->get_space()->name(obj1, obj2); \
+		M_BaseObject* result = space->name(obj1, obj2); \
 		push_value(result);	\
 		context->gc_track_object(obj1);	\
 		context->gc_track_object(obj2);	\
@@ -198,7 +210,6 @@ void PyFrame::store_fast(int arg, int next_pc)
 void PyFrame::load_global(int arg, int next_pc)
 {
 	M_BaseObject* name = get_name(arg);
-	ObjSpace* space = context->get_space();
 	std::string unwrapped_name = space->unwrap_str(name);
 
 	M_BaseObject* value = space->getitem(globals, name);
@@ -212,7 +223,6 @@ void PyFrame::load_global(int arg, int next_pc)
 
 void PyFrame::call_function_common(int arg, M_BaseObject* star, M_BaseObject* starstar)
 {
-	ObjSpace* space = context->get_space();
 	int nargs = arg & 0xff;
 	int nkwargs = (arg >> 8) & 0xff;
 
@@ -251,7 +261,6 @@ void PyFrame::call_function(int arg, int next_pc)
 
 void PyFrame::make_function(int arg, int next_pc)
 {
-	ObjSpace* space = context->get_space();
 	M_BaseObject* qualname = pop_value_untrack();
 	M_BaseObject* code_obj = pop_value_untrack();
 
@@ -276,7 +285,7 @@ int PyFrame::jump_forward(int arg, int next_pc)
 int PyFrame::pop_jump_if_false(int arg, int next_pc)
 {
 	M_BaseObject* value = pop_value_untrack();
-	if (!context->get_space()->is_true(value)) {
+	if (!space->is_true(value)) {
 		next_pc = arg;
 	}
 
@@ -303,8 +312,6 @@ void PyFrame::compare_op(int arg, int next_pc)
 {
 	M_BaseObject* v2 = pop_value_untrack();
 	M_BaseObject* v1 = pop_value_untrack();
-
-	ObjSpace* space = context->get_space();
 
 	M_BaseObject* result;
 	switch (arg) {
@@ -337,7 +344,7 @@ int PyFrame::jump_if_false_or_pop(int arg, int next_pc)
 {
 	M_BaseObject* value = peek_value();
 	int result;
-	if (!context->get_space()->is_true(value))
+	if (!space->is_true(value))
 		result = arg;
 	else {
 		pop_value();
@@ -354,4 +361,52 @@ void PyFrame::rot_two(int arg, int next_pc)
 	M_BaseObject* v2 = pop_value_untrack();
 	push_value(v1);
 	push_value(v2);
+}
+
+void PyFrame::build_tuple(int arg, int next_pc)
+{
+	std::vector<M_BaseObject*> args;
+	pop_values_untrack(arg, args);
+	M_BaseObject* tup = space->new_tuple(args);
+	push_value(tup);
+}
+
+void PyFrame::setup_loop(int arg, int next_pc)
+{
+	FrameBlock* loop_block = new LoopBlock(next_pc + arg, value_stack.size());
+	push_block(loop_block);
+}
+
+void PyFrame::get_iter(int arg, int next_pc)
+{
+    M_BaseObject* iterable = pop_value_untrack();
+    M_BaseObject* iterator = space->iter(iterable);
+    push_value(iterator);
+    context->gc_track_object(iterable);
+}
+
+int PyFrame::for_iter(int arg, int next_pc)
+{
+    M_BaseObject* iterator = peek_value();
+    M_BaseObject* next_obj = nullptr;
+    try {
+        next_obj = space->next(iterator);
+        push_value(next_obj);
+    } catch (InterpError& e) {
+        if (!e.match(space, space->StopIteration_type())) {
+            throw e;
+        }
+
+        pop_value();
+        next_pc += arg;
+    }
+
+    return next_pc;
+}
+
+void PyFrame::_pop_block(int arg, int next_pc)
+{
+    FrameBlock* block = pop_block();
+    block->cleanup(this);
+    SAFE_DELETE(block);
 }

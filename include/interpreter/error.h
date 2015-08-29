@@ -28,6 +28,11 @@ namespace mtpython {
     			snprintf(buf.get(), size, format, args ...);
     			return InterpError(type, space->wrap_str(std::string(buf.get(), buf.get() + size - 1))); 
 			}
+
+			bool match(objects::ObjSpace* space, objects::M_BaseObject* match_type)
+			{
+				return space->match_exception(type, match_type);
+			}
 		};
 
 	}

@@ -174,6 +174,33 @@ ASTNode* BaseCodeGenerator::visit_compare(CompareNode *node) {
 	return node;
 }
 
+ASTNode* BaseCodeGenerator::visit_for(ForNode* node)
+{
+	set_lineno(node->get_line());
+	CodeBlock* start = new_block();
+	CodeBlock* cleanup = new_block();
+	CodeBlock* end = new_block();
+
+	emit_jump(SETUP_LOOP, end);
+	push_frame_block(FrameType::F_LOOP, start);
+	node->get_iter()->visit(this);
+	emit_op(GET_ITER);
+
+	use_next_block(start);
+	emit_jump(FOR_ITER, cleanup);
+	node->get_target()->visit(this);
+	visit_sequence(node->get_body());
+	emit_jump(JUMP_ABSOLUTE, start, true);
+
+	use_next_block(cleanup);
+	emit_op(POP_BLOCK);
+	pop_frame_block();
+	visit_sequence(node->get_orelse());
+	use_next_block(end);
+
+	return node;
+}
+
 void BaseCodeGenerator::make_closure(mtpython::interpreter::PyCode* code, int args, mtpython::objects::M_BaseObject* qualname)
 {
 	int nfree = code->get_nfreevars();
@@ -220,12 +247,12 @@ ASTNode* BaseCodeGenerator::visit_if(IfNode* node)
 	} else {
 		node->get_test()->visit(this);
 		emit_jump(POP_JUMP_IF_FALSE, otherwise, true);
-		node->get_body()->visit(this);
+		visit_sequence(node->get_body());
 		emit_jump(JUMP_FORWARD, end_block);
 
 		if (orelse) {
 			use_next_block(otherwise);
-			orelse->visit(this);
+			visit_sequence(orelse);
 		}
 	}
 
@@ -310,6 +337,30 @@ ASTNode* BaseCodeGenerator::visit_string(StringNode* node)
 {
 	set_lineno(node->get_line());
 	load_const(node->get_value());
+
+	return node;
+}
+
+ASTNode* BaseCodeGenerator::visit_tuple(TupleNode* node)
+{
+	set_lineno(node->get_line());
+	std::vector<ASTNode*>& elements = node->get_elements();
+	std::size_t eltcount = elements.size();
+
+	ExprContext ctx = node->get_context();
+	if (ctx == ExprContext::EC_STORE) {
+		for (std::size_t i = 0; i < eltcount; i++) {
+			ASTNode* elt = elements[i];
+			/* TODO: Starred assignment PEP 3132 */
+		}
+	}
+
+	for (auto elt : elements) {
+		elt->visit(this);
+	}
+
+	if (ctx == ExprContext::EC_LOAD) emit_op_arg(BUILD_TUPLE, eltcount);
+
 
 	return node;
 }

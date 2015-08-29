@@ -100,8 +100,9 @@ public:
 	{
 		node->get_target()->visit(this);
 		node->get_iter()->visit(this);
-		node->get_body()->visit(this);
-		node->get_orelse()->visit(this);
+		visit_sequence(node->get_body());
+		if (ASTNode* orelse = node->get_orelse())
+			visit_sequence(orelse);
 		
 		return node; 
 	}
@@ -114,9 +115,9 @@ public:
 	virtual ASTNode* visit_if(IfNode* node) 
 	{
 		node->get_test()->visit(this);
-		node->get_body()->visit(this);
+		visit_sequence(node->get_body());
 		if (ASTNode* orelse = node->get_orelse())
-			orelse->visit(this);
+			visit_sequence(orelse);
 		
 		return node; 
 	}

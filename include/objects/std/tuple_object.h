@@ -15,12 +15,14 @@ private:
 	std::vector<M_BaseObject*> items;
 public:
 	M_StdTupleObject() { }
-	M_StdTupleObject(std::vector<M_BaseObject*>& items) : items(items) { }
+	M_StdTupleObject(const std::vector<M_BaseObject*>& items) : items(items) { }
 	
 	std::vector<M_BaseObject*>& get_items() { return items; }
 
 	static interpreter::Typedef* _tuple_typedef();
 	virtual interpreter::Typedef* get_typedef();
+
+	static M_BaseObject* __iter__(vm::ThreadContext* context, M_BaseObject* self);
 };
 
 }

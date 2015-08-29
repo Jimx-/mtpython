@@ -27,6 +27,7 @@ namespace objects {
 class ObjSpace {
 private:
 	M_BaseObject* type_TypeError;
+	M_BaseObject* type_StopIteration;
 
 	void init_builtin_exceptions();
 protected:
@@ -74,6 +75,8 @@ public:
 	virtual M_BaseObject* type_type() { throw NotImplementedException("Abstract"); }
 
 	M_BaseObject* TypeError_type() { return type_TypeError; }
+	M_BaseObject* StopIteration_type() { return type_StopIteration; }
+	bool match_exception(M_BaseObject* type1, M_BaseObject* type2) { return (type1 == type2); }
 
 	virtual M_BaseObject* wrap(int x) { return wrap_int(x); }
 	virtual M_BaseObject* wrap(const std::string& x) { return wrap_str(x); }
@@ -97,9 +100,9 @@ public:
 	virtual std::string unwrap_str(M_BaseObject* obj) { return obj->to_string(this); }
 	virtual void unwrap_tuple(M_BaseObject* obj, std::vector<M_BaseObject*>& list) { }
 
-	virtual M_BaseObject* get_and_call_function(vm::ThreadContext* context, M_BaseObject* descr, std::initializer_list<M_BaseObject*> args);
+	virtual M_BaseObject* get_and_call_function(vm::ThreadContext* context, M_BaseObject* descr, const std::initializer_list<M_BaseObject*> args);
 	virtual M_BaseObject* call_args(vm::ThreadContext* context, M_BaseObject* func, interpreter::Arguments& args);
-	virtual M_BaseObject* call_function(vm::ThreadContext* context, M_BaseObject* func, std::initializer_list<M_BaseObject*> args);
+	virtual M_BaseObject* call_function(vm::ThreadContext* context, M_BaseObject* func, const std::initializer_list<M_BaseObject*> args);
 
 	virtual M_BaseObject* getitem(M_BaseObject* obj, M_BaseObject* key);
 	virtual M_BaseObject* getitem_str(M_BaseObject* obj, const std::string& key);
@@ -112,6 +115,9 @@ public:
 	virtual bool i_is(M_BaseObject* obj1, M_BaseObject* obj2) { return (!obj2) ? false : obj2->i_is(this, obj1); }
 	virtual bool i_eq(M_BaseObject* obj1, M_BaseObject* obj2);
 	virtual std::size_t i_hash(M_BaseObject* obj);
+
+	virtual M_BaseObject* iter(M_BaseObject* obj);
+	virtual M_BaseObject* next(M_BaseObject* obj);
 
 	virtual M_BaseObject* lt(M_BaseObject* obj1, M_BaseObject* obj2);
 	virtual M_BaseObject* le(M_BaseObject* obj1, M_BaseObject* obj2);

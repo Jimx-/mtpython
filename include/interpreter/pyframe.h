@@ -12,14 +12,32 @@
 namespace mtpython {
 namespace interpreter {
 
+class FrameBlock {
+protected:
+	int handler;
+	int level;
+public:
+	FrameBlock(int handler, int level) : handler(handler), level(level) { }
+
+	void cleanup(PyFrame* frame) { }
+};
+
+class LoopBlock : public FrameBlock {
+public:
+	LoopBlock(int handler, int level) : FrameBlock(handler, level) { }
+};
+
 class PyFrame : public mtpython::objects::M_BaseObject {
 protected:
 	vm::ThreadContext* context;
+	objects::ObjSpace* space;
 	PyCode* pycode;
 	mtpython::objects::M_BaseObject* globals;
 
 	std::stack<mtpython::objects::M_BaseObject*> value_stack;
 	std::vector<mtpython::objects::M_BaseObject*> local_vars;
+
+	std::stack<FrameBlock*> block_stack;
 	
 	int pc;
 
@@ -61,6 +79,19 @@ protected:
 		return value_stack.top();
 	}
 
+	void push_block(FrameBlock* block)
+	{
+		block_stack.push(block);
+	}
+
+	FrameBlock* pop_block()
+	{
+		FrameBlock* block = block_stack.top();
+		block_stack.pop();
+
+		return block;
+	}
+
 	mtpython::objects::M_BaseObject* get_const(int index);
 	mtpython::objects::M_BaseObject* get_name(int index);
 
@@ -82,6 +113,11 @@ protected:
 	virtual void rot_three(int arg, int next_pc);
 	virtual void compare_op(int arg, int next_pc);
 	virtual int jump_if_false_or_pop(int arg, int next_pc);
+	virtual void build_tuple(int arg, int next_pc);
+	virtual void setup_loop(int arg, int next_pc);
+	virtual void get_iter(int arg, int next_pc);
+	virtual int for_iter(int arg, int next_pc);
+	virtual void _pop_block(int arg, int next_pc);
 
 	virtual void call_function_common(int arg, mtpython::objects::M_BaseObject* star=nullptr, mtpython::objects::M_BaseObject* starstar=nullptr);
 public:

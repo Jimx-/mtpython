@@ -45,7 +45,8 @@ void ObjSpace::make_builtins()
 void ObjSpace::init_builtin_exceptions()
 {
 #define SET_EXCEPTION_TYPE(name) type_##name = builtin->get_dict_value(this, #name);
-	SET_EXCEPTION_TYPE(TypeError); 
+	SET_EXCEPTION_TYPE(TypeError);
+    SET_EXCEPTION_TYPE(StopIteration);
 }
 
 BaseCompiler* ObjSpace::get_compiler(ThreadContext* context)
@@ -132,6 +133,30 @@ DEF_CMP_OPER(gt, __gt__, __gt__)
 DEF_CMP_OPER(ge, __ge__, __ge__)
 DEF_CMP_OPER(ne, __ne__, __ne__)
 
+M_BaseObject* ObjSpace::iter(M_BaseObject* obj)
+{
+	M_BaseObject* descr = lookup(obj, "__iter__");
+    if (!descr) {
+        descr = lookup(obj, "__getitem__");
+        if (!descr) throw InterpError(TypeError_type(), wrap_str("object is not iterable"));
+    }
+
+    M_BaseObject* iterator = get_and_call_function(current_thread(), descr, {obj});
+    M_BaseObject* next = lookup(iterator, "__next__");
+    if (!next) throw InterpError(TypeError_type(), wrap_str("iter() returned non-iterator"));
+
+    return iterator;
+}
+
+M_BaseObject* ObjSpace::next(M_BaseObject* obj)
+{
+    M_BaseObject* descr = lookup(obj, "__next__");
+    if (!descr) {
+        throw InterpError(TypeError_type(), wrap_str("object is not an iterator"));
+    }
+    return get_and_call_function(current_thread(), descr, {obj});
+}
+
 M_BaseObject* ObjSpace::new_interned_str(const std::string& x)
 {
 	auto got = interned_str.find(x);
@@ -153,7 +178,7 @@ M_BaseObject* ObjSpace::call_args(ThreadContext* context, M_BaseObject* func, Ar
 	return nullptr;
 }
 
-M_BaseObject* ObjSpace::get_and_call_function(ThreadContext* context, M_BaseObject* descr, std::initializer_list<M_BaseObject*> args)
+M_BaseObject* ObjSpace::get_and_call_function(ThreadContext* context, M_BaseObject* descr, const std::initializer_list<M_BaseObject*> args)
 {
 	Function* as_func = dynamic_cast<Function*>(descr);
 	if (as_func) {
@@ -163,7 +188,7 @@ M_BaseObject* ObjSpace::get_and_call_function(ThreadContext* context, M_BaseObje
 	return nullptr;
 }
 
-M_BaseObject* ObjSpace::call_function(ThreadContext* context, M_BaseObject* func, std::initializer_list<M_BaseObject*> args)
+M_BaseObject* ObjSpace::call_function(ThreadContext* context, M_BaseObject* func, const std::initializer_list<M_BaseObject*> args)
 {
 	Arguments arguments(context->get_space(), args);
 

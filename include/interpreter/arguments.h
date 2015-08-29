@@ -23,10 +23,10 @@ protected:
 	std::vector<std::string> keywords;
 	std::vector<objects::M_BaseObject*> keyword_values;
 public:
-	Arguments(objects::ObjSpace* space, std::initializer_list<objects::M_BaseObject*>& args) : space(space), args(args) { }
-	Arguments(objects::ObjSpace* space, std::vector<objects::M_BaseObject*>& args) : space(space), args(args) { }
-	Arguments(objects::ObjSpace* space, std::vector<objects::M_BaseObject*>& args, 
-		std::vector<std::string>& keywords, std::vector<objects::M_BaseObject*>& keyword_values) : 
+	Arguments(objects::ObjSpace* space, const std::initializer_list<objects::M_BaseObject*>& args) : space(space), args(args) { }
+	Arguments(objects::ObjSpace* space, const std::vector<objects::M_BaseObject*>& args) : space(space), args(args) { }
+	Arguments(objects::ObjSpace* space, const std::vector<objects::M_BaseObject*>& args,
+			  const std::vector<std::string>& keywords, const std::vector<objects::M_BaseObject*>& keyword_values) :
 		space(space), args(args), keywords(keywords), keyword_values(keyword_values) { }
 
 	void parse(const std::string& fname, objects::M_BaseObject* first, Signature& sig, std::vector<objects::M_BaseObject*>& scope) {

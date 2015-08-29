@@ -1,11 +1,18 @@
 #ifndef _CODEGEN_H_
 #define _CODEGEN_H_
 
+#include <stack>
+#include <utility>
+
 #include "parse/code_builder.h"
 #include "parse/symtable.h"
 
 namespace mtpython {
 namespace parse {
+
+typedef enum {
+    F_LOOP,
+} FrameType;
 
 class BaseCodeGenerator : public CodeBuilder {
 private:
@@ -13,6 +20,7 @@ private:
 protected:
 	SymtableVisitor* symtab;
 	Scope* scope;
+    std::stack<std::pair<FrameType, CodeBlock*> > frame_block;
 
 	char _binop(BinaryOper op);
 	void gen_name(const std::string& name, mtpython::tree::ExprContext ctx);
@@ -22,6 +30,9 @@ protected:
     virtual int get_code_flags() { return 0; }
 public:
 	BaseCodeGenerator(const std::string& name, mtpython::objects::ObjSpace* space, mtpython::tree::ASTNode* module, SymtableVisitor* symtab, int lineno, CompileInfo* info);
+
+    void push_frame_block(FrameType type, CodeBlock* block) { frame_block.push(std::make_pair(type, block)); }
+    void pop_frame_block() { frame_block.pop(); }
 
 	/*virtual ASTNode* visit_module(ModuleNode* node); */
     //virtual mtpython::tree::ASTNode* visit_arguments(mtpython::tree::ArgumentsNode* node);
@@ -35,7 +46,7 @@ public:
     /*virtual ASTNode* visit_continue(ContinueNode* node);
     virtual ASTNode* visit_delete(DeleteNode* node); */
 	virtual mtpython::tree::ASTNode* visit_expr(mtpython::tree::ExprNode* node);
-    /*virtual ASTNode* visit_for(ForNode* node);*/
+    virtual mtpython::tree::ASTNode* visit_for(mtpython::tree::ForNode* node);
     virtual mtpython::tree::ASTNode* visit_functiondef(mtpython::tree::FunctionDefNode* node);
     virtual mtpython::tree::ASTNode* visit_if(mtpython::tree::IfNode* node);
     virtual mtpython::tree::ASTNode* visit_ifexp(mtpython::tree::IfExpNode* node);
@@ -46,8 +57,8 @@ public:
     virtual mtpython::tree::ASTNode* visit_pass(mtpython::tree::PassNode* node);
     /*virtual ASTNode* visit_raise(RaiseNode* node);*/
     virtual mtpython::tree::ASTNode* visit_return(mtpython::tree::ReturnNode* node);
-    /*virtual ASTNode* visit_tuple(TupleNode* node);
-    virtual ASTNode* visit_unaryop(UnaryOpNode* node);
+    virtual mtpython::tree::ASTNode* visit_tuple(mtpython::tree::TupleNode* node);
+    /*virtual ASTNode* visit_unaryop(UnaryOpNode* node);
     virtual ASTNode* visit_while(WhileNode* node);
     virtual ASTNode* visit_yield(YieldNode* node);
     virtual ASTNode* visit_yieldfrom(YieldFromNode* node);*/
