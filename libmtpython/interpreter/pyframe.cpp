@@ -335,13 +335,15 @@ void PyFrame::compare_op(int arg, int next_pc)
 
 int PyFrame::jump_if_false_or_pop(int arg, int next_pc)
 {
-	M_BaseObject* value = pop_value_untrack();
+	M_BaseObject* value = peek_value();
 	int result;
 	if (!context->get_space()->is_true(value))
 		result = arg;
-	else
+	else {
+		pop_value();
 		result = next_pc;
-	context->gc_track_object(value);
+	}
+
 
 	return result;
 }

@@ -234,6 +234,24 @@ ASTNode* BaseCodeGenerator::visit_if(IfNode* node)
 	return node;
 }
 
+ASTNode* BaseCodeGenerator::visit_ifexp(IfExpNode* node)
+{
+	set_lineno(node->get_line());
+	CodeBlock* end_block = new_block();
+	CodeBlock* otherwise = new_block();
+
+	node->get_test()->visit(this);
+	emit_jump(POP_JUMP_IF_FALSE, otherwise, true);
+	node->get_body()->visit(this);
+	emit_jump(JUMP_FORWARD, end_block);
+
+	use_next_block(otherwise);
+	node->get_orelse()->visit(this);
+	use_next_block(end_block);
+
+	return node;
+}
+
 ASTNode* BaseCodeGenerator::visit_name(NameNode* node)
 {
 	set_lineno(node->get_line());
