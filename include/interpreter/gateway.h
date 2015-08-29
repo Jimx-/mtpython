@@ -41,7 +41,7 @@ private:
 	InterpFunction1 func;
 	Signature sig;
 public:
-	BuiltinCode1(const std::string& name, InterpFunction1 f) : Code(name), sig(std::initializer_list<std::string>{"arg0"}) { func = f; }
+	BuiltinCode1(const std::string& name, InterpFunction1 f) : Code(name), sig({"arg0"}) { func = f; }
 	BuiltinCode1(const std::string& name, InterpFunction1 f, const Signature& sig) : Code(name), sig(sig) { func = f; }
 
 	virtual mtpython::objects::M_BaseObject* funcrun(vm::ThreadContext* context, mtpython::objects::M_BaseObject* func, Arguments& args)
@@ -57,7 +57,7 @@ private:
 	InterpFunction2 func;
 	Signature sig;
 public:
-	BuiltinCode2(const std::string& name, InterpFunction2 f) : Code(name), sig(std::initializer_list<std::string>{"arg0", "arg1"}) { func = f; }
+	BuiltinCode2(const std::string& name, InterpFunction2 f) : Code(name), sig({"arg0", "arg1"}) { func = f; }
 	BuiltinCode2(const std::string& name, InterpFunction2 f, const Signature& sig) : Code(name), sig(sig) { func = f; }
 
 	virtual mtpython::objects::M_BaseObject* funcrun(vm::ThreadContext* context, mtpython::objects::M_BaseObject* func, Arguments& args)
@@ -73,7 +73,7 @@ private:
 	InterpFunction3 func;
 	Signature sig;
 public:
-	BuiltinCode3(const std::string& name, InterpFunction3 f) : Code(name), sig(std::initializer_list<std::string>{"arg0", "arg1", "arg2"}) { func = f; }
+	BuiltinCode3(const std::string& name, InterpFunction3 f) : Code(name), sig({"arg0", "arg1", "arg2"}) { func = f; }
 	BuiltinCode3(const std::string& name, InterpFunction3 f, const Signature& sig) : Code(name), sig(sig) { func = f; }
 
 	virtual mtpython::objects::M_BaseObject* funcrun(vm::ThreadContext* context, mtpython::objects::M_BaseObject* func, Arguments& args)

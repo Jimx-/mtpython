@@ -5,9 +5,7 @@ using namespace mtpython::interpreter;
 
 static mtpython::interpreter::Typedef BaseException_typedef("BaseException", {});
 
-static mtpython::interpreter::Typedef Exception_typedef("Exception", { &BaseException_typedef },
-	std::unordered_map<std::string, M_BaseObject*>{
-});
+static mtpython::interpreter::Typedef Exception_typedef("Exception", { &BaseException_typedef }, {});
 
 static mtpython::interpreter::Typedef TypeError_typedef("TypeError", { &Exception_typedef }, {});
 static mtpython::interpreter::Typedef StopIteration_typedef("StopIteration", { &Exception_typedef }, {});

@@ -9,7 +9,7 @@
 using namespace mtpython::objects;
 using namespace mtpython::interpreter;
 
-static mtpython::interpreter::Typedef bool_typedef("bool", std::unordered_map<std::string, M_BaseObject*>{
+static mtpython::interpreter::Typedef bool_typedef("bool", {
 	{ "__bool__", new InterpFunctionWrapper("__bool__", M_StdBoolObject::__bool__) },
 });
 

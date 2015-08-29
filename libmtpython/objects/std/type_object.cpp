@@ -6,7 +6,7 @@
 
 using namespace mtpython::objects;
 
-static mtpython::interpreter::Typedef type_typedef("type", std::unordered_map<std::string, M_BaseObject*>({}));
+static mtpython::interpreter::Typedef type_typedef("type", {});
 
 StdTypeObject::StdTypeObject(ObjSpace* space, std::string& name, std::vector<M_BaseObject*>& bases, std::unordered_map<std::string, M_BaseObject*>& dict) :
 			space(space), name(name), bases(bases), dict(dict)

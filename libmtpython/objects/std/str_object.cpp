@@ -9,7 +9,7 @@
 using namespace mtpython::objects;
 using namespace mtpython::interpreter;
 
-static mtpython::interpreter::Typedef str_typedef("str", std::unordered_map<std::string, M_BaseObject*>{
+static mtpython::interpreter::Typedef str_typedef("str", {
 	{ "__repr__", new InterpFunctionWrapper("__repr__", M_StdStrObject::__repr__) },
 	{ "__hash__", new InterpFunctionWrapper("__hash__", M_StdStrObject::__hash__) },
 	{ "__eq__", new InterpFunctionWrapper("__eq__", M_StdStrObject::__eq__) },

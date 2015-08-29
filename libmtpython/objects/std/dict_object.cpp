@@ -8,7 +8,7 @@
 using namespace mtpython::objects;
 using namespace mtpython::interpreter;
 
-static mtpython::interpreter::Typedef dict_typedef("dict", std::unordered_map<std::string, M_BaseObject*>{
+static mtpython::interpreter::Typedef dict_typedef("dict", {
 	{ "__getitem__", new InterpFunctionWrapper("__getitem__", M_StdDictObject::__getitem__) },
 	{ "__setitem__", new InterpFunctionWrapper("__setitem__", M_StdDictObject::__setitem__) },
 });

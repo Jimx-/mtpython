@@ -10,7 +10,7 @@
 using namespace mtpython::objects;
 using namespace mtpython::interpreter;
 
-static mtpython::interpreter::Typedef int_typedef("int", std::unordered_map<std::string, M_BaseObject*>{
+static mtpython::interpreter::Typedef int_typedef("int", {
 	{ "__repr__", new InterpFunctionWrapper("__repr__", M_StdIntObject::__repr__) },
 	{ "__bool__", new InterpFunctionWrapper("__bool__", M_StdIntObject::__bool__) },
 	{ "__add__", new InterpFunctionWrapper("__add__", M_StdIntObject::__add__) },
