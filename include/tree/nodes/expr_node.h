@@ -22,7 +22,7 @@ public:
 
 	virtual void print(const int padding) {
 		std::string blank(padding, ' ');
-		std::cout << blank << line << ": Expr: ";
+		std::cout << blank << line << ": Expr: " << std::endl;
 		value->print(padding + 4);
 		std::cout << std::endl;
 	}

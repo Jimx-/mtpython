@@ -1,4 +1,5 @@
 #include "parse/codegen.h"
+#include "exceptions.h"
 
 using namespace mtpython::parse;
 using namespace mtpython::interpreter;
@@ -52,6 +53,19 @@ ASTNode* BaseCodeGenerator::visit_binop(BinOpNode* node)
 	emit_op(_binop(node->get_op()));
 	
 	return node;
+}
+
+ASTNode* BaseCodeGenerator::visit_break(BreakNode* node)
+{
+	set_lineno(node->get_line());
+	bool in_loop = false;
+	for (auto& fb : frame_block) {
+		if (fb.first == FrameType::F_LOOP) in_loop = true;
+	}
+
+	if (!in_loop) throw mtpython::SyntaxError("'break' outside loop");
+
+	emit_op(BREAK_LOOP);
 }
 
 ASTNode* BaseCodeGenerator::visit_call(CallNode* node)

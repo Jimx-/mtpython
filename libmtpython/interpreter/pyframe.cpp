@@ -1,14 +1,15 @@
+#include <exception>
+
 #include "interpreter/pyframe.h"
-#include "interpreter/pycode.h"
 #include "interpreter/function.h"
 #include "tools/opcode.h"
 #include "macros.h"
 
-#include <exception>
-
 using namespace mtpython::interpreter;
 using namespace mtpython::objects;
 using namespace mtpython::vm;
+
+static BreakUnwinder break_unwinder;
 
 class ExitFrameException : public std::exception { };
 class ReturnException : public ExitFrameException { };
@@ -16,6 +17,14 @@ class ReturnException : public ExitFrameException { };
 void FrameBlock::cleanup(PyFrame* frame)
 {
     frame->drop_values_until(level);
+}
+
+int LoopBlock::handle(PyFrame* frame, StackUnwinder* unwinder)
+{
+	if (unwinder->why() == WhyCode::WHY_BREAK) {
+		cleanup(frame);
+		return handler;
+	}
 }
 
 PyFrame::PyFrame(ThreadContext* context, Code* code, M_BaseObject* globals)
@@ -163,7 +172,33 @@ int PyFrame::dispatch_bytecode(ThreadContext* context, std::vector<unsigned char
             next_pc = for_iter(arg, next_pc);
         else if (opcode == POP_BLOCK)
             _pop_block(arg, next_pc);
+		else if (opcode == BREAK_LOOP)
+			next_pc = break_loop(arg, next_pc);
 	}
+}
+
+FrameBlock* PyFrame::unwind_stack(int why)
+{
+	while (block_stack.size() > 0) {
+		FrameBlock* block = pop_block();
+		if (block->handling_mask() & why) {
+			return block;
+		}
+
+		block->cleanup(this);
+	}
+
+	return nullptr;
+}
+
+int PyFrame::unwind_stack_jump(StackUnwinder* unwinder)
+{
+	FrameBlock* block = unwind_stack(unwinder->why());
+	if (!block) {
+		throw mtpython::BytecodeCorruption("Stack unwind error");
+	}
+
+	return block->handle(this, unwinder);
 }
 
 M_BaseObject* PyFrame::get_const(int index)
@@ -414,4 +449,9 @@ void PyFrame::_pop_block(int arg, int next_pc)
     FrameBlock* block = pop_block();
     block->cleanup(this);
     SAFE_DELETE(block);
+}
+
+int PyFrame::break_loop(int arg, int next_pc)
+{
+	return unwind_stack_jump(&break_unwinder);
 }

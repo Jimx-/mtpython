@@ -46,6 +46,7 @@ int SourceBuffer::load_source(const string& source)
 	}
 
 	line_offset.push_back(buf.size());
+	if (buf.back() != '\n') buf.push_back('\n');
 
 	pos = 0;
 

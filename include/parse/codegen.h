@@ -1,7 +1,7 @@
 #ifndef _CODEGEN_H_
 #define _CODEGEN_H_
 
-#include <stack>
+#include <deque>
 #include <utility>
 
 #include "parse/code_builder.h"
@@ -20,7 +20,7 @@ private:
 protected:
 	SymtableVisitor* symtab;
 	Scope* scope;
-    std::stack<std::pair<FrameType, CodeBlock*> > frame_block;
+    std::deque<std::pair<FrameType, CodeBlock*> > frame_block;
 
 	char _binop(BinaryOper op);
 	void gen_name(const std::string& name, mtpython::tree::ExprContext ctx);
@@ -31,15 +31,15 @@ protected:
 public:
 	BaseCodeGenerator(const std::string& name, mtpython::objects::ObjSpace* space, mtpython::tree::ASTNode* module, SymtableVisitor* symtab, int lineno, CompileInfo* info);
 
-    void push_frame_block(FrameType type, CodeBlock* block) { frame_block.push(std::make_pair(type, block)); }
-    void pop_frame_block() { frame_block.pop(); }
+    void push_frame_block(FrameType type, CodeBlock* block) { frame_block.push_back(std::make_pair(type, block)); }
+    void pop_frame_block() { frame_block.pop_back(); }
 
 	/*virtual ASTNode* visit_module(ModuleNode* node); */
     //virtual mtpython::tree::ASTNode* visit_arguments(mtpython::tree::ArgumentsNode* node);
     virtual mtpython::tree::ASTNode* visit_assign(mtpython::tree::AssignNode* node);
     /*virtual ASTNode* visit_augassign(AugAssignNode* node);*/
     virtual mtpython::tree::ASTNode* visit_binop(mtpython::tree::BinOpNode* node);
-    /*virtual ASTNode* visit_break(BreakNode* node); */
+    virtual mtpython::tree::ASTNode* visit_break(mtpython::tree::BreakNode* node);
     virtual mtpython::tree::ASTNode* visit_call(mtpython::tree::CallNode* node);
     virtual mtpython::tree::ASTNode* visit_compare(mtpython::tree::CompareNode* node);
     virtual mtpython::tree::ASTNode* visit_const(mtpython::tree::ConstNode* node);

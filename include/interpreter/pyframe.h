@@ -1,30 +1,60 @@
 #ifndef _INTERPRETER_PYFRAME_H_
 #define _INTERPRETER_PYFRAME_H_
 
+#include <string>
+#include <stack>
+
 #include "objects/base_object.h"
 #include "interpreter/code.h"
 #include "interpreter/pycode.h"
 #include "interpreter/error.h"
 #include "vm/vm.h"
-#include <string>
-#include <stack>
+#include "exceptions.h"
 
 namespace mtpython {
 namespace interpreter {
+
+typedef enum {
+	WHY_NOT =       0x0001, /* No error */
+	WHY_EXCEPTION = 0x0002, /* Exception occurred */
+	WHY_RETURN =    0x0008, /* 'return' statement */
+	WHY_BREAK =     0x0010, /* 'break' statement */
+	WHY_CONTINUE =  0x0020, /* 'continue' statement */
+	WHY_YIELD =     0x0040, /* 'yield' operator */
+	WHY_SILENCED =  0x0080  /* Exception silenced by 'with' */
+} WhyCode;
+
+class StackUnwinder : public mtpython::objects::M_BaseObject {
+protected:
+	WhyCode why_code;
+public:
+	WhyCode why() { return why_code; }
+};
+
+class BreakUnwinder : public StackUnwinder {
+public:
+	BreakUnwinder() { why_code = WHY_BREAK; }
+};
 
 class FrameBlock {
 protected:
 	int handler;
 	int level;
+	int mask;
 public:
-	FrameBlock(int handler, int level) : handler(handler), level(level) { }
+	FrameBlock(int handler, int level) : handler(handler), level(level) { mask = WHY_NOT; }
+
+	int handling_mask() { return mask; }
+	virtual int handle(PyFrame* frame, StackUnwinder* unwinder) { throw mtpython::NotImplementedException("Abstract"); }
 
 	void cleanup(PyFrame* frame);
 };
 
 class LoopBlock : public FrameBlock {
 public:
-	LoopBlock(int handler, int level) : FrameBlock(handler, level) { }
+	LoopBlock(int handler, int level) : FrameBlock(handler, level) { mask = (WHY_BREAK | WHY_CONTINUE); };
+
+	virtual int handle(PyFrame* frame, StackUnwinder* unwinder);
 };
 
 class PyFrame : public mtpython::objects::M_BaseObject {
@@ -97,29 +127,33 @@ protected:
 
 	int handle_interp_error(InterpError& exc);
 
-	virtual void pop_top(int arg, int next_pc);
-	virtual void load_const(int arg, int next_pc);
-	virtual void binary_add(int arg, int next_pc);
-	virtual void load_fast(int arg, int next_pc);
-	virtual void store_fast(int arg, int next_pc);
-	virtual void load_global(int arg, int next_pc);
-	virtual void call_function(int arg, int next_pc);
-	virtual void make_function(int arg, int next_pc);
-	virtual int jump_absolute(int arg);
-	virtual int jump_forward(int arg, int next_pc);
-	virtual int pop_jump_if_false(int arg, int next_pc);
-	virtual void dup_top(int arg, int next_pc);
-	virtual void rot_two(int arg, int next_pc);
-	virtual void rot_three(int arg, int next_pc);
-	virtual void compare_op(int arg, int next_pc);
-	virtual int jump_if_false_or_pop(int arg, int next_pc);
-	virtual void build_tuple(int arg, int next_pc);
-	virtual void setup_loop(int arg, int next_pc);
-	virtual void get_iter(int arg, int next_pc);
-	virtual int for_iter(int arg, int next_pc);
-	virtual void _pop_block(int arg, int next_pc);
+	FrameBlock* unwind_stack(int why);
+	int unwind_stack_jump(StackUnwinder* unwinder);
 
-	virtual void call_function_common(int arg, mtpython::objects::M_BaseObject* star=nullptr, mtpython::objects::M_BaseObject* starstar=nullptr);
+	void pop_top(int arg, int next_pc);
+	void load_const(int arg, int next_pc);
+	void binary_add(int arg, int next_pc);
+	void load_fast(int arg, int next_pc);
+	void store_fast(int arg, int next_pc);
+	void load_global(int arg, int next_pc);
+	void call_function(int arg, int next_pc);
+	void make_function(int arg, int next_pc);
+	int jump_absolute(int arg);
+	int jump_forward(int arg, int next_pc);
+	int pop_jump_if_false(int arg, int next_pc);
+	void dup_top(int arg, int next_pc);
+	void rot_two(int arg, int next_pc);
+	void rot_three(int arg, int next_pc);
+	void compare_op(int arg, int next_pc);
+	int jump_if_false_or_pop(int arg, int next_pc);
+	void build_tuple(int arg, int next_pc);
+	void setup_loop(int arg, int next_pc);
+	void get_iter(int arg, int next_pc);
+	int for_iter(int arg, int next_pc);
+	void _pop_block(int arg, int next_pc);
+	int break_loop(int arg, int next_pc);
+
+	void call_function_common(int arg, mtpython::objects::M_BaseObject* star=nullptr, mtpython::objects::M_BaseObject* starstar=nullptr);
 public:
 	PyFrame(vm::ThreadContext* context, Code* code, mtpython::objects::M_BaseObject* globals);
 

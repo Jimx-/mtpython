@@ -27,6 +27,14 @@ public:
     virtual ~SyntaxError() throw() {}
 };
 
+class BytecodeCorruption:public std::runtime_error
+{
+public:
+    BytecodeCorruption (const char * error_msg) :runtime_error(error_msg){}
+    virtual ~BytecodeCorruption() throw() {}
+};
+
+
 }
 
 #endif /* _EXCEPTIONS_H_ */
