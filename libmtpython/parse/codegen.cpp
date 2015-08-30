@@ -369,10 +369,44 @@ ASTNode* BaseCodeGenerator::visit_while(WhileNode* node)
 {
 	set_lineno(node->get_line());
 
-	if (0 /* TODO: constant optimization */) {
-
+	ASTNode* test = node->get_test();
+	int test_const = expr_constant(test);
+	if (test_const == 0) {
+		if (ASTNode* orelse = node->get_orelse())
+			visit_sequence(orelse);
 	} else {
 		CodeBlock* end = new_block();
+		CodeBlock* loop = new_block();
+		CodeBlock* anchor = nullptr;
+
+		if (test_const == -1) {
+			anchor = new_block();
+		}
+
+		CodeBlock* orelse = nullptr;
+		if (node->get_orelse()) orelse = new_block();
+
+		emit_jump(SETUP_LOOP, end);
+		use_next_block(loop);
+		push_frame_block(FrameType::F_LOOP, loop);
+
+		if (test_const == -1) {
+			node->get_test()->visit(this);
+			emit_jump(POP_JUMP_IF_FALSE, anchor, true);
+		}
+
+		visit_sequence(node->get_body());
+		emit_jump(JUMP_ABSOLUTE, loop, true);
+
+		if (test_const == -1) {
+			use_next_block(anchor);
+		}
+		emit_op(POP_BLOCK);
+		pop_frame_block();
+
+		if (node->get_orelse()) visit_sequence(node->get_orelse());
+
+		use_next_block(end);
 	}
 
 	return node;

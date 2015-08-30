@@ -150,7 +150,17 @@ public:
 	virtual ASTNode* visit_return(ReturnNode* node) { return node;}
 	virtual ASTNode* visit_tuple(TupleNode* node) {return node; }
 	virtual ASTNode* visit_unaryop(UnaryOpNode* node) { return node;}
-	virtual ASTNode* visit_while(WhileNode* node) {return node; }
+
+	virtual ASTNode* visit_while(WhileNode* node)
+	{
+		node->get_test()->visit(this);
+		visit_sequence(node->get_body());
+		if (ASTNode* orelse = node->get_orelse())
+			visit_sequence(orelse);
+
+		return node;
+	}
+
 	virtual ASTNode* visit_yield(YieldNode* node) {return node; }
 	virtual ASTNode* visit_yieldfrom(YieldFromNode* node) { return node;}
 };

@@ -258,6 +258,11 @@ int CodeBuilder::expr_constant(mtpython::tree::ASTNode* node)
 		mtpython::tree::NumberNode* number_node = dynamic_cast<mtpython::tree::NumberNode*>(node);
 		return space->is_true(number_node->get_value()) ? 1 : 0;
 	}
+	case mtpython::tree::NodeType::NT_CONST:
+	{
+		mtpython::tree::ConstNode* const_node = dynamic_cast<mtpython::tree::ConstNode*>(node);
+		return space->is_true(const_node->get_value()) ? 1 : 0;
+	}
 	}
 
 	return -1;
