@@ -17,7 +17,7 @@ private:
 
 public:
 	KeywordNode(const int line_nr);
-	~KeywordNode() {}
+	~KeywordNode() { SAFE_DELETE(value); }
 
 	std::string& get_arg() { return arg; }
 	void set_arg(const std::string& arg) { this->arg = arg; }

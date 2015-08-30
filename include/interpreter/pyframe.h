@@ -19,7 +19,7 @@ protected:
 public:
 	FrameBlock(int handler, int level) : handler(handler), level(level) { }
 
-	void cleanup(PyFrame* frame) { }
+	void cleanup(PyFrame* frame);
 };
 
 class LoopBlock : public FrameBlock {
@@ -131,6 +131,11 @@ public:
 	objects::M_BaseObject* dispatch(vm::ThreadContext* context, Code* code, int next_pc);
 	int execute_bytecode(vm::ThreadContext* context, std::vector<unsigned char>& bytecode, int next_pc);
 	int dispatch_bytecode(vm::ThreadContext* context, std::vector<unsigned char>& bytecode, int next_pc);
+
+	void drop_values_until(int level)
+	{
+		while (value_stack.size() > level) pop_value();
+	}
 };
 
 }

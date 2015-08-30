@@ -58,9 +58,9 @@ public:
     /*virtual ASTNode* visit_raise(RaiseNode* node);*/
     virtual mtpython::tree::ASTNode* visit_return(mtpython::tree::ReturnNode* node);
     virtual mtpython::tree::ASTNode* visit_tuple(mtpython::tree::TupleNode* node);
-    /*virtual ASTNode* visit_unaryop(UnaryOpNode* node);
-    virtual ASTNode* visit_while(WhileNode* node);
-    virtual ASTNode* visit_yield(YieldNode* node);
+    /*virtual ASTNode* visit_unaryop(UnaryOpNode* node); */
+    virtual mtpython::tree::ASTNode* visit_while(mtpython::tree::WhileNode* node);
+    /*virtual ASTNode* visit_yield(YieldNode* node);
     virtual ASTNode* visit_yieldfrom(YieldFromNode* node);*/
 };
 

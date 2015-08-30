@@ -365,6 +365,19 @@ ASTNode* BaseCodeGenerator::visit_tuple(TupleNode* node)
 	return node;
 }
 
+ASTNode* BaseCodeGenerator::visit_while(WhileNode* node)
+{
+	set_lineno(node->get_line());
+
+	if (0 /* TODO: constant optimization */) {
+
+	} else {
+		CodeBlock* end = new_block();
+	}
+
+	return node;
+}
+
 ModuleCodeGenerator::ModuleCodeGenerator(mtpython::objects::ObjSpace* space, mtpython::tree::ASTNode* module, SymtableVisitor* symtab, CompileInfo* info) : BaseCodeGenerator("module", space, module, symtab, -1, info)
 {
 	compile(module);

@@ -16,7 +16,16 @@ private:
 	ASTNode* body;
 public:
 	FunctionDefNode(const int line_nr);
-	~FunctionDefNode() { SAFE_DELETE(body); }
+	~FunctionDefNode()
+	{
+		SAFE_DELETE(args);
+		ASTNode* node = body, *prev;
+		while (node) {
+			prev = node;
+			node = node->get_sibling();
+			SAFE_DELETE(prev);
+		}
+	}
 
 	std::string get_name() { return this->name; }
 	void set_name(const std::string& name) { this->name = name; }

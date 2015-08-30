@@ -16,7 +16,15 @@ private:
 	ASTNode* body;
 public:
 	ModuleNode(const int line_nr);
-	~ModuleNode() { SAFE_DELETE(body); }
+	~ModuleNode()
+	{
+		ASTNode* node = body, *prev;
+		while (node) {
+			prev = node;
+			node = node->get_sibling();
+			SAFE_DELETE(prev);
+		}
+	}
 
 	ASTNode* get_body() { return this->body; }
 	void set_body(ASTNode * body) { this->body = body; }

@@ -15,7 +15,7 @@ private:
 	std::vector<ASTNode*> targets;
 public:
 	DeleteNode(const int line_nr);
-	~DeleteNode() { targets.clear(); }
+	~DeleteNode() { for (std::size_t i = 0; i < targets.size(); i++) SAFE_DELETE(targets[i]); }
 
 	std::vector<ASTNode*>& get_targets() { return targets; }
 	void push_target(ASTNode* target) { targets.push_back(target); }

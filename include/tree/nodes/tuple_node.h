@@ -16,7 +16,7 @@ private:
 	ExprContext ctx;
 public:
 	TupleNode(const int line_nr);
-	~TupleNode() { elts.clear(); }
+	~TupleNode() { for (std::size_t i = 0; i < elts.size(); i++) SAFE_DELETE(elts[i]); }
 
 	void push_element(ASTNode* elt) { elts.push_back(elt); }
 	std::vector<ASTNode*>& get_elements() { return elts; }

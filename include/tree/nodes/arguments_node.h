@@ -15,7 +15,7 @@ private:
 	std::vector<ASTNode*> args;
 public:
 	ArgumentsNode(const int line_nr);
-	~ArgumentsNode() { args.clear(); }
+	~ArgumentsNode() { for (std::size_t i = 0; i < args.size(); i++) SAFE_DELETE(args[i]); }
 
 	std::vector<ASTNode*>& get_args() { return args; }
 	void push_arg(ASTNode* arg) { args.push_back(arg); }

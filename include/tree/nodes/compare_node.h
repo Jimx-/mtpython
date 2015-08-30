@@ -17,7 +17,11 @@ private:
 	std::vector<ASTNode*> comparators;
 public:
 	CompareNode(const int line_nr);
-	~CompareNode() { SAFE_DELETE(left); }
+	~CompareNode()
+	{
+		SAFE_DELETE(left);
+		for (std::size_t i = 0; i < comparators.size(); i++) SAFE_DELETE(comparators[i]);
+	}
 
 	ASTNode* get_left() { return this->left; }
 	void set_left(ASTNode* left) { this->left = left; }

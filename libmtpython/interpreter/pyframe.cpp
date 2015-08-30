@@ -13,6 +13,11 @@ using namespace mtpython::vm;
 class ExitFrameException : public std::exception { };
 class ReturnException : public ExitFrameException { };
 
+void FrameBlock::cleanup(PyFrame* frame)
+{
+    frame->drop_values_until(level);
+}
+
 PyFrame::PyFrame(ThreadContext* context, Code* code, M_BaseObject* globals)
 {
 	this->context = context;

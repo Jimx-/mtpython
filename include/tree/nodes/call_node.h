@@ -19,7 +19,12 @@ private:
 	std::vector<KeywordNode*> keywords;
 public:
 	CallNode(const int line_nr);
-	~CallNode() { SAFE_DELETE(func); }
+	~CallNode()
+	{
+		SAFE_DELETE(func);
+		for (std::size_t i = 0; i < args.size(); i++) SAFE_DELETE(args[i]);
+		for (std::size_t i = 0; i < keywords.size(); i++) SAFE_DELETE(keywords[i]);
+	}
 
 	ASTNode* get_func() { return this->func; }
 	void set_func(ASTNode* func) { this->func = func; }

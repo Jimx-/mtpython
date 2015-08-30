@@ -16,7 +16,7 @@ private:
 	ASTNode* value;
 public:
 	AssignNode(const int line_nr);
-	~AssignNode() { targets.clear(); }
+	~AssignNode() { SAFE_DELETE(value); for (std::size_t i = 0; i < targets.size(); i++) SAFE_DELETE(targets[i]); }
 
 	ASTNode* get_value() { return value; }
 	void set_value(ASTNode* value) { this->value = value; }

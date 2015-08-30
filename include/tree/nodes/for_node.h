@@ -14,7 +14,23 @@ private:
 	ASTNode* target, *iter, *body, *orelse; 
 public:
 	ForNode(const int line_nr);
-	~ForNode() { SAFE_DELETE(target); SAFE_DELETE(iter); SAFE_DELETE(body); SAFE_DELETE(orelse); }
+	~ForNode()
+	{
+		SAFE_DELETE(target);
+		SAFE_DELETE(iter);
+		ASTNode* node = body, *prev;
+		while (node) {
+			prev = node;
+			node = node->get_sibling();
+			SAFE_DELETE(prev);
+		}
+		node = orelse;
+		while (node) {
+			prev = node;
+			node = node->get_sibling();
+			SAFE_DELETE(prev);
+		}
+	}
 
 	ASTNode * get_target() { return target; }
 	void set_target(ASTNode * target) { this->target = target; }

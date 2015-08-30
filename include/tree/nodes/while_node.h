@@ -14,7 +14,22 @@ private:
 	ASTNode* test, *body, *orelse; 
 public:
 	WhileNode(const int line_nr);
-	~WhileNode() { SAFE_DELETE(test); SAFE_DELETE(body); SAFE_DELETE(orelse); }
+	~WhileNode()
+	{
+		SAFE_DELETE(test);
+		ASTNode* node = body, *prev;
+		while (node) {
+			prev = node;
+			node = node->get_sibling();
+			SAFE_DELETE(prev);
+		}
+		node = orelse;
+		while (node) {
+			prev = node;
+			node = node->get_sibling();
+			SAFE_DELETE(prev);
+		}
+	}
 
 	ASTNode * get_test() { return test; }
 	void set_test(ASTNode * test) { this->test = test; }
