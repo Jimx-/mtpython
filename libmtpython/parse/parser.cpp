@@ -5,11 +5,18 @@
 
 using namespace mtpython::parse;
 using namespace mtpython::tree;
+using namespace mtpython::objects;
 
-Parser::Parser(mtpython::objects::ObjSpace* space, const std::string& source, CompileInfo* info): sb(source, info->get_type()), diag(info, &sb), s(&sb, &diag)
+Parser::Parser(mtpython::objects::ObjSpace* space, const std::string &source, CompileInfo* info, int flags) : sb(source, info->get_type()), diag(info, &sb), s(&sb, &diag)
 {
 	this->space = space;
 	init_res_words(s);
+
+	if (flags & PyCF_SOURCE_IS_UTF8) {
+		info->set_encoding("utf-8");
+	}
+
+	compile_info = info;
 }
 
 Parser::~Parser()
@@ -624,7 +631,7 @@ ASTNode* Parser::atom()
 	{
 		/* TODO: handle encoding, str concat */
 		StringNode* str_node = new StringNode(s.get_line());
-		str_node->set_value(space->wrap_str(s.get_last_string()));
+		str_node->set_value(parsestrplus());
 		match(TOK_STRINGLITERAL);
 		node = str_node;
 		break;
@@ -657,6 +664,59 @@ ASTNode* Parser::atom()
 		return nullptr;
     }
     return node;
+}
+
+M_BaseObject* Parser::parsestrplus()
+{
+	return space->wrap_str(s.get_last_string());
+	//return parsestr();
+}
+
+M_BaseObject* Parser::parsestr()
+{
+	const std::string& enc = compile_info->get_encoding();
+	bool bytes_mode = true;
+	std::string str = s.get_last_string();
+
+	if (bytes_mode) {
+		if (enc != "") {
+			std::string decoded = decode_unicode_utf8(str);
+		}
+	}
+}
+
+void Parser::decode_utf8(const std::string& str, std::size_t& start, std::size_t end)
+{
+	std::size_t s, t;
+	s = t = start;
+
+	while (s < end && (str[s] & 0x80)) s++;
+	start = s;
+
+	std::string substr = str.substr(t, s - t);
+
+}
+
+std::string Parser::decode_unicode_utf8(const std::string& str)
+{
+	std::size_t i = 0;
+	std::size_t end = str.size();
+	std::string decoded;
+
+	while (i < end) {
+		if (str[i] == '\\') {
+			decoded += str[i++];
+			if (str[i] & 0x80) {
+				decoded += "u005c";
+			}
+		}
+
+		if (str[i] & 0x80) {
+			decode_utf8(str, i, end);
+		} else {
+			decoded += str[i++];
+		}
+	}
 }
 
 ASTNode* Parser::call(ASTNode* callable)

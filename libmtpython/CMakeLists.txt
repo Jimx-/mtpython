@@ -16,7 +16,7 @@ SET(LIBMTPYTHON_SRCLIST
 		objects/std/int_object.cpp
 		objects/std/iter_object.cpp
 		objects/std/object_object.cpp
-		objects/std/str_object.cpp
+		objects/std/unicode_object.cpp
 		objects/std/tuple_object.cpp
 		objects/std/type_object.cpp
 		objects/std/obj_space_std.cpp

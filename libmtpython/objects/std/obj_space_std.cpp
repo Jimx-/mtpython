@@ -5,7 +5,7 @@
 #include "objects/std/int_object.h"
 #include "objects/std/bool_object.h"
 #include "objects/std/none_object.h"
-#include "objects/std/str_object.h"
+#include "objects/std/unicode_object.h"
 #include "objects/std/dict_object.h"
 #include "objects/std/object_object.h"
 #include "objects/std/tuple_object.h"
@@ -26,7 +26,7 @@ StdObjSpace::StdObjSpace() : ObjSpace()
 	builtin_types["dict"] = get_typeobject(M_StdDictObject::_dict_typedef());
 	builtin_types["int"] = get_typeobject(M_StdIntObject::_int_typedef());
 	builtin_types["object"] = get_typeobject(M_StdObjectObject::_object_typedef());
-	builtin_types["str"] = get_typeobject(M_StdStrObject::_str_typedef());
+	builtin_types["str"] = get_typeobject(M_StdUnicodeObject::_str_typedef());
 	builtin_types["tuple"] = get_typeobject(M_StdTupleObject::_tuple_typedef());
 	builtin_types["type"] = get_typeobject(StdTypeObject::_type_typedef());
 
@@ -70,7 +70,7 @@ M_BaseObject* StdObjSpace::wrap_int(const std::string& x)
 
 M_BaseObject* StdObjSpace::wrap_str(const std::string& x)
 {
-	return new M_StdStrObject(x);
+	return new M_StdUnicodeObject(x);
 }
 
 M_BaseObject* StdObjSpace::new_tuple(std::vector<M_BaseObject*>& items)

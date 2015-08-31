@@ -7,18 +7,15 @@
 namespace mtpython {
 namespace objects {
 
-#define M_STDSTROBJECT(obj) (dynamic_cast<M_StdStrObject*>(obj))
-	
-class M_AbstractStdStrObject : public M_BaseObject {
-};
+#define M_STDUNICODEOBJECT(obj) (dynamic_cast<M_StdUnicodeObject*>(obj))
 
-class M_StdStrObject : public M_AbstractStdStrObject {
+class M_StdUnicodeObject : public M_BaseObject {
 private:
 	std::string value;
 public:
-	M_StdStrObject(const std::string& s);
+	M_StdUnicodeObject(const std::string& s);
 
-	virtual bool i_is(ObjSpace* space, M_BaseObject* other) { return (M_STDSTROBJECT(other) != nullptr); }
+	virtual bool i_is(ObjSpace* space, M_BaseObject* other) { return (M_STDUNICODEOBJECT(other) != nullptr); }
 
 	static M_BaseObject* __repr__(mtpython::vm::ThreadContext* context, mtpython::objects::M_BaseObject* self);
 	static M_BaseObject* __hash__(mtpython::vm::ThreadContext* context, mtpython::objects::M_BaseObject* self);

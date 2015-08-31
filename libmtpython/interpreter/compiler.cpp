@@ -13,9 +13,11 @@ PyCompiler::PyCompiler(mtpython::vm::ThreadContext* context) : BaseCompiler(cont
 
 Code* PyCompiler::compile(std::string& source, std::string& filename, mtpython::parse::SourceType type, int flags)
 {
+	flags = flags | PyCF_SOURCE_IS_UTF8;
+
 	CompileInfo info(filename, type, flags);
 
-	Parser parser(space, source, &info);
+	Parser parser(space, source, &info, flags);
 
 	mtpython::tree::ASTNode* module = parser.parse();
 	module->print(0);

@@ -18,6 +18,7 @@ namespace mtpython {
 			mtpython::utils::SourceBuffer sb;
 			mtpython::parse::Diagnostics diag;
 			mtpython::parse::Scanner s;
+			mtpython::parse::CompileInfo* compile_info;
 	
 			Token cur_tok;
 			std::string srcfile;
@@ -65,8 +66,13 @@ namespace mtpython {
 			mtpython::tree::ASTNode* name();
 			mtpython::tree::ASTNode* call(mtpython::tree::ASTNode* callable);
 			mtpython::tree::ASTNode* argument();
+
+			objects::M_BaseObject* parsestrplus();
+			objects::M_BaseObject* parsestr();
+			std::string decode_unicode_utf8(const std::string& str);
+			void decode_utf8(const std::string& str, std::size_t& start, std::size_t end);
 		public:
-			Parser(mtpython::objects::ObjSpace* space, const std::string& source, CompileInfo* info);
+			Parser(mtpython::objects::ObjSpace* space, const std::string &source, CompileInfo* info, int flags);
 			~Parser();
 
 			void read_token();

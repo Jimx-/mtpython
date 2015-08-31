@@ -22,7 +22,7 @@ SourceBuffer::SourceBuffer(vector<char>::iterator first, vector<char>::iterator 
 int SourceBuffer::load_source(const string& source)
 {	
 	int idx = 0;
-
+	std::cout << source[0] << std::endl;
 	buf.clear();
 	
 	char tmp = 0;
