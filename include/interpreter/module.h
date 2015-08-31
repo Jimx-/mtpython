@@ -25,6 +25,8 @@ public:
 	Module(objects::ObjSpace* space, objects::M_BaseObject* name, objects::M_BaseObject* dict=nullptr);
 
 	objects::M_BaseObject* get_dict() { return dict; }
+	objects::M_BaseObject* get(const std::string& name);
+	objects::M_BaseObject* call(vm::ThreadContext* context, const std::string& name, const std::initializer_list<objects::M_BaseObject*> args);
 	virtual objects::M_BaseObject* get_dict_value(objects::ObjSpace* space, const std::string& attr);
 	
 	virtual void install();

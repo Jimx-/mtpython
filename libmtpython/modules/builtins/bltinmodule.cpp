@@ -1,8 +1,8 @@
 #include "modules/builtins/bltinmodule.h"
 #include "objects/bltin_exceptions.h"
 #include "interpreter/gateway.h"
-#include "interpreter/signature.h"
-#include "vm/vm.h"
+#include "interpreter/pycode.h"
+#include "interpreter/compiler.h"
 
 #include <iostream>
 
@@ -13,6 +13,26 @@ using namespace mtpython::interpreter;
 static M_BaseObject* builtin___import__(mtpython::vm::ThreadContext* context, std::vector<M_BaseObject*>& args)
 {
 	return nullptr;
+
+}
+
+static M_BaseObject* builtin_compile(mtpython::vm::ThreadContext* context, std::vector<M_BaseObject*>& args)
+{
+	ObjSpace* space = context->get_space();
+
+	std::string source = space->unwrap_str(args[0]);
+	std::string filename = space->unwrap_str(args[1]);
+	std::string mode = space->unwrap_str(args[2]);
+	int flags  = space->unwrap_int(args[3]);
+
+	M_BaseObject* code = context->get_compiler()->compile(source, filename, mode, flags);
+
+	context->gc_track_object(args[0]);
+	context->gc_track_object(args[1]);
+	context->gc_track_object(args[2]);
+	context->gc_track_object(args[3]);
+
+	return space->wrap(code);
 }
 
 /* The famous print() */
@@ -67,6 +87,7 @@ BuiltinsModule::BuiltinsModule(ObjSpace* space, M_BaseObject* name) : Module(spa
 	ADD_EXCEPTION(StopIteration);
 
 	add_def("__import__", new InterpFunctionWrapper("__import__", builtin___import__, Signature({"name", "globals", "locals", "from_list", "level"})));
-	
+
+	add_def("compile", new InterpFunctionWrapper("compile", builtin_compile, Signature({"source", "filename", "mode", "flags", "dont_inherit", "optimize"})));
 	add_def("print", new InterpFunctionWrapper("print", builtin_print, Signature("args", "kwargs")));
 }

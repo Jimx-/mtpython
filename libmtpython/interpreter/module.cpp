@@ -1,4 +1,5 @@
 #include "interpreter/module.h"
+#include "interpreter/error.h"
 
 using namespace mtpython::interpreter;
 using namespace mtpython::objects;
@@ -25,4 +26,18 @@ void Module::install()
 M_BaseObject* Module::get_dict_value(ObjSpace* space, const std::string& attr)
 {
 	return space->getitem_str(dict, attr);
+}
+
+M_BaseObject* Module::get(const std::string &name)
+{
+	M_BaseObject* value = get_dict_value(space, name);
+	if (!value) throw InterpError(space->TypeError_type(), space->wrap(name));
+	return value;
+}
+
+M_BaseObject* Module::call(mtpython::vm::ThreadContext* context, const std::string &name,
+						   const std::initializer_list<objects::M_BaseObject*> args)
+{
+	M_BaseObject* func = get(name);
+	return space->call_function(context, func, args);
 }

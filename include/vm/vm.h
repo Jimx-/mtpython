@@ -34,6 +34,9 @@ private:
 	mtpython::objects::ObjSpace* space;
 
 	ThreadContext main_thread;
+
+	mtpython::interpreter::Code* compile_code(ThreadContext* context, const std::string& source,
+				const std::string& filename, const std::string& mode);
 public:
 	PyVM(mtpython::objects::ObjSpace* space);
 

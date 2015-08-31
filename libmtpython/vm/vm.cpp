@@ -1,7 +1,7 @@
-#include "utils/source_buffer.h"
-#include "interpreter/compiler.h"
 #include <fstream>
 
+#include "utils/source_buffer.h"
+#include "interpreter/compiler.h"
 #include "interpreter/module.h"
 
 using namespace mtpython::vm;
@@ -30,5 +30,16 @@ void PyVM::run_file(std::string& filename)
     file.read(&source[0], source.size());
     file.close();
 
-    main_thread.get_compiler()->compile(source, filename, mtpython::parse::SourceType::ST_FILE_INPUT, 0)->exec_code(&main_thread, space->new_dict(), nullptr);
+    compile_code(&main_thread, source, filename, "exec")->exec_code(&main_thread, space->new_dict(), nullptr);
+}
+
+mtpython::interpreter::Code* PyVM::compile_code(ThreadContext* context, const std::string &source,
+												const std::string &filename, const std::string &mode)
+{
+	ObjSpace* space = context->get_space();
+	mtpython::interpreter::Module* mod = dynamic_cast<mtpython::interpreter::Module*>(space->get_builtin());
+
+	M_BaseObject* code_obj = mod->call(context, "compile", {space->wrap(source), space->wrap(filename), space->wrap(mode), space->wrap(0), space->wrap(0), space->wrap(0)});
+
+	return dynamic_cast<mtpython::interpreter::Code*>(code_obj);
 }

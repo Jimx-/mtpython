@@ -11,8 +11,12 @@ PyCompiler::PyCompiler(mtpython::vm::ThreadContext* context) : BaseCompiler(cont
 
 }
 
-Code* PyCompiler::compile(std::string& source, std::string& filename, mtpython::parse::SourceType type, int flags)
+Code* PyCompiler::compile(const std::string& source, const std::string& filename, const std::string& mode, int flags)
 {
+	mtpython::parse::SourceType type = mtpython::parse::SourceType::ST_ERROR;
+
+	if (mode == "exec") type = mtpython::parse::SourceType::ST_FILE_INPUT;
+
 	flags = flags | PyCF_SOURCE_IS_UTF8;
 
 	CompileInfo info(filename, type, flags);

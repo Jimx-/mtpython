@@ -19,7 +19,7 @@ private:
 	int flags;
 	std::string encoding;
 public:
-	CompileInfo(std::string& filename, SourceType type, int flags) : filename(filename), type(type), flags(flags), encoding("") { }
+	CompileInfo(const std::string& filename, SourceType type, int flags) : filename(filename), type(type), flags(flags), encoding("") { }
 
 	std::string& get_filename() { return filename; }
 	SourceType get_type() { return type; }
