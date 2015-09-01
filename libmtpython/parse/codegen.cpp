@@ -16,7 +16,7 @@ BaseCodeGenerator::BaseCodeGenerator(const std::string& name, ObjSpace* space, A
 	this->symtab = symtab;
 }
 
-char BaseCodeGenerator::_binop(BinaryOper op)
+unsigned char BaseCodeGenerator::_binop(BinaryOper op)
 {
 	switch (op) {
 	case OP_PLUS:
@@ -25,6 +25,22 @@ char BaseCodeGenerator::_binop(BinaryOper op)
 		return BINARY_SUBTRACT;
 	case OP_MUL:
 		return BINARY_MULTIPLY;
+	}
+
+	return NOP;
+}
+
+unsigned char BaseCodeGenerator::_unaryop(UnaryOper op)
+{
+	switch (op) {
+	case OP_POS:
+		return UNARY_POSITIVE;
+	case OP_NEG:
+		return UNARY_NEGATIVE;
+	case OP_NOT:
+		return UNARY_NOT;
+	case OP_BITNOT:
+		return UNARY_INVERT;
 	}
 
 	return NOP;
@@ -375,6 +391,15 @@ ASTNode* BaseCodeGenerator::visit_tuple(TupleNode* node)
 
 	if (ctx == ExprContext::EC_LOAD) emit_op_arg(BUILD_TUPLE, eltcount);
 
+
+	return node;
+}
+
+ASTNode* BaseCodeGenerator::visit_unaryop(UnaryOpNode* node)
+{
+	set_lineno(node->get_line());
+	node->get_operand()->visit(this);
+	emit_op(_unaryop(node->get_op()));
 
 	return node;
 }

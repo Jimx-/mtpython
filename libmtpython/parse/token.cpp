@@ -129,8 +129,34 @@ std::string mtpython::parse::tok2str(Token tok)
 		return "RETURN";
 	case TOK_EOF:
 		return "EOF";
+	case TOK_NEWLINE:
+		return "NEWLINE";
+	case TOK_IMPORT:
+		return "IMPORT";
+	case TOK_DEF:
+		return "DEF";
+	case TOK_LAMBDA:
+		return "LAMBDA";
+	case TOK_DEL:
+		return "DEL";
+	case TOK_YIELD:
+		return "YIELD";
+	case TOK_FROM:
+		return "FROM";
+	case TOK_RAISE:
+		return "RAISE";
+	case TOK_PASS:
+		return "PASS";
+	case TOK_STARSTAR:
+		return "**";
+	case TOK_SLASHSLASH:
+		return "//";
+	case TOK_LSQUARE:
+		return "[";
+	case TOK_RSQUARE:
+		return "]";
 	}
-	return "UNKNOWN SYMBOL";
+	return "UNKNOWN TOKEN";
 }
 
 std::string mtpython::parse::binop2str(BinaryOper op)
@@ -175,6 +201,22 @@ std::string mtpython::parse::binop2str(BinaryOper op)
 	return "INVALID BINOP";
 }
 
+std::string mtpython::parse::unaryop2str(UnaryOper op)
+{
+	switch (op) {
+	case OP_POS:
+		return "+";
+	case OP_NEG:
+		return "-";
+	case OP_NOT:
+		return "!";
+	case OP_BITNOT:
+		return "~";
+	}
+
+	return "INVALID UNARYOP";
+}
+
 std::string mtpython::parse::cmpop2str(CmpOper op)
 {
 	switch (op) {
@@ -202,10 +244,6 @@ UnaryOper mtpython::parse::tok2unop(Token tok)
 		return OP_POS;
 	case TOK_MINUS:
 		return OP_NEG;
-	case TOK_PLUSPLUS:
-		return OP_PLUSPLUS;
-	case TOK_MINUSMINUS:
-		return OP_MINUSMINUS;
 	case TOK_NOT:
 		return OP_NOT;
 	case TOK_TILDE:

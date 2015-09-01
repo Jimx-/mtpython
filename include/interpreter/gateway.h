@@ -16,7 +16,7 @@ namespace mtpython {
 namespace interpreter {
 
 /* Wrapper of interpreter level function */
-typedef mtpython::objects::M_BaseObject* (*InterpFunction)(mtpython::vm::ThreadContext* context, std::vector<mtpython::objects::M_BaseObject*>& args);
+typedef mtpython::objects::M_BaseObject* (*InterpFunction)(mtpython::vm::ThreadContext* context, const std::vector<mtpython::objects::M_BaseObject*>& args);
 typedef mtpython::objects::M_BaseObject* (*InterpFunction1)(mtpython::vm::ThreadContext* context, mtpython::objects::M_BaseObject* arg1);
 typedef mtpython::objects::M_BaseObject* (*InterpFunction2)(mtpython::vm::ThreadContext* context, mtpython::objects::M_BaseObject* arg1, mtpython::objects::M_BaseObject* arg2);
 typedef mtpython::objects::M_BaseObject* (*InterpFunction3)(mtpython::vm::ThreadContext* context, mtpython::objects::M_BaseObject* arg1, mtpython::objects::M_BaseObject* arg2, mtpython::objects::M_BaseObject* arg3);

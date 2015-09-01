@@ -113,6 +113,14 @@ std::size_t ObjSpace::i_hash(M_BaseObject* obj)
 		return result;	\
 	}
 
+#define DEF_UNARY_OPER(name, special_name) \
+	M_BaseObject* ObjSpace::name(M_BaseObject* obj) \
+	{	\
+		M_BaseObject* impl = lookup(obj, #special_name);	\
+ 		if (!impl) throw InterpError::format(this, TypeError_type(), "unsupported operand type for unary %s", #name);	\
+		return get_and_call_function(current_thread(), impl, {obj});	\
+	}
+
 #define DEF_CMP_OPER(name, lname, rname) \
 	M_BaseObject* ObjSpace::name(M_BaseObject* obj1, M_BaseObject* obj2) \
 	{	\
@@ -125,6 +133,12 @@ std::size_t ObjSpace::i_hash(M_BaseObject* obj)
 	}
 
 DEF_BINARY_OPER(add, __add__, __radd__)
+DEF_BINARY_OPER(sub, __sub__, __rsub__)
+DEF_BINARY_OPER(mul, __mul__, __rmul__)
+
+DEF_UNARY_OPER(pos, __pos__)
+DEF_UNARY_OPER(neg, __neg__)
+DEF_UNARY_OPER(invert, __invert__)
 
 DEF_CMP_OPER(eq, __eq__, __eq__)
 DEF_CMP_OPER(lt, __lt__, __lt__)
@@ -132,6 +146,11 @@ DEF_CMP_OPER(le, __le__, __le__)
 DEF_CMP_OPER(gt, __gt__, __gt__)
 DEF_CMP_OPER(ge, __ge__, __ge__)
 DEF_CMP_OPER(ne, __ne__, __ne__)
+
+M_BaseObject* ObjSpace::not_(M_BaseObject* obj)
+{
+	return new_bool(!is_true(obj));
+}
 
 M_BaseObject* ObjSpace::iter(M_BaseObject* obj)
 {
@@ -227,3 +246,22 @@ void ObjSpace::setitem(M_BaseObject* obj, M_BaseObject* key, M_BaseObject* value
 
 	get_and_call_function(current_thread(), descr, {obj, key, value});
 }
+
+M_BaseObject* ObjSpace::abs(M_BaseObject* obj)
+{
+	M_BaseObject* descr = lookup(obj, "__abs__");
+
+	if (!descr) return nullptr;
+
+	return get_and_call_function(current_thread(), descr, {obj});
+}
+
+M_BaseObject* ObjSpace::len(M_BaseObject* obj)
+{
+	M_BaseObject* descr = lookup(obj, "__len__");
+
+	if (!descr) return nullptr;
+
+	return get_and_call_function(current_thread(), descr, {obj});
+}
+

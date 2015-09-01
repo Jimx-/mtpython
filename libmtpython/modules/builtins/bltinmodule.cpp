@@ -3,6 +3,7 @@
 #include "interpreter/gateway.h"
 #include "interpreter/pycode.h"
 #include "interpreter/compiler.h"
+#include "interpreter/error.h"
 
 #include <iostream>
 
@@ -10,13 +11,24 @@ using namespace mtpython::modules;
 using namespace mtpython::objects;
 using namespace mtpython::interpreter;
 
-static M_BaseObject* builtin___import__(mtpython::vm::ThreadContext* context, std::vector<M_BaseObject*>& args)
+static M_BaseObject* builtin___import__(mtpython::vm::ThreadContext* context, const std::vector<M_BaseObject*>& args)
 {
 	return nullptr;
 
 }
 
-static M_BaseObject* builtin_compile(mtpython::vm::ThreadContext* context, std::vector<M_BaseObject*>& args)
+static M_BaseObject* builtin_abs(mtpython::vm::ThreadContext* context, M_BaseObject* obj)
+{
+	ObjSpace* space = context->get_space();
+	M_BaseObject* result = space->abs(obj);
+
+	if (!result) throw InterpError(space->TypeError_type(), space->wrap("bad operand type for abs()"));
+	context->gc_track_object(obj);
+
+	return result;
+}
+
+static M_BaseObject* builtin_compile(mtpython::vm::ThreadContext* context, const std::vector<M_BaseObject*>& args)
 {
 	ObjSpace* space = context->get_space();
 
@@ -33,6 +45,17 @@ static M_BaseObject* builtin_compile(mtpython::vm::ThreadContext* context, std::
 	context->gc_track_object(args[3]);
 
 	return space->wrap(code);
+}
+
+static M_BaseObject* builtin_len(mtpython::vm::ThreadContext* context, M_BaseObject* obj)
+{
+	ObjSpace* space = context->get_space();
+	M_BaseObject* result = space->len(obj);
+
+	if (!result) throw InterpError(space->TypeError_type(), space->wrap("object has no len()"));
+	context->gc_track_object(obj);
+
+	return result;
 }
 
 /* The famous print() */
@@ -88,6 +111,8 @@ BuiltinsModule::BuiltinsModule(ObjSpace* space, M_BaseObject* name) : Module(spa
 
 	add_def("__import__", new InterpFunctionWrapper("__import__", builtin___import__, Signature({"name", "globals", "locals", "from_list", "level"})));
 
+	add_def("abs", new InterpFunctionWrapper("abs", builtin_abs));
 	add_def("compile", new InterpFunctionWrapper("compile", builtin_compile, Signature({"source", "filename", "mode", "flags", "dont_inherit", "optimize"})));
+	add_def("len", new InterpFunctionWrapper("len", builtin_len));
 	add_def("print", new InterpFunctionWrapper("print", builtin_print, Signature("args", "kwargs")));
 }

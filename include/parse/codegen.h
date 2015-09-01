@@ -22,7 +22,9 @@ protected:
 	Scope* scope;
     std::deque<std::pair<FrameType, CodeBlock*> > frame_block;
 
-	char _binop(BinaryOper op);
+	unsigned char _binop(BinaryOper op);
+    unsigned char _unaryop(UnaryOper op);
+
 	void gen_name(const std::string& name, mtpython::tree::ExprContext ctx);
 
     void make_closure(mtpython::interpreter::PyCode* code, int args, mtpython::objects::M_BaseObject* qualname);
@@ -58,7 +60,7 @@ public:
     /*virtual ASTNode* visit_raise(RaiseNode* node);*/
     virtual mtpython::tree::ASTNode* visit_return(mtpython::tree::ReturnNode* node);
     virtual mtpython::tree::ASTNode* visit_tuple(mtpython::tree::TupleNode* node);
-    /*virtual ASTNode* visit_unaryop(UnaryOpNode* node); */
+    virtual mtpython::tree::ASTNode* visit_unaryop(mtpython::tree::UnaryOpNode* node);
     virtual mtpython::tree::ASTNode* visit_while(mtpython::tree::WhileNode* node);
     /*virtual ASTNode* visit_yield(YieldNode* node);
     virtual ASTNode* visit_yieldfrom(YieldFromNode* node);*/

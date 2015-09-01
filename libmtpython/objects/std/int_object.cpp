@@ -14,12 +14,16 @@ static mtpython::interpreter::Typedef int_typedef("int", {
 	{ "__repr__", new InterpFunctionWrapper("__repr__", M_StdIntObject::__repr__) },
 	{ "__bool__", new InterpFunctionWrapper("__bool__", M_StdIntObject::__bool__) },
 	{ "__add__", new InterpFunctionWrapper("__add__", M_StdIntObject::__add__) },
+	{ "__sub__", new InterpFunctionWrapper("__sub__", M_StdIntObject::__sub__) },
+	{ "__mul__", new InterpFunctionWrapper("__mul__", M_StdIntObject::__mul__) },
 	{ "__eq__", new InterpFunctionWrapper("__eq__", M_StdIntObject::__eq__) },
 	{ "__ne__", new InterpFunctionWrapper("__ne__", M_StdIntObject::__ne__) },
 	{ "__lt__", new InterpFunctionWrapper("__lt__", M_StdIntObject::__lt__) },
 	{ "__le__", new InterpFunctionWrapper("__le__", M_StdIntObject::__le__) },
 	{ "__gt__", new InterpFunctionWrapper("__gt__", M_StdIntObject::__gt__) },
 	{ "__ge__", new InterpFunctionWrapper("__ge__", M_StdIntObject::__ge__) },
+	{ "__abs__", new InterpFunctionWrapper("__abs__", M_StdIntObject::__abs__) },
+	{ "__neg__", new InterpFunctionWrapper("__neg__", M_StdIntObject::__neg__) },
 });
 
 M_StdIntObject::M_StdIntObject(int x)
@@ -81,6 +85,41 @@ M_BaseObject* M_StdIntObject::__add__(mtpython::vm::ThreadContext* context, M_Ba
 
 	return space->wrap_int(z);
 }
+
+M_BaseObject* M_StdIntObject::__sub__(mtpython::vm::ThreadContext* context, M_BaseObject* self, M_BaseObject* other)
+{
+	ObjSpace* space = context->get_space();
+
+	M_StdIntObject* self_as_int = dynamic_cast<M_StdIntObject*>(self);
+	if (!self_as_int) throw InterpError(space->TypeError_type(), space->wrap_str("object is not int"));
+	M_StdIntObject* other_as_int = dynamic_cast<M_StdIntObject*>(other);
+	if (!other_as_int) throw InterpError(space->TypeError_type(), space->wrap_str("object is not int"));
+
+	int x = self_as_int->intval;
+	int y = other_as_int->intval;
+
+	int z = x - y;
+
+	return space->wrap_int(z);
+}
+
+M_BaseObject* M_StdIntObject::__mul__(mtpython::vm::ThreadContext* context, M_BaseObject* self, M_BaseObject* other)
+{
+	ObjSpace* space = context->get_space();
+
+	M_StdIntObject* self_as_int = dynamic_cast<M_StdIntObject*>(self);
+	if (!self_as_int) throw InterpError(space->TypeError_type(), space->wrap_str("object is not int"));
+	M_StdIntObject* other_as_int = dynamic_cast<M_StdIntObject*>(other);
+	if (!other_as_int) throw InterpError(space->TypeError_type(), space->wrap_str("object is not int"));
+
+	int x = self_as_int->intval;
+	int y = other_as_int->intval;
+
+	int z = x * y;
+
+	return space->wrap_int(z);
+}
+
 
 M_BaseObject* M_StdIntObject::__eq__(mtpython::vm::ThreadContext *context, mtpython::objects::M_BaseObject *self,
 									 mtpython::objects::M_BaseObject *other)
@@ -176,4 +215,25 @@ M_BaseObject *M_StdIntObject::__ge__(mtpython::vm::ThreadContext *context, mtpyt
 	int y = other_as_int->intval;
 
 	return space->new_bool(x >= y);
+}
+
+M_BaseObject* M_StdIntObject::__abs__(mtpython::vm::ThreadContext* context, M_BaseObject* self)
+{
+	ObjSpace* space = context->get_space();
+	M_StdIntObject* as_int = M_STDINTOBJECT(self);
+	if (!as_int) throw InterpError(space->TypeError_type(), space->wrap_str("object is not int"));
+
+	int x = as_int->intval;
+	if (x < 0) x = -x;
+
+	return space->wrap_int(x);
+}
+
+M_BaseObject* M_StdIntObject::__neg__(mtpython::vm::ThreadContext* context, M_BaseObject* self)
+{
+	ObjSpace* space = context->get_space();
+	M_StdIntObject* as_int = M_STDINTOBJECT(self);
+	if (!as_int) throw InterpError(space->TypeError_type(), space->wrap_str("object is not int"));
+
+	return space->wrap_int(-(as_int->intval));
 }

@@ -21,6 +21,8 @@ public:
 	static M_BaseObject* __repr__(mtpython::vm::ThreadContext* context, mtpython::objects::M_BaseObject* self);
 	static M_BaseObject* __bool__(mtpython::vm::ThreadContext* context, mtpython::objects::M_BaseObject* self);
 	static M_BaseObject* __add__(mtpython::vm::ThreadContext* context, mtpython::objects::M_BaseObject* self, mtpython::objects::M_BaseObject* other);
+	static M_BaseObject* __sub__(mtpython::vm::ThreadContext* context, mtpython::objects::M_BaseObject* self, mtpython::objects::M_BaseObject* other);
+	static M_BaseObject* __mul__(mtpython::vm::ThreadContext* context, mtpython::objects::M_BaseObject* self, mtpython::objects::M_BaseObject* other);
 
 	static M_BaseObject* __eq__(mtpython::vm::ThreadContext* context, mtpython::objects::M_BaseObject* self, mtpython::objects::M_BaseObject* other);
 	static M_BaseObject* __ne__(mtpython::vm::ThreadContext* context, mtpython::objects::M_BaseObject* self, mtpython::objects::M_BaseObject* other);
@@ -28,6 +30,9 @@ public:
 	static M_BaseObject* __le__(mtpython::vm::ThreadContext* context, mtpython::objects::M_BaseObject* self, mtpython::objects::M_BaseObject* other);
 	static M_BaseObject* __gt__(mtpython::vm::ThreadContext* context, mtpython::objects::M_BaseObject* self, mtpython::objects::M_BaseObject* other);
 	static M_BaseObject* __ge__(mtpython::vm::ThreadContext* context, mtpython::objects::M_BaseObject* self, mtpython::objects::M_BaseObject* other);
+
+	static M_BaseObject* __abs__(mtpython::vm::ThreadContext* context, mtpython::objects::M_BaseObject* self);
+	static M_BaseObject* __neg__(mtpython::vm::ThreadContext* context, mtpython::objects::M_BaseObject* self);
 
 	static interpreter::Typedef* _int_typedef();
 	virtual interpreter::Typedef* get_typedef();

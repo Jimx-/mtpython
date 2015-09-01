@@ -133,6 +133,8 @@ protected:
 	void pop_top(int arg, int next_pc);
 	void load_const(int arg, int next_pc);
 	void binary_add(int arg, int next_pc);
+	void binary_sub(int arg, int next_pc);
+	void binary_mul(int arg, int next_pc);
 	void load_fast(int arg, int next_pc);
 	void store_fast(int arg, int next_pc);
 	void load_global(int arg, int next_pc);
@@ -152,6 +154,10 @@ protected:
 	int for_iter(int arg, int next_pc);
 	void _pop_block(int arg, int next_pc);
 	int break_loop(int arg, int next_pc);
+	void unary_positive(int arg, int next_pc);
+	void unary_negative(int arg, int next_pc);
+	void unary_not(int arg, int next_pc);
+	void unary_invert(int arg, int next_pc);
 
 	void call_function_common(int arg, mtpython::objects::M_BaseObject* star=nullptr, mtpython::objects::M_BaseObject* starstar=nullptr);
 public:

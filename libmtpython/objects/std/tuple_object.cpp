@@ -11,6 +11,7 @@ using namespace mtpython::interpreter;
 
 static mtpython::interpreter::Typedef tuple_typedef("tuple", {
 	{ "__iter__", new InterpFunctionWrapper("__iter__", M_StdTupleObject::__iter__) },
+	{ "__len__", new InterpFunctionWrapper("__len__", M_StdTupleObject::__len__) },
 });
 
 mtpython::interpreter::Typedef* M_StdTupleObject::_tuple_typedef()
@@ -30,4 +31,13 @@ M_BaseObject* M_StdTupleObject::__iter__(mtpython::vm::ThreadContext* context, M
 	if (!as_tuple) throw InterpError(space->TypeError_type(), space->wrap_str("object is not tuple"));
 
 	return new M_StdTupleIterObject(as_tuple->items);
+}
+
+M_BaseObject* M_StdTupleObject::__len__(mtpython::vm::ThreadContext* context, M_BaseObject* self)
+{
+	ObjSpace* space = context->get_space();
+	M_StdTupleObject* as_tuple = M_STDTUPLEOBJECT(self);
+	if (!as_tuple) throw InterpError(space->TypeError_type(), space->wrap_str("object is not tuple"));
+
+	return space->wrap_int(as_tuple->items.size());
 }

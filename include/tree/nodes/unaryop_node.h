@@ -23,6 +23,14 @@ public:
 	void set_op(const mtpython::parse::UnaryOper op) { this->op = op; } 
 	virtual NodeType get_tag() { return NT_UNARY; }
 
+	virtual void print(const int padding) {
+		std::string blank(padding, ' ');
+		std::cout << blank << line << ": UnaryOp:" << std::endl;
+		std::cout << blank << "  " << line << ": Operator: " << unaryop2str(op) << std::endl;
+		std::cout << blank << "  " << line << ": Operand: "<< std::endl;
+		operand->print(padding + 4);
+	}
+
 	virtual void visit(ASTVisitor* visitor) { visitor->visit_unaryop(this); }
 };
 

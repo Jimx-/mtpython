@@ -22,8 +22,7 @@ namespace mtpython {
 		} Token;
 
 		typedef enum {
-			OP_POS, OP_NEG, OP_PLUSPLUS, OP_MINUSMINUS,
-			OP_NOT, OP_BITNOT,
+			OP_POS, OP_NEG, OP_NOT, OP_BITNOT,
 			INVALID_UNOP
 		} UnaryOper;
 
@@ -45,6 +44,7 @@ namespace mtpython {
 		UnaryOper tok2unop(Token tok);
 		BinaryOper tok2binop(Token tok);
 		std::string binop2str(BinaryOper op);
+		std::string unaryop2str(UnaryOper op);
 		std::string cmpop2str(CmpOper op);
 		CmpOper tok2cmpop(Token tok);
 	}

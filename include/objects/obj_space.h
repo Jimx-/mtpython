@@ -100,33 +100,43 @@ public:
 	virtual std::string unwrap_str(M_BaseObject* obj) { return obj->to_string(this); }
 	virtual void unwrap_tuple(M_BaseObject* obj, std::vector<M_BaseObject*>& list) { }
 
-	virtual M_BaseObject* get_and_call_function(vm::ThreadContext* context, M_BaseObject* descr, const std::initializer_list<M_BaseObject*> args);
-	virtual M_BaseObject* call_args(vm::ThreadContext* context, M_BaseObject* func, interpreter::Arguments& args);
-	virtual M_BaseObject* call_function(vm::ThreadContext* context, M_BaseObject* func, const std::initializer_list<M_BaseObject*> args);
+	M_BaseObject* get_and_call_function(vm::ThreadContext* context, M_BaseObject* descr, const std::initializer_list<M_BaseObject*> args);
+	M_BaseObject* call_args(vm::ThreadContext* context, M_BaseObject* func, interpreter::Arguments& args);
+	M_BaseObject* call_function(vm::ThreadContext* context, M_BaseObject* func, const std::initializer_list<M_BaseObject*> args);
 
-	virtual M_BaseObject* getitem(M_BaseObject* obj, M_BaseObject* key);
-	virtual M_BaseObject* getitem_str(M_BaseObject* obj, const std::string& key);
-	virtual void setitem(M_BaseObject* obj, M_BaseObject* key, M_BaseObject* value);
-	virtual void setitem_str(M_BaseObject* obj, const std::string& key, M_BaseObject* value);
+	M_BaseObject* getitem(M_BaseObject* obj, M_BaseObject* key);
+	M_BaseObject* getitem_str(M_BaseObject* obj, const std::string& key);
+	void setitem(M_BaseObject* obj, M_BaseObject* key, M_BaseObject* value);
+	void setitem_str(M_BaseObject* obj, const std::string& key, M_BaseObject* value);
 	
-	virtual M_BaseObject* hash(M_BaseObject* obj);
+	M_BaseObject* hash(M_BaseObject* obj);
 
-	virtual bool is_true(M_BaseObject* obj);
-	virtual bool i_is(M_BaseObject* obj1, M_BaseObject* obj2) { return (!obj2) ? false : obj2->i_is(this, obj1); }
-	virtual bool i_eq(M_BaseObject* obj1, M_BaseObject* obj2);
-	virtual std::size_t i_hash(M_BaseObject* obj);
+	bool is_true(M_BaseObject* obj);
+	bool i_is(M_BaseObject* obj1, M_BaseObject* obj2) { return (!obj2) ? false : obj2->i_is(this, obj1); }
+	bool i_eq(M_BaseObject* obj1, M_BaseObject* obj2);
+	std::size_t i_hash(M_BaseObject* obj);
 
-	virtual M_BaseObject* iter(M_BaseObject* obj);
-	virtual M_BaseObject* next(M_BaseObject* obj);
+	M_BaseObject* iter(M_BaseObject* obj);
+	M_BaseObject* next(M_BaseObject* obj);
 
-	virtual M_BaseObject* lt(M_BaseObject* obj1, M_BaseObject* obj2);
-	virtual M_BaseObject* le(M_BaseObject* obj1, M_BaseObject* obj2);
-	virtual M_BaseObject* gt(M_BaseObject* obj1, M_BaseObject* obj2);
-	virtual M_BaseObject* ge(M_BaseObject* obj1, M_BaseObject* obj2);
-	virtual M_BaseObject* ne(M_BaseObject* obj1, M_BaseObject* obj2);
-	virtual M_BaseObject* eq(M_BaseObject* obj1, M_BaseObject* obj2);
+	M_BaseObject* lt(M_BaseObject* obj1, M_BaseObject* obj2);
+	M_BaseObject* le(M_BaseObject* obj1, M_BaseObject* obj2);
+	M_BaseObject* gt(M_BaseObject* obj1, M_BaseObject* obj2);
+	M_BaseObject* ge(M_BaseObject* obj1, M_BaseObject* obj2);
+	M_BaseObject* ne(M_BaseObject* obj1, M_BaseObject* obj2);
+	M_BaseObject* eq(M_BaseObject* obj1, M_BaseObject* obj2);
 
-	virtual M_BaseObject* add(M_BaseObject* obj1, M_BaseObject* obj2);
+	M_BaseObject* abs(M_BaseObject* obj);
+	M_BaseObject* len(M_BaseObject* obj);
+
+	M_BaseObject* pos(M_BaseObject* obj);
+	M_BaseObject* neg(M_BaseObject* obj);
+	M_BaseObject* not_(M_BaseObject* obj);
+	M_BaseObject* invert(M_BaseObject* obj);
+
+	M_BaseObject* add(M_BaseObject* obj1, M_BaseObject* obj2);
+	M_BaseObject* sub(M_BaseObject* obj1, M_BaseObject* obj2);
+	M_BaseObject* mul(M_BaseObject* obj1, M_BaseObject* obj2);
 };
 
 }

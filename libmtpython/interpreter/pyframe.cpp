@@ -136,6 +136,10 @@ int PyFrame::dispatch_bytecode(ThreadContext* context, std::vector<unsigned char
 			pop_top(arg, next_pc);
 		else if (opcode == BINARY_ADD)
 			binary_add(arg, next_pc);
+		else if (opcode == BINARY_SUBTRACT)
+			binary_sub(arg, next_pc);
+		else if (opcode == BINARY_MULTIPLY)
+			binary_mul(arg, next_pc);
 		else if (opcode == LOAD_CONST)
 			load_const(arg, next_pc);
 		else if (opcode == LOAD_FAST)
@@ -174,6 +178,14 @@ int PyFrame::dispatch_bytecode(ThreadContext* context, std::vector<unsigned char
             _pop_block(arg, next_pc);
 		else if (opcode == BREAK_LOOP)
 			next_pc = break_loop(arg, next_pc);
+		else if (opcode == UNARY_POSITIVE)
+			unary_positive(arg, next_pc);
+		else if (opcode == UNARY_NEGATIVE)
+			unary_negative(arg, next_pc);
+		else if (opcode == UNARY_NOT)
+			unary_not(arg, next_pc);
+		else if (opcode == UNARY_INVERT)
+			unary_invert(arg, next_pc);
 	}
 }
 
@@ -223,6 +235,8 @@ M_BaseObject* PyFrame::get_name(int index)
 	}
 
 DEF_BINARY_OPER(add)
+DEF_BINARY_OPER(sub)
+DEF_BINARY_OPER(mul)
 
 void PyFrame::pop_top(int arg, int next_pc)
 {
@@ -455,3 +469,18 @@ int PyFrame::break_loop(int arg, int next_pc)
 {
 	return unwind_stack_jump(&break_unwinder);
 }
+
+#define DEF_UNARY_OPER(opname, name) \
+	void PyFrame::unary_##opname(int arg, int next_pc) \
+	{ \
+		M_BaseObject* obj = pop_value_untrack(); \
+		M_BaseObject* result = space->name(obj); \
+		push_value(result);	\
+		context->gc_track_object(obj);	\
+	}
+
+DEF_UNARY_OPER(positive, pos)
+DEF_UNARY_OPER(negative, neg)
+DEF_UNARY_OPER(invert, invert)
+DEF_UNARY_OPER(not, not_)
+

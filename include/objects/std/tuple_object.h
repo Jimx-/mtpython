@@ -23,6 +23,7 @@ public:
 	virtual interpreter::Typedef* get_typedef();
 
 	static M_BaseObject* __iter__(vm::ThreadContext* context, M_BaseObject* self);
+	static M_BaseObject* __len__(vm::ThreadContext* context, M_BaseObject* self);
 };
 
 }
