@@ -11,7 +11,7 @@ namespace mtpython {
 namespace parse {
 
 typedef enum {
-    F_LOOP,
+    F_LOOP, F_EXCEPT, F_FINALLY, F_FINALLY_END,
 } FrameType;
 
 class BaseCodeGenerator : public CodeBuilder {
@@ -59,6 +59,9 @@ public:
     virtual mtpython::tree::ASTNode* visit_pass(mtpython::tree::PassNode* node);
     /*virtual ASTNode* visit_raise(RaiseNode* node);*/
     virtual mtpython::tree::ASTNode* visit_return(mtpython::tree::ReturnNode* node);
+    virtual mtpython::tree::ASTNode* visit_try(mtpython::tree::TryNode* node);
+    mtpython::tree::ASTNode* visit_try_except(mtpython::tree::TryNode* node);
+    mtpython::tree::ASTNode* visit_try_finally(mtpython::tree::TryNode* node);
     virtual mtpython::tree::ASTNode* visit_tuple(mtpython::tree::TupleNode* node);
     virtual mtpython::tree::ASTNode* visit_unaryop(mtpython::tree::UnaryOpNode* node);
     virtual mtpython::tree::ASTNode* visit_while(mtpython::tree::WhileNode* node);

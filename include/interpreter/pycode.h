@@ -39,6 +39,7 @@ public:
 	std::vector<unsigned char>& get_code() { return co_code; }
 	std::vector<mtpython::objects::M_BaseObject*>& get_consts() { return co_consts; }
 	std::vector<mtpython::objects::M_BaseObject*>& get_names() { return co_names; }
+	std::vector<std::string>& get_varnames() { return co_varnames; }
 	int get_nlocals() { return co_nlocals; }
 	int get_nfreevars() { return co_freevars.size(); }
 	

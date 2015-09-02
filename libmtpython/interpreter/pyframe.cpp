@@ -1,4 +1,5 @@
 #include <exception>
+#include <interpreter/pyframe.h>
 
 #include "interpreter/pyframe.h"
 #include "interpreter/function.h"
@@ -27,6 +28,34 @@ int LoopBlock::handle(PyFrame* frame, StackUnwinder* unwinder)
 	}
 }
 
+int ExceptBlock::handle(PyFrame* frame, StackUnwinder* unwinder)
+{
+	ExceptionUnwinder* as_exc = dynamic_cast<ExceptionUnwinder*>(unwinder);
+	cleanup(frame);
+
+	FrameBlock* finally_block = new FinallyBlock(0, frame->value_stack_level());
+	frame->push_block(finally_block);
+
+	frame->push_value(frame->get_space()->wrap(as_exc));
+	const InterpError& error = as_exc->get_error();
+	frame->push_value(error.get_value());
+	frame->push_value(error.get_type());
+
+	return handler;
+}
+
+int FinallyBlock::handle(PyFrame* frame, StackUnwinder* unwinder)
+{
+	cleanup(frame);
+	ExceptionUnwinder* as_exc = dynamic_cast<ExceptionUnwinder*>(unwinder);
+	if (as_exc) {
+		ObjSpace* space = frame->get_space();
+		frame->push_value(space->wrap(as_exc));
+	}
+
+	return handler;
+}
+
 PyFrame::PyFrame(ThreadContext* context, Code* code, M_BaseObject* globals)
 {
 	this->context = context;
@@ -50,19 +79,17 @@ M_BaseObject* PyFrame::execute_frame()
 {
 	M_BaseObject* retval;
 
-	try {
-		int next_pc = pc + 1;
+	context->enter(this);
 
-		try {
-			retval = dispatch(context, pycode, next_pc);
-		} 
-		catch (...) {
-			throw;
-		}
-	}
-	catch (...) {
+	int next_pc = pc + 1;
+
+	try {
+		retval = dispatch(context, pycode, next_pc);
+	} catch (...) {
 		throw;
 	}
+
+	context->leave(this);
 
 	return retval;
 }
@@ -98,8 +125,15 @@ int PyFrame::execute_bytecode(ThreadContext* context, std::vector<unsigned char>
 
 int PyFrame::handle_interp_error(InterpError& exc)
 {
-	context->gc_track_object(exc.get_value());
-	return 0;
+	FrameBlock* block = unwind_stack(WhyCode::WHY_EXCEPTION);
+	if (!block) {	/* no handler */
+		throw exc;
+	}
+
+	ExceptionUnwinder* unwinder = new ExceptionUnwinder(exc);
+	int next_pc = block->handle(this, unwinder);
+
+	return next_pc;
 }
 
 int PyFrame::dispatch_bytecode(ThreadContext* context, std::vector<unsigned char>& bytecode, int next_pc)
@@ -128,6 +162,21 @@ int PyFrame::dispatch_bytecode(ThreadContext* context, std::vector<unsigned char
 
 		if (opcode == RETURN_VALUE) {
 			throw ReturnException();
+		}
+
+		if (opcode == END_FINALLY) {
+			StackUnwinder* unwinder = dynamic_cast<StackUnwinder*>(end_finally());
+			if (unwinder) {
+				FrameBlock* block = unwind_stack(unwinder->why());
+				if (!block) {
+					push_value(unwinder->unhandle());
+					throw ReturnException();
+				} else {
+					next_pc = block->handle(this, unwinder);
+				}
+			}
+
+			return next_pc;
 		}
 
 		if (opcode == JUMP_ABSOLUTE)
@@ -186,6 +235,14 @@ int PyFrame::dispatch_bytecode(ThreadContext* context, std::vector<unsigned char
 			unary_not(arg, next_pc);
 		else if (opcode == UNARY_INVERT)
 			unary_invert(arg, next_pc);
+		else if (opcode == SETUP_FINALLY)
+			setup_finally(arg, next_pc);
+		else if (opcode == SETUP_EXCEPT)
+			setup_except(arg, next_pc);
+		else if (opcode == POP_EXCEPT)
+			pop_except(arg, next_pc);
+		else if (opcode == DELETE_FAST)
+			delete_fast(arg, next_pc);
 	}
 }
 
@@ -223,6 +280,11 @@ M_BaseObject* PyFrame::get_name(int index)
 	return pycode->get_names()[index];
 }
 
+const std::string& PyFrame::get_localname(int index)
+{
+	return pycode->get_varnames()[index];
+}
+
 #define DEF_BINARY_OPER(name) \
 	void PyFrame::binary_##name(int arg, int next_pc) \
 	{ \
@@ -251,6 +313,9 @@ void PyFrame::load_const(int arg, int next_pc)
 void PyFrame::load_fast(int arg, int next_pc)
 {
 	M_BaseObject* value = local_vars[arg];
+	if (!value) {
+		throw InterpError::format(space, space->UnboundLocalError_type(), "local variable '%s' referenced before assignment", get_localname(arg).c_str());
+	}
 	push_value(value);
 }
 
@@ -269,7 +334,7 @@ void PyFrame::load_global(int arg, int next_pc)
 	M_BaseObject* value = space->getitem(globals, name);
 	if (!value) {
 		value = space->get_builtin()->get_dict_value(space, unwrapped_name);
-		if (!value) throw InterpError::format(space, space->TypeError_type(), "global name %s not found", unwrapped_name.c_str());
+		if (!value) throw InterpError::format(space, space->NameError_type(), "global name %s not found", unwrapped_name.c_str());
 	}
 
 	push_value(value);
@@ -484,3 +549,44 @@ DEF_UNARY_OPER(negative, neg)
 DEF_UNARY_OPER(invert, invert)
 DEF_UNARY_OPER(not, not_)
 
+void PyFrame::setup_finally(int arg, int next_pc)
+{
+	FrameBlock* finally_block = new FinallyBlock(next_pc + arg, value_stack.size());
+	push_block(finally_block);
+}
+
+void PyFrame::setup_except(int arg, int next_pc)
+{
+	FrameBlock* except_block = new ExceptBlock(next_pc + arg, value_stack.size());
+	push_block(except_block);
+}
+
+void PyFrame::pop_except(int arg, int next_pc)
+{
+	FrameBlock* block = pop_block();
+	block->cleanup(this);
+	SAFE_DELETE(block);
+}
+
+void PyFrame::delete_fast(int arg, int next_pc)
+{
+	M_BaseObject* value = local_vars[arg];
+	if (!value) {
+		throw InterpError::format(space, space->UnboundLocalError_type(), "local variable '%s' referenced before assignment", get_localname(arg).c_str());
+	}
+	local_vars[arg] = nullptr;
+}
+
+M_BaseObject* PyFrame::end_finally()
+{
+	M_BaseObject* top = pop_value_untrack();
+	if (space->i_is(top, space->wrap_None())) return nullptr;
+
+	/* stack : [unwinder] 			case of a finally */
+	StackUnwinder* as_unwinder = dynamic_cast<StackUnwinder*>(top);
+	if (as_unwinder) return top;
+
+	/* stack : [ExceptionUnwinder, value, type]		case of an except */
+	pop_value();		/* pop value */
+	return pop_value_untrack();
+}

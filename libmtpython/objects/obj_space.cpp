@@ -47,6 +47,8 @@ void ObjSpace::init_builtin_exceptions()
 #define SET_EXCEPTION_TYPE(name) type_##name = builtin->get_dict_value(this, #name);
 	SET_EXCEPTION_TYPE(TypeError);
     SET_EXCEPTION_TYPE(StopIteration);
+	SET_EXCEPTION_TYPE(NameError);
+	SET_EXCEPTION_TYPE(UnboundLocalError);
 }
 
 BaseCompiler* ObjSpace::get_compiler(ThreadContext* context)

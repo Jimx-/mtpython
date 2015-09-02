@@ -371,6 +371,125 @@ ASTNode* BaseCodeGenerator::visit_string(StringNode* node)
 	return node;
 }
 
+ASTNode* BaseCodeGenerator::visit_try(TryNode* node)
+{
+	if (!(node->get_finalbody()))
+		return visit_try_except(node);
+	else
+		return visit_try_finally(node);
+}
+
+ASTNode* BaseCodeGenerator::visit_try_except(TryNode* node)
+{
+	set_lineno(node->get_line());
+
+	CodeBlock* body = new_block();
+	CodeBlock* exc = new_block();
+	CodeBlock* otherwise = new_block();
+	CodeBlock* end = new_block();
+	CodeBlock* next_exc;
+
+	emit_jump(SETUP_EXCEPT, exc);
+	push_frame_block(F_EXCEPT, body);
+	visit_sequence(node->get_body());
+	emit_op(POP_BLOCK);
+	pop_frame_block();
+	emit_jump(JUMP_FORWARD, otherwise);
+
+	use_next_block(exc);
+	std::vector<ExceptHandlerNode*>& handlers = node->get_handlers();
+	for (auto handler : handlers) {
+		set_lineno(handler->get_line());
+		next_exc = new_block();
+		ASTNode* type = handler->get_type();
+		if (type) {
+			emit_op(DUP_TOP);
+			type->visit(this);
+			emit_op_arg(COMPARE_OP, 10);
+			emit_jump(JUMP_IF_FALSE_OR_POP, next_exc, true);
+		}
+		emit_op(POP_TOP);
+		std::string& name = handler->get_name();
+		if (name != "") {
+			CodeBlock* cleanup_body, *cleanup_end;
+			cleanup_end = new_block();
+			gen_name(name, EC_STORE);
+			emit_op(POP_TOP);
+			/*
+              try:
+                  # body
+              except type as name:
+                  try:
+                      # body
+                  finally:
+                      name = None
+                      del name
+            */
+
+			emit_jump(SETUP_FINALLY, cleanup_end);
+			cleanup_body = new_block();
+			push_frame_block(F_FINALLY, cleanup_body);
+			visit_sequence(handler->get_body());
+			emit_op(POP_BLOCK);
+			emit_op(POP_EXCEPT);
+			pop_frame_block();
+
+			load_const(space->wrap_None());
+			use_next_block(cleanup_end);
+			push_frame_block(F_FINALLY_END, cleanup_end);
+			load_const(space->wrap_None());
+			gen_name(name, EC_STORE);
+			gen_name(name, EC_DEL);
+
+			emit_op(END_FINALLY);
+			pop_frame_block();
+		} else {
+			emit_op(POP_TOP);
+			emit_op(POP_TOP);
+			CodeBlock* cleanupbody = new_block();
+			use_next_block(cleanupbody);
+			push_frame_block(F_FINALLY, cleanupbody);
+			visit_sequence(handler->get_body());
+			emit_op(POP_EXCEPT);
+			pop_frame_block();
+		}
+		emit_jump(JUMP_FORWARD, end);
+		use_next_block(next_exc);
+	}
+
+	emit_op(END_FINALLY);
+	use_next_block(otherwise);
+	visit_sequence(node->get_orelse());
+	use_next_block(end);
+
+	return node;
+}
+
+ASTNode* BaseCodeGenerator::visit_try_finally(TryNode* node)
+{
+	set_lineno(node->get_line());
+	CodeBlock* end = new_block();
+	emit_jump(SETUP_FINALLY, end);
+	CodeBlock* body = new_block();
+	use_next_block(body);
+	push_frame_block(F_FINALLY, body);
+	if (node->get_handlers().size() > 0)
+		visit_try_except(node);
+	else
+		visit_sequence(node->get_body());
+	emit_op(POP_BLOCK);
+	pop_frame_block();
+
+	load_const(space->wrap_None());
+	use_next_block(end);
+	push_frame_block(F_FINALLY_END, end);
+	visit_sequence(node->get_finalbody());
+	emit_op(END_FINALLY);
+	pop_frame_block();
+
+	return node;
+}
+
 ASTNode* BaseCodeGenerator::visit_tuple(TupleNode* node)
 {
 	set_lineno(node->get_line());

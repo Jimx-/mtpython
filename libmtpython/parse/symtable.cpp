@@ -134,3 +134,14 @@ ASTNode* SymtableVisitor::visit_arguments(ArgumentsNode* node)
 
 	return node;
 }
+
+ASTNode* SymtableVisitor::visit_excepthandler(ExceptHandlerNode* node)
+{
+	std::string& name = node->get_name();
+	if (name != "") add_name(name, SYM_ASSIGN);
+
+	visit_sequence(node->get_body());
+	node->get_type()->visit(this);
+
+	return node;
+}

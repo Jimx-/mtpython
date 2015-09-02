@@ -1,12 +1,15 @@
 #ifndef _VM_VM_H_
 #define _VM_VM_H_
 
+#include <stack>
+
 #include "objects/obj_space.h"
 
 namespace mtpython {
 
 namespace interpreter {
 class BaseCompiler;
+class PyFrame;
 }
 
 namespace vm {
@@ -18,12 +21,18 @@ private:
 	PyVM* vm;
 	mtpython::objects::ObjSpace* space;
 	mtpython::interpreter::BaseCompiler* compiler;
+
+	std::stack<mtpython::interpreter::PyFrame*> frame_stack;
 public:
 	ThreadContext(PyVM* vm, mtpython::objects::ObjSpace* space);
 	~ThreadContext();
 
 	mtpython::interpreter::BaseCompiler* get_compiler() { return compiler; }
 	mtpython::objects::ObjSpace* get_space() { return space; }
+
+	void enter(mtpython::interpreter::PyFrame* frame);
+	void leave(mtpython::interpreter::PyFrame* frame);
+	mtpython::interpreter::PyFrame* top_frame() { return frame_stack.top(); }
 
 	void gc_track_object(mtpython::objects::M_BaseObject* obj) { }
 	void gc_untrack_object(mtpython::objects::M_BaseObject* obj) { }

@@ -43,6 +43,7 @@ namespace mtpython {
 			mtpython::tree::ASTNode* pass_stmt();
 			mtpython::tree::ASTNode* return_stmt();
 			mtpython::tree::ASTNode* raise_stmt();
+			mtpython::tree::ASTNode* try_stmt();
 			mtpython::tree::ASTNode* arguments();
 			mtpython::tree::ASTNode* exprlist();
 			mtpython::tree::ASTNode* testlist_comp();
@@ -66,6 +67,7 @@ namespace mtpython {
 			mtpython::tree::ASTNode* name();
 			mtpython::tree::ASTNode* call(mtpython::tree::ASTNode* callable);
 			mtpython::tree::ASTNode* argument();
+			mtpython::tree::ExceptHandlerNode* excepthandler();
 
 			objects::M_BaseObject* parsestrplus();
 			objects::M_BaseObject* parsestr();

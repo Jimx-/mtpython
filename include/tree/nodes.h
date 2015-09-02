@@ -32,5 +32,7 @@
 #include "tree/nodes/string_node.h"
 #include "tree/nodes/expr_node.h"
 #include "tree/nodes/const_node.h"
+#include "tree/nodes/excepthandler_node.h"
+#include "tree/nodes/try_node.h"
 
 #endif /* _NODES_H_ */

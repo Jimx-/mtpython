@@ -156,3 +156,16 @@ NODE_CONSTRUCTOR(ConstNode)
 {
 	value = nullptr;
 }
+
+NODE_CONSTRUCTOR(ExceptHandlerNode)
+{
+	type = nullptr;
+	body = nullptr;
+}
+
+NODE_CONSTRUCTOR(TryNode)
+{
+	body = nullptr;
+	orelse = nullptr;
+	finalbody = nullptr;
+}

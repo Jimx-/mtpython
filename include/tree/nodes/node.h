@@ -10,11 +10,11 @@ namespace tree {
 #define error_tree nullptr
 
 typedef enum {
-	NT_EMPTY, NT_IF, NT_FOR, NT_FOREACH, NT_ASSIGN, NT_AUGASSIGN, NT_WHILE, NT_DOWHILE, NT_TRY,
-	NT_CATCH, NT_FINALLY, NT_CASE, NT_RETURN, NT_BREAK, NT_CONTINUE, NT_EXPRSTMT,
-	NT_WHEN, NT_IDENT, NT_UNARY, NT_BINARY, NT_LITERAL, NT_ARGUMENTS, NT_CALL,
+	NT_EMPTY, NT_IF, NT_FOR, NT_ASSIGN, NT_AUGASSIGN, NT_WHILE, NT_TRY,
+	NT_CATCH, NT_FINALLY, NT_RETURN, NT_BREAK, NT_CONTINUE, NT_IDENT, NT_UNARY, NT_ARGUMENTS, NT_CALL,
     NT_MODULE, NT_FUNCDEF, NT_NUMBER, NT_BINOP, NT_COMPARE, NT_IFEXP, NT_TUPLE, NT_DELETE,
     NT_YIELD, NT_YIELDFROM, NT_RAISE, NT_PASS, NT_KEYWORD, NT_STRING, NT_EXPR, NT_CONST,
+    NT_EXCEPTHANDLER,
 } NodeType;
 
 class ASTVisitor;
@@ -61,6 +61,7 @@ class CompareNode;
 class ConstNode;
 class ContinueNode;
 class DeleteNode;
+class ExceptHandlerNode;
 class ExprNode;
 class ForNode;
 class FunctionDefNode;
@@ -73,6 +74,7 @@ class StringNode;
 class PassNode;
 class RaiseNode;
 class ReturnNode;
+class TryNode;
 class TupleNode;
 class UnaryOpNode;
 class WhileNode;
@@ -100,6 +102,7 @@ public:
     virtual ASTNode* visit_const(ConstNode* node) { return nullptr; }
     virtual ASTNode* visit_continue(ContinueNode* node) { return nullptr; }
     virtual ASTNode* visit_delete(DeleteNode* node) { return nullptr; }
+    virtual ASTNode* visit_excepthandler(ExceptHandlerNode* node) { return nullptr; }
     virtual ASTNode* visit_expr(ExprNode* node) { return nullptr; }
     virtual ASTNode* visit_for(ForNode* node) { return nullptr; }
     virtual ASTNode* visit_functiondef(FunctionDefNode* node) { return nullptr; }
@@ -112,6 +115,7 @@ public:
     virtual ASTNode* visit_pass(PassNode* node) { return nullptr; }
     virtual ASTNode* visit_raise(RaiseNode* node) { return nullptr; }
     virtual ASTNode* visit_return(ReturnNode* node) { return nullptr; }
+    virtual ASTNode* visit_try(TryNode* node) { return nullptr; }
     virtual ASTNode* visit_tuple(TupleNode* node) { return nullptr; }
     virtual ASTNode* visit_unaryop(UnaryOpNode* node) { return nullptr; }
     virtual ASTNode* visit_while(WhileNode* node) { return nullptr; }

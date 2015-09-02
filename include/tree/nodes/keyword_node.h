@@ -7,7 +7,7 @@
 #include <string>
 #include "macros.h"
 
-namespace mtpython { 
+namespace mtpython {
 namespace tree {
 
 class KeywordNode : public ASTNode {

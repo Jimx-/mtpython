@@ -26,8 +26,11 @@ namespace objects {
 
 class ObjSpace {
 private:
+	/* Exception types */
 	M_BaseObject* type_TypeError;
 	M_BaseObject* type_StopIteration;
+	M_BaseObject* type_NameError;
+	M_BaseObject* type_UnboundLocalError;
 
 	void init_builtin_exceptions();
 protected:
@@ -76,6 +79,8 @@ public:
 
 	M_BaseObject* TypeError_type() { return type_TypeError; }
 	M_BaseObject* StopIteration_type() { return type_StopIteration; }
+	M_BaseObject* NameError_type() { return type_NameError; }
+	M_BaseObject* UnboundLocalError_type() { return type_UnboundLocalError; }
 	bool match_exception(M_BaseObject* type1, M_BaseObject* type2) { return (type1 == type2); }
 
 	virtual M_BaseObject* wrap(int x) { return wrap_int(x); }

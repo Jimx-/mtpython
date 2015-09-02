@@ -108,6 +108,8 @@ BuiltinsModule::BuiltinsModule(ObjSpace* space, M_BaseObject* name) : Module(spa
 	ADD_EXCEPTION(Exception);
 	ADD_EXCEPTION(TypeError);
 	ADD_EXCEPTION(StopIteration);
+	ADD_EXCEPTION(NameError);
+	ADD_EXCEPTION(UnboundLocalError);
 
 	add_def("__import__", new InterpFunctionWrapper("__import__", builtin___import__, Signature({"name", "globals", "locals", "from_list", "level"})));
 

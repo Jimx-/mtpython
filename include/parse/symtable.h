@@ -81,8 +81,9 @@ public:
     virtual ASTNode* visit_break(BreakNode* node);
     virtual ASTNode* visit_compare(CompareNode* node);
     virtual ASTNode* visit_continue(ContinueNode* node);
-    virtual ASTNode* visit_delete(DeleteNode* node);
-    virtual ASTNode* visit_for(ForNode* node);*/
+    virtual ASTNode* visit_delete(DeleteNode* node); */
+	virtual mtpython::tree::ASTNode* visit_excepthandler(mtpython::tree::ExceptHandlerNode* node);
+    /*virtual ASTNode* visit_for(ForNode* node);*/
     virtual mtpython::tree::ASTNode* visit_functiondef(mtpython::tree::FunctionDefNode* node);
     /*virtual ASTNode* visit_if(IfNode* node);
     virtual ASTNode* visit_ifexp(IfExpNode* node);*/

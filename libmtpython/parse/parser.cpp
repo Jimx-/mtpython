@@ -73,6 +73,7 @@ void Parser::init_res_words(Scanner& scn)
 	scn.add_res_word("from", TOK_FROM);
 	scn.add_res_word("raise", TOK_RAISE);
 	scn.add_res_word("pass", TOK_PASS);
+	scn.add_res_word("as", TOK_AS);
 }
 
 /*
@@ -200,6 +201,10 @@ ASTNode* Parser::stmt()
 		break;
 	case TOK_PASS:
 		node = pass_stmt();
+		break;
+	case TOK_TRY:
+		compound_stmt = true;
+		node = try_stmt();
 		break;
 	case TOK_IDENT:
 	case TOK_INTLITERAL:
@@ -497,6 +502,8 @@ ASTNode* Parser::shift_expr()
 /* arith_expr: term (('+'|'-') term)* */
 ASTNode* Parser::arith_expr()
 {
+	bool has_right = false;
+
     ASTNode* node = term();
     BinOpNode * p = nullptr;
     while ((cur_tok == TOK_PLUS) || (cur_tok == TOK_MINUS)) { 
@@ -758,11 +765,36 @@ ASTNode* Parser::argument()
 		if (!name_node) diag.error(s.get_line(), s.get_col(), "invalid syntax");
 
 		keyword->set_arg(name_node->get_name());
+		SAFE_DELETE(name_node);
 		match(TOK_EQL);
 		keyword->set_value(test());
 
 		return keyword;
 	}
+
+	return node;
+}
+
+ExceptHandlerNode* Parser::excepthandler()
+{
+	ExceptHandlerNode* node = new ExceptHandlerNode(s.get_line());
+	match(TOK_EXCEPT);
+
+	ASTNode* type = test();
+	node->set_type(type);
+
+	if (cur_tok == TOK_AS) {
+		match(TOK_AS);
+		NameNode* as_name = dynamic_cast<NameNode*>(name());
+		if (!as_name) diag.error(s.get_line(), s.get_col(), "invalid syntax");
+		node->set_name(as_name->get_name());
+		SAFE_DELETE(as_name);
+	}
+
+	match(TOK_COLON);
+	ASTNode* body = suite();
+	if (!body) diag.error(s.get_line(), s.get_col(), "invalid syntax");
+	node->set_body(body);
 
 	return node;
 }
@@ -962,6 +994,48 @@ ASTNode* Parser::raise_stmt()
 			if (!expression) diag.error(s.get_line(), s.get_col(), "invalid syntax");
 			node->set_cause(expression);
 		}
+	}
+
+	return node;
+}
+
+/* try_stmt: ('try' ':' suite
+           ((except_clause ':' suite)+
+	    ['else' ':' suite]
+	    ['finally' ':' suite] |
+	   'finally' ':' suite)) */
+ASTNode* Parser::try_stmt()
+{
+	TryNode* node = new TryNode(s.get_line());
+
+	match(TOK_TRY);
+	match(TOK_COLON);
+
+	ASTNode* body = suite();
+	if (!body) diag.error(s.get_line(), s.get_col(), "invalid syntax");
+	node->set_body(body);
+
+	while (cur_tok == TOK_EXCEPT) {
+		ExceptHandlerNode* except_handler = excepthandler();
+		node->push_handler(except_handler);
+	}
+
+	if (cur_tok == TOK_ELSE) {
+		match(TOK_ELSE);
+		match(TOK_COLON);
+
+		ASTNode* orelse = suite();
+		if (!orelse) diag.error(s.get_line(), s.get_col(), "invalid syntax");
+		node->set_orelse(orelse);
+	}
+
+	if (cur_tok == TOK_FINALLY) {
+		match(TOK_FINALLY);
+		match(TOK_COLON);
+
+		ASTNode* finalbody = suite();
+		if (!finalbody) diag.error(s.get_line(), s.get_col(), "invalid syntax");
+		node->set_finalbody(finalbody);
 	}
 
 	return node;

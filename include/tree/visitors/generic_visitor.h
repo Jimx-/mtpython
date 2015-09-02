@@ -89,6 +89,14 @@ public:
 		return node; 
 	}
 
+	virtual ASTNode* visit_excepthandler(ExceptHandlerNode* node)
+	{
+		node->get_type()->visit(this);
+		visit_sequence(node->get_body());
+
+		return node;
+	}
+
 	virtual ASTNode* visit_expr(ExprNode* node)
 	{
 		node->get_value()->visit(this);
@@ -148,6 +156,20 @@ public:
 
 	virtual ASTNode* visit_raise(RaiseNode* node) {return node; }
 	virtual ASTNode* visit_return(ReturnNode* node) { return node;}
+
+	virtual ASTNode* visit_try(TryNode* node)
+	{
+		visit_sequence(node->get_body());
+		std::vector<ExceptHandlerNode*>& excepthandlers = node->get_handlers();
+		for (unsigned int i = 0; i < excepthandlers.size(); i++) {
+			excepthandlers[i]->visit(this);
+		}
+		visit_sequence(node->get_orelse());
+		visit_sequence(node->get_finalbody());
+
+		return node;
+	}
+
 	virtual ASTNode* visit_tuple(TupleNode* node) {return node; }
 	virtual ASTNode* visit_unaryop(UnaryOpNode* node) { return node;}
 

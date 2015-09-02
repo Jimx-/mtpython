@@ -2,6 +2,7 @@
 
 #include "utils/source_buffer.h"
 #include "interpreter/compiler.h"
+#include "interpreter/pycode.h"
 #include "interpreter/module.h"
 
 using namespace mtpython::vm;
@@ -41,5 +42,16 @@ mtpython::interpreter::Code* PyVM::compile_code(ThreadContext* context, const st
 
 	M_BaseObject* code_obj = mod->call(context, "compile", {space->wrap(source), space->wrap(filename), space->wrap(mode), space->wrap(0), space->wrap(0), space->wrap(0)});
 
-	return dynamic_cast<mtpython::interpreter::Code*>(code_obj);
+	mtpython::interpreter::PyCode* code = dynamic_cast<mtpython::interpreter::PyCode*>(code_obj);
+	return code;
+}
+
+void ThreadContext::enter(mtpython::interpreter::PyFrame* frame)
+{
+	frame_stack.push(frame);
+}
+
+void ThreadContext::leave(mtpython::interpreter::PyFrame* frame)
+{
+	frame_stack.pop();
 }
