@@ -22,8 +22,10 @@ public:
 
 	virtual M_BaseObject* bind_space(ObjSpace* space) { return this; }
 
-	virtual M_BaseObject* get_dict_value(ObjSpace* space, const std::string& attr) { throw NotImplementedException("Abstract"); }
-	
+	virtual M_BaseObject* get_dict(ObjSpace* space) { return nullptr; }
+	virtual M_BaseObject* get_dict_value(ObjSpace* space, const std::string& attr);
+	virtual bool set_dict_value(ObjSpace* space,const std::string&  ttr, M_BaseObject* value);
+
 	virtual bool i_is(ObjSpace* space, M_BaseObject* other) { throw NotImplementedException("Abstract"); }
 
 	virtual int to_int(ObjSpace* space, bool allow_conversion) { throw NotImplementedException("Abstract"); }
@@ -31,7 +33,7 @@ public:
 
 	void lock() {}
 	void unlock() {}
-	
+
 	virtual void dbg_print() { }	/* for debug purpose */
 };
 

@@ -31,6 +31,7 @@ private:
 	M_BaseObject* type_StopIteration;
 	M_BaseObject* type_NameError;
 	M_BaseObject* type_UnboundLocalError;
+	M_BaseObject* type_AttributeError;
 
 	void init_builtin_exceptions();
 protected:
@@ -81,6 +82,7 @@ public:
 	M_BaseObject* StopIteration_type() { return type_StopIteration; }
 	M_BaseObject* NameError_type() { return type_NameError; }
 	M_BaseObject* UnboundLocalError_type() { return type_UnboundLocalError; }
+	M_BaseObject* AttributeError_type() { return type_AttributeError; }
 	bool match_exception(M_BaseObject* type1, M_BaseObject* type2) { return (type1 == type2); }
 
 	virtual M_BaseObject* wrap(int x) { return wrap_int(x); }
@@ -105,14 +107,21 @@ public:
 	virtual std::string unwrap_str(M_BaseObject* obj) { return obj->to_string(this); }
 	virtual void unwrap_tuple(M_BaseObject* obj, std::vector<M_BaseObject*>& list) { }
 
+	M_BaseObject* get(M_BaseObject* descr, M_BaseObject* obj, M_BaseObject* type=nullptr);
+
 	M_BaseObject* get_and_call_function(vm::ThreadContext* context, M_BaseObject* descr, const std::initializer_list<M_BaseObject*> args);
 	M_BaseObject* call_args(vm::ThreadContext* context, M_BaseObject* func, interpreter::Arguments& args);
+	M_BaseObject* call_obj_args(vm::ThreadContext* context, M_BaseObject* func, M_BaseObject* obj, interpreter::Arguments& args);
 	M_BaseObject* call_function(vm::ThreadContext* context, M_BaseObject* func, const std::initializer_list<M_BaseObject*> args);
 
 	M_BaseObject* getitem(M_BaseObject* obj, M_BaseObject* key);
 	M_BaseObject* getitem_str(M_BaseObject* obj, const std::string& key);
 	void setitem(M_BaseObject* obj, M_BaseObject* key, M_BaseObject* value);
 	void setitem_str(M_BaseObject* obj, const std::string& key, M_BaseObject* value);
+
+	M_BaseObject* getattr(M_BaseObject* obj, M_BaseObject* name);
+	M_BaseObject* setattr(M_BaseObject* obj, M_BaseObject* name, M_BaseObject* value);
+	M_BaseObject* delattr(M_BaseObject* obj, M_BaseObject* name);
 	
 	M_BaseObject* hash(M_BaseObject* obj);
 

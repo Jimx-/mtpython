@@ -599,10 +599,23 @@ ASTNode* Parser::trailer(ASTNode* left)
 {
 	ASTNode* node = nullptr;
 
-	switch (cur_tok)
-	{
+	switch (cur_tok) {
 	case TOK_LPAREN:
-		return call(left);
+		node = call(left);
+		break;
+	case TOK_DOT:
+	{
+		AttributeNode* attr_node = new AttributeNode(s.get_line());
+		attr_node->set_value(left);
+		match(TOK_DOT);
+		NameNode* as_name = dynamic_cast<NameNode*>(name());
+		if (!as_name) diag.error(s.get_line(), s.get_col(), "invalid syntax");
+		attr_node->set_attr(as_name->get_name());
+		SAFE_DELETE(as_name);
+		attr_node->set_context(EC_LOAD);
+		node = attr_node;
+		break;
+	}
 	}
 
 	return node;

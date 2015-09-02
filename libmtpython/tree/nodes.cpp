@@ -169,3 +169,8 @@ NODE_CONSTRUCTOR(TryNode)
 	orelse = nullptr;
 	finalbody = nullptr;
 }
+
+NODE_CONSTRUCTOR(AttributeNode)
+{
+	value = nullptr;
+}

@@ -14,7 +14,7 @@ typedef enum {
 	NT_CATCH, NT_FINALLY, NT_RETURN, NT_BREAK, NT_CONTINUE, NT_IDENT, NT_UNARY, NT_ARGUMENTS, NT_CALL,
     NT_MODULE, NT_FUNCDEF, NT_NUMBER, NT_BINOP, NT_COMPARE, NT_IFEXP, NT_TUPLE, NT_DELETE,
     NT_YIELD, NT_YIELDFROM, NT_RAISE, NT_PASS, NT_KEYWORD, NT_STRING, NT_EXPR, NT_CONST,
-    NT_EXCEPTHANDLER,
+    NT_EXCEPTHANDLER, NT_ATTRIBUTE,
 } NodeType;
 
 class ASTVisitor;
@@ -32,7 +32,7 @@ public:
     int get_line() { return line; }
     ASTNode * get_sibling() { return this->sibling; }
     void set_sibling(ASTNode * sbl) { this->sibling = sbl; }
-    virtual void set_context(ExprContext cxt) { }
+    virtual void set_context(ExprContext ctx) { }
     virtual NodeType get_tag() { return NT_EMPTY; }
     virtual void print(const int padding) { }
 
@@ -51,6 +51,7 @@ public:
 };
 
 class ModuleNode;
+class AttributeNode;
 class ArgumentsNode;
 class AssignNode;
 class AugAssignNode;
@@ -92,6 +93,7 @@ public:
     }
 
     virtual ASTNode* visit_module(ModuleNode* node) { return nullptr; }
+    virtual ASTNode* visit_attribute(AttributeNode* node) { return nullptr; }
     virtual ASTNode* visit_arguments(ArgumentsNode* node) { return nullptr; }
     virtual ASTNode* visit_assign(AssignNode* node) { return nullptr; }
     virtual ASTNode* visit_augassign(AugAssignNode* node) { return nullptr; }

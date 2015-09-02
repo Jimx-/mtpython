@@ -49,6 +49,7 @@ void ObjSpace::init_builtin_exceptions()
     SET_EXCEPTION_TYPE(StopIteration);
 	SET_EXCEPTION_TYPE(NameError);
 	SET_EXCEPTION_TYPE(UnboundLocalError);
+	SET_EXCEPTION_TYPE(AttributeError);
 }
 
 BaseCompiler* ObjSpace::get_compiler(ThreadContext* context)
@@ -196,7 +197,31 @@ M_BaseObject* ObjSpace::call_args(ThreadContext* context, M_BaseObject* func, Ar
 		return as_func->call_args(context, args);
 	}
 
+	Method* as_method = dynamic_cast<Method*>(func);
+	if (as_method) {
+		return as_method->call_args(context, args);
+	}
+
 	return nullptr;
+}
+
+M_BaseObject* ObjSpace::call_obj_args(ThreadContext* context, M_BaseObject* func, M_BaseObject* obj, Arguments& args)
+{
+	Function* as_func = dynamic_cast<Function*>(func);
+	if (as_func) {
+		return as_func->call_obj_args(context, obj, args);
+	}
+
+	return nullptr;
+}
+
+M_BaseObject* ObjSpace::get(M_BaseObject* descr, M_BaseObject* obj, M_BaseObject* type)
+{
+	M_BaseObject* getter = lookup(descr, "__get__");
+	if (!getter) return descr;
+
+	if (!type) type = this->type(obj);
+	return get_and_call_function(current_thread(), getter, {descr, obj, type});
 }
 
 M_BaseObject* ObjSpace::get_and_call_function(ThreadContext* context, M_BaseObject* descr, const std::initializer_list<M_BaseObject*> args)
@@ -247,6 +272,35 @@ void ObjSpace::setitem(M_BaseObject* obj, M_BaseObject* key, M_BaseObject* value
 	if (!descr) throw InterpError(TypeError_type(), wrap_str("object item assignment not supported"));
 
 	get_and_call_function(current_thread(), descr, {obj, key, value});
+}
+
+M_BaseObject* ObjSpace::getattr(M_BaseObject* obj, M_BaseObject* name)
+{
+	M_BaseObject* descr = lookup(obj, "__getattribute__");
+	try {
+		if (!descr) throw InterpError(AttributeError_type(), wrap_None());
+		return get_and_call_function(current_thread(), descr, {obj, name});
+	} catch (InterpError& e) {
+		if (!e.match(this, AttributeError_type())) throw e;
+		/* TODO: delete e.value */
+		descr = lookup(obj, "__getattr__");
+		if (!descr) throw e;
+	}
+	return get_and_call_function(current_thread(), descr, {obj, name});
+}
+
+M_BaseObject* ObjSpace::setattr(M_BaseObject* obj, M_BaseObject* name, M_BaseObject* value)
+{
+	M_BaseObject* descr = lookup(obj, "__setattr__");
+	if (!descr) throw InterpError(TypeError_type(), wrap_str("object is readonly"));
+	return get_and_call_function(current_thread(), descr, {obj, name});
+}
+
+M_BaseObject* ObjSpace::delattr(M_BaseObject* obj, M_BaseObject* name)
+{
+	M_BaseObject* descr = lookup(obj, "__delattr__");
+	if (!descr) throw InterpError(TypeError_type(), wrap_str("object does not support attribute removal"));
+	return get_and_call_function(current_thread(), descr, {obj, name});
 }
 
 M_BaseObject* ObjSpace::abs(M_BaseObject* obj)

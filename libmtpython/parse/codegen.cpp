@@ -46,6 +46,33 @@ unsigned char BaseCodeGenerator::_unaryop(UnaryOper op)
 	return NOP;
 }
 
+ASTNode* BaseCodeGenerator::visit_attribute(AttributeNode* node)
+{
+	set_lineno(node->get_line());
+	ExprContext ctx = node->get_context();
+
+	if (ctx != EC_AUGSTORE) node->get_value()->visit(this);
+
+	unsigned char op = NOP;
+	if (ctx == EC_LOAD) {
+		op = LOAD_ATTR;
+	} else if (ctx == EC_STORE) {
+		op = STORE_ATTR;
+	} else if (ctx == EC_DEL) {
+		op = DELETE_ATTR;
+	} else if (ctx == EC_AUGLOAD) {
+		emit_op(DUP_TOP);
+		op = LOAD_ATTR;
+	} else if (ctx == EC_AUGSTORE) {
+		emit_op(ROT_TWO);
+		op = STORE_ATTR;
+	}
+
+	emit_op_arg(op, add_name(names, node->get_attr()));
+
+	return node;
+}
+
 ASTNode* BaseCodeGenerator::visit_assign(AssignNode* node)
 {
 	set_lineno(node->get_line());

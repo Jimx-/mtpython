@@ -181,6 +181,10 @@ protected:
     void setup_finally(int arg, int next_pc);
     void pop_except(int arg, int next_pc);
     void delete_fast(int arg, int next_pc);
+    void load_attr(int arg, int next_pc);
+    void store_attr(int arg, int next_pc);
+    void delete_attr(int arg, int next_pc);
+
     objects::M_BaseObject* end_finally();
 
     void call_function_common(int arg, mtpython::objects::M_BaseObject* star=nullptr, mtpython::objects::M_BaseObject* starstar=nullptr);

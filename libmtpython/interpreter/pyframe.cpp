@@ -117,8 +117,7 @@ int PyFrame::execute_bytecode(ThreadContext* context, std::vector<unsigned char>
 {
 	try {
 		next_pc = dispatch_bytecode(context, bytecode, next_pc);
-	}
-	catch (InterpError& e) {
+	} catch (InterpError& e) {
 		next_pc = handle_interp_error(e);
 	}
 
@@ -245,6 +244,12 @@ int PyFrame::dispatch_bytecode(ThreadContext* context, std::vector<unsigned char
 			pop_except(arg, next_pc);
 		else if (opcode == DELETE_FAST)
 			delete_fast(arg, next_pc);
+		else if (opcode == LOAD_ATTR)
+			load_attr(arg, next_pc);
+		else if (opcode == STORE_ATTR)
+			store_attr(arg, next_pc);
+		else if (opcode == DELETE_ATTR)
+			delete_attr(arg, next_pc);
 	}
 }
 
@@ -591,4 +596,30 @@ M_BaseObject* PyFrame::end_finally()
 	/* stack : [ExceptionUnwinder, value, type]		case of an except */
 	pop_value();		/* pop value */
 	return pop_value_untrack();
+}
+
+void PyFrame::load_attr(int arg, int next_pc)
+{
+	M_BaseObject* obj = pop_value_untrack();
+	M_BaseObject* attr = get_name(arg);
+	M_BaseObject* value = space->getattr(obj, attr);
+	push_value(value);
+	context->gc_track_object(obj);
+}
+void PyFrame::store_attr(int arg, int next_pc)
+{
+	M_BaseObject* obj = pop_value_untrack();
+	M_BaseObject* attr = get_name(arg);
+	M_BaseObject* value = pop_value_untrack();
+	space->setattr(obj, attr, value);
+	context->gc_track_object(obj);
+	context->gc_track_object(value);
+}
+
+void PyFrame::delete_attr(int arg, int next_pc)
+{
+	M_BaseObject* obj = pop_value_untrack();
+	M_BaseObject* attr = get_name(arg);
+	space->delattr(obj, attr);
+	context->gc_track_object(obj);
 }

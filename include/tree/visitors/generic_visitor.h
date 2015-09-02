@@ -16,6 +16,11 @@ public:
 		return node;
 	}
 
+	virtual ASTNode* visit_attribute(AttributeNode* node)
+	{
+		node->get_value()->visit(this);
+	}
+
 	virtual ASTNode* visit_arguments(ArgumentsNode* node) 
 	{
 		std::vector<ASTNode*>& args = node->get_args();

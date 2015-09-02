@@ -19,6 +19,7 @@ private:
 	objects::M_BaseObject* func_globals;
 public:
 	Function(objects::ObjSpace* space, Code* code, objects::M_BaseObject* globals=nullptr);
+	virtual Typedef* get_typedef();
 
 	Code* get_code() { return code; }
 
@@ -27,6 +28,20 @@ public:
 
 	objects::M_BaseObject* call_args(vm::ThreadContext* context, Arguments& args);
 	objects::M_BaseObject* call_obj_args(vm::ThreadContext* context, objects::M_BaseObject* obj, Arguments& args);
+
+	static objects::M_BaseObject* __get__(vm::ThreadContext* context, objects::M_BaseObject* self, objects::M_BaseObject* obj, objects::M_BaseObject* type);
+};
+
+/* A method is a function bound to an instance */
+class Method : public objects::M_BaseObject {
+private:
+	objects::ObjSpace* space;
+	Function* func;
+	objects::M_BaseObject* instance;
+public:
+	Method(objects::ObjSpace* space, Function* func, objects::M_BaseObject* instance) : space(space), func(func), instance(instance) { }
+
+	objects::M_BaseObject* call_args(vm::ThreadContext* context, Arguments& args);
 };
 
 }

@@ -37,6 +37,7 @@ public:
     void pop_frame_block() { frame_block.pop_back(); }
 
 	/*virtual ASTNode* visit_module(ModuleNode* node); */
+    virtual mtpython::tree::ASTNode* visit_attribute(mtpython::tree::AttributeNode* node);
     //virtual mtpython::tree::ASTNode* visit_arguments(mtpython::tree::ArgumentsNode* node);
     virtual mtpython::tree::ASTNode* visit_assign(mtpython::tree::AssignNode* node);
     /*virtual ASTNode* visit_augassign(AugAssignNode* node);*/
