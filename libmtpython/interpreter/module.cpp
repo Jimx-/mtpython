@@ -36,7 +36,7 @@ M_BaseObject* Module::get(const std::string &name)
 }
 
 M_BaseObject* Module::call(mtpython::vm::ThreadContext* context, const std::string &name,
-						   const std::initializer_list<objects::M_BaseObject*> args)
+						   const std::initializer_list<M_BaseObject*> args)
 {
 	M_BaseObject* func = get(name);
 	return space->call_function(context, func, args);

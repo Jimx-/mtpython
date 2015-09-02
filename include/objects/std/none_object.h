@@ -8,6 +8,8 @@ namespace mtpython {
 namespace objects {
 
 class M_StdNoneObject : public M_BaseObject {
+public:
+	virtual bool i_is(ObjSpace* space, M_BaseObject* other) { return (other == space->wrap_None()); }
 };
 
 }

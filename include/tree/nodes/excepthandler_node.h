@@ -35,8 +35,10 @@ public:
     virtual void print(const int padding) {
         std::string blank(padding, ' ');
         std::cout << blank << line << ": ExceptHandler: " << std::endl;
-        std::cout << blank << "  " << line << ": Type:" << std::endl;
-        type->print(padding + 4);
+		if (type) {
+			std::cout << blank << "  " << line << ": Type:" << std::endl;
+			type->print(padding + 4);
+		}
         std::cout << blank << "  " << line << ": Name: " << name << std::endl;
         std::cout << blank << "  " << line << ": Body:" << std::endl;
         ASTNode* stmt = body;

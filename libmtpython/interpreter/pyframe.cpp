@@ -26,6 +26,8 @@ int LoopBlock::handle(PyFrame* frame, StackUnwinder* unwinder)
 		cleanup(frame);
 		return handler;
 	}
+
+	return handler;
 }
 
 int ExceptBlock::handle(PyFrame* frame, StackUnwinder* unwinder)

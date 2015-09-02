@@ -690,6 +690,8 @@ M_BaseObject* Parser::parsestr()
 			std::string decoded = decode_unicode_utf8(str);
 		}
 	}
+
+	return nullptr;
 }
 
 void Parser::decode_utf8(const std::string& str, std::size_t& start, std::size_t end)
@@ -724,6 +726,8 @@ std::string Parser::decode_unicode_utf8(const std::string& str)
 			decoded += str[i++];
 		}
 	}
+
+	return decoded;
 }
 
 ASTNode* Parser::call(ASTNode* callable)

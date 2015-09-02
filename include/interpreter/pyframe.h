@@ -30,7 +30,7 @@ protected:
     WhyCode why_code;
 public:
     WhyCode why() { return why_code; }
-    objects::M_BaseObject* unhandle() { }
+	objects::M_BaseObject* unhandle() { throw NotImplementedException("Abstract"); }
 };
 
 class ExceptionUnwinder : public StackUnwinder {
@@ -69,7 +69,7 @@ public:
 
 class ExceptBlock : public FrameBlock {
 public:
-    ExceptBlock(int handler, int level) : FrameBlock(handler, level) { mask = -1; };
+    ExceptBlock(int handler, int level) : FrameBlock(handler, level) { mask = WHY_EXCEPTION; };
 
     virtual int handle(PyFrame* frame, StackUnwinder* unwinder);
 };
@@ -81,7 +81,7 @@ public:
 
 class FinallyBlock : public FrameBlock {
 public:
-    FinallyBlock(int handler, int level) : FrameBlock(handler, level) { mask = WHY_EXCEPTION; };
+    FinallyBlock(int handler, int level) : FrameBlock(handler, level) { mask = -1; };
 
     virtual int handle(PyFrame* frame, StackUnwinder* unwinder);
 };
@@ -213,7 +213,7 @@ public:
 
     void drop_values_until(int level)
     {
-        while (value_stack.size() > level) pop_value();
+        while (value_stack.size() > (std::size_t)level) pop_value();
     }
 };
 
