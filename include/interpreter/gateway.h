@@ -17,6 +17,7 @@ namespace interpreter {
 
 /* Wrapper of interpreter level function */
 typedef mtpython::objects::M_BaseObject* (*InterpFunction)(mtpython::vm::ThreadContext* context, const std::vector<mtpython::objects::M_BaseObject*>& args);
+typedef mtpython::objects::M_BaseObject* (*InterpFunction0)(mtpython::vm::ThreadContext* context);
 typedef mtpython::objects::M_BaseObject* (*InterpFunction1)(mtpython::vm::ThreadContext* context, mtpython::objects::M_BaseObject* arg1);
 typedef mtpython::objects::M_BaseObject* (*InterpFunction2)(mtpython::vm::ThreadContext* context, mtpython::objects::M_BaseObject* arg1, mtpython::objects::M_BaseObject* arg2);
 typedef mtpython::objects::M_BaseObject* (*InterpFunction3)(mtpython::vm::ThreadContext* context, mtpython::objects::M_BaseObject* arg1, mtpython::objects::M_BaseObject* arg2, mtpython::objects::M_BaseObject* arg3);
@@ -34,6 +35,21 @@ public:
 	}
 
 	virtual mtpython::objects::M_BaseObject* funcrun_obj(vm::ThreadContext* context, mtpython::objects::M_BaseObject* func, mtpython::objects::M_BaseObject* obj, Arguments& args);
+};
+
+class BuiltinCode0 : public Code {
+private:
+	InterpFunction0 func;
+	Signature sig;
+public:
+	BuiltinCode0(const std::string& name, InterpFunction0 f) : Code(name), sig({}) { func = f; }
+
+	virtual mtpython::objects::M_BaseObject* funcrun(vm::ThreadContext* context, mtpython::objects::M_BaseObject* func, Arguments& args)
+	{
+		return funcrun_obj(context, func, nullptr, args);
+	}
+	virtual mtpython::objects::M_BaseObject* funcrun_obj(vm::ThreadContext* context, mtpython::objects::M_BaseObject* func, mtpython::objects::M_BaseObject* obj, Arguments& args);
+
 };
 
 class BuiltinCode1 : public Code {
@@ -89,6 +105,7 @@ protected:
 	Code* code;
 public:
 	InterpFunctionWrapper(const std::string& name, InterpFunction f, const Signature& sig);
+	InterpFunctionWrapper(const std::string& name, InterpFunction0 f);
 	InterpFunctionWrapper(const std::string& name, InterpFunction1 f);
 	InterpFunctionWrapper(const std::string& name, InterpFunction1 f, const Signature& sig);
 	InterpFunctionWrapper(const std::string& name, InterpFunction2 f);

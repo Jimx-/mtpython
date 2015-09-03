@@ -10,6 +10,7 @@ namespace mtpython {
 namespace interpreter {
 class BaseCompiler;
 class PyFrame;
+class Module;
 }
 
 namespace vm {
@@ -44,8 +45,11 @@ private:
 
 	ThreadContext main_thread;
 
+	mtpython::interpreter::Module* init_main_module(ThreadContext* context);
 	mtpython::interpreter::Code* compile_code(ThreadContext* context, const std::string& source,
 				const std::string& filename, const std::string& mode);
+	void run_eval_string(ThreadContext* context, const std::string &source,
+							   const std::string &filename, bool eval);
 public:
 	PyVM(mtpython::objects::ObjSpace* space);
 

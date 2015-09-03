@@ -1,8 +1,15 @@
 #include "interpreter/module.h"
 #include "interpreter/error.h"
+#include "interpreter/gateway.h"
+#include "interpreter/descriptor.h"
 
 using namespace mtpython::interpreter;
 using namespace mtpython::objects;
+
+static Typedef Module_typedef("module", {
+	{ "__repr__", new InterpFunctionWrapper("__repr__", Module::__repr__) },
+	{ "__dict__", new GetSetDescriptor(Module::__dict__get )},
+});
 
 Module::Module(ObjSpace* space, M_BaseObject* name, M_BaseObject* dict)
 {
@@ -14,6 +21,11 @@ Module::Module(ObjSpace* space, M_BaseObject* name, M_BaseObject* dict)
 	if (name) {
 		space->setitem(this->dict, space->new_interned_str("__name__"), name);
 	}
+}
+
+Typedef* Module::get_typedef()
+{
+	return &Module_typedef;
 }
 
 void Module::install()
@@ -40,4 +52,28 @@ M_BaseObject* Module::call(mtpython::vm::ThreadContext* context, const std::stri
 {
 	M_BaseObject* func = get(name);
 	return space->call_function(context, func, args);
+}
+
+M_BaseObject* Module::__repr__(mtpython::vm::ThreadContext* context, M_BaseObject* self)
+{
+	Module* as_mod = static_cast<Module*>(self);
+	std::string str;
+	ObjSpace* space = context->get_space();
+	M_BaseObject* repr_str = space->repr(as_mod->name);
+	str += "<module " + space->unwrap_str(repr_str);
+	SAFE_DELETE(repr_str);
+
+	if (dynamic_cast<BuiltinModule*>(as_mod)) {
+		str += " (built-in)>";
+	} else {
+
+	}
+
+	return space->wrap_str(str);
+}
+
+M_BaseObject* Module::__dict__get(mtpython::vm::ThreadContext* context, M_BaseObject* self)
+{
+	Module* mod = static_cast<Module*>(self);
+	return mod->dict;
 }

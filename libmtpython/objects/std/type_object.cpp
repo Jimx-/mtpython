@@ -1,17 +1,28 @@
-#include "objects/std/type_object.h"
-#include "objects/std/object_object.h"
-#include "objects/obj_space.h"
-
 #include <list>
 
-using namespace mtpython::objects;
+#include "objects/std/type_object.h"
+#include "objects/std/object_object.h"
+#include "interpreter/gateway.h"
+#include "interpreter/descriptor.h"
 
-static mtpython::interpreter::Typedef type_typedef("type", {});
+
+using namespace mtpython::objects;
+using namespace mtpython::interpreter;
+
+static mtpython::interpreter::Typedef type_typedef("type", {
+	{ "__repr__", new InterpFunctionWrapper("__repr__", M_StdTypeObject::__repr__) },
+	{ "__mro__", new GetSetDescriptor(M_StdTypeObject::__mro__get) },
+});
 
 M_StdTypeObject::M_StdTypeObject(ObjSpace* space, std::string& name, std::vector<M_BaseObject*>& bases, std::unordered_map<std::string, M_BaseObject*>& dict) :
 			space(space), name(name), bases(bases), dict(dict)
 {
 	init_mro();
+}
+
+mtpython::interpreter::Typedef* M_StdTypeObject::get_typedef()
+{
+	return &type_typedef;
 }
 
 mtpython::interpreter::Typedef* M_StdTypeObject::_type_typedef()
@@ -123,4 +134,21 @@ M_BaseObject* StdTypedefCache::build(mtpython::interpreter::Typedef* key)
 	M_StdTypeObject* wrapped_type = new M_StdTypeObject(space, key->get_name(), wrapped_bases, wrapped_dict);
 
 	return wrapped_type;
+}
+
+M_BaseObject* M_StdTypeObject::__repr__(mtpython::vm::ThreadContext* context, M_BaseObject* self)
+{
+	std::string str;
+	str = "<class '";
+	M_StdTypeObject* as_type = static_cast<M_StdTypeObject*>(self);
+	str += as_type->name;
+	str += "'>";
+
+	return context->get_space()->wrap_str(str);
+}
+
+M_BaseObject* M_StdTypeObject::__mro__get(mtpython::vm::ThreadContext* context, M_BaseObject* self)
+{
+	M_StdTypeObject* as_type = static_cast<M_StdTypeObject*>(self);
+	return context->get_space()->new_tuple(as_type->mro);
 }

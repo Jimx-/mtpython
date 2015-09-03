@@ -7,7 +7,7 @@
 namespace mtpython {
 	namespace modules {
 
-		class BuiltinsModule : public mtpython::interpreter::Module {
+		class BuiltinsModule : public mtpython::interpreter::BuiltinModule {
 		public:
 			BuiltinsModule(mtpython::objects::ObjSpace* space, mtpython::objects::M_BaseObject* name);
 		};

@@ -4,6 +4,7 @@
 #include "interpreter/pycode.h"
 #include "interpreter/compiler.h"
 #include "interpreter/error.h"
+#include "interpreter/pyframe.h"
 
 #include <iostream>
 
@@ -47,6 +48,11 @@ static M_BaseObject* builtin_compile(mtpython::vm::ThreadContext* context, const
 	return space->wrap(code);
 }
 
+static M_BaseObject* builtin_globals(mtpython::vm::ThreadContext* context)
+{
+	return context->top_frame()->get_globals();
+}
+
 static M_BaseObject* builtin_len(mtpython::vm::ThreadContext* context, M_BaseObject* obj)
 {
 	ObjSpace* space = context->get_space();
@@ -86,7 +92,7 @@ static M_BaseObject* builtin_print(mtpython::vm::ThreadContext* context, M_BaseO
 	return nullptr;
 }
 
-BuiltinsModule::BuiltinsModule(ObjSpace* space, M_BaseObject* name) : Module(space, name)
+BuiltinsModule::BuiltinsModule(ObjSpace* space, M_BaseObject* name) : BuiltinModule(space, name)
 {
 	/* constants */
 	add_def("None", space->wrap_None());
@@ -117,6 +123,7 @@ BuiltinsModule::BuiltinsModule(ObjSpace* space, M_BaseObject* name) : Module(spa
 
 	add_def("abs", new InterpFunctionWrapper("abs", builtin_abs));
 	add_def("compile", new InterpFunctionWrapper("compile", builtin_compile, Signature({"source", "filename", "mode", "flags", "dont_inherit", "optimize"})));
+	add_def("globals", new InterpFunctionWrapper("globals", builtin_globals));
 	add_def("len", new InterpFunctionWrapper("len", builtin_len));
 	add_def("print", new InterpFunctionWrapper("print", builtin_print, Signature("args", "kwargs")));
 }

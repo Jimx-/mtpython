@@ -33,6 +33,7 @@ public:
 	M_BaseObject* getitem(M_BaseObject* key);
 	void setitem(M_BaseObject* key, M_BaseObject* value);
 
+	static M_BaseObject* __repr__(vm::ThreadContext* context, M_BaseObject* self);
 	static M_BaseObject* __getitem__(mtpython::vm::ThreadContext* context, M_BaseObject* obj, M_BaseObject* key);
 	static M_BaseObject* __setitem__(mtpython::vm::ThreadContext* context, M_BaseObject* obj, M_BaseObject* key, M_BaseObject* value);
 	

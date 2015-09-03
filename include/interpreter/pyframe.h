@@ -205,6 +205,7 @@ public:
     }
 
     objects::ObjSpace* get_space() { return space; };
+    objects::M_BaseObject* get_globals() { return globals; }
 
     objects::M_BaseObject* exec();
     objects::M_BaseObject* execute_frame();

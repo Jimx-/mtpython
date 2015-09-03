@@ -15,6 +15,7 @@ SET(LIBMTPYTHON_SRCLIST
 		objects/std/dict_object.cpp
 		objects/std/int_object.cpp
 		objects/std/iter_object.cpp
+		objects/std/none_object.cpp
 		objects/std/object_object.cpp
 		objects/std/unicode_object.cpp
 		objects/std/tuple_object.cpp
@@ -28,6 +29,7 @@ SET(LIBMTPYTHON_SRCLIST
 		interpreter/function.cpp
 		interpreter/pyframe.cpp
 		interpreter/module.cpp
+		interpreter/descriptor.cpp
 		modules/builtins/bltinmodule.cpp
 		vm/thread_context.cpp
 		vm/vm.cpp)

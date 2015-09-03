@@ -8,11 +8,21 @@
 using namespace mtpython::vm;
 using namespace mtpython::objects;
 using namespace mtpython::parse;
+using namespace mtpython::interpreter;
 
 PyVM::PyVM(ObjSpace* space) : main_thread(this, space)
 {
 	this->space = space;
 	space->set_vm(this);
+}
+
+Module* PyVM::init_main_module(ThreadContext* context)
+{
+	ObjSpace* space = context->get_space();
+	M_BaseObject* main_name = space->wrap_str("__main__");
+
+	Module* module = new Module(space, main_name);
+	return module;
 }
 
 void PyVM::run_file(std::string& filename)
@@ -31,7 +41,27 @@ void PyVM::run_file(std::string& filename)
     file.read(&source[0], source.size());
     file.close();
 
-    compile_code(&main_thread, source, filename, "exec")->exec_code(&main_thread, space->new_dict(), nullptr);
+	run_eval_string(&main_thread, source, filename, false);
+}
+
+void PyVM::run_eval_string(ThreadContext* context, const std::string &source,
+						   const std::string &filename, bool eval)
+{
+	std::string mode;
+	if (eval)
+		mode = "eval";
+	else
+		mode = "exec";
+
+	ObjSpace* space = context->get_space();
+	Module* main_module = init_main_module(context);
+	M_BaseObject* globals = main_module->get_dict();
+
+	space->setitem(globals, space->wrap_str("__builtins__"), space->get_builtin());
+	if (filename != "")
+		space->setitem(globals, space->wrap_str("__file__"), space->wrap_str(filename));
+
+	compile_code(context, source, filename, mode)->exec_code(context, globals, nullptr);
 }
 
 mtpython::interpreter::Code* PyVM::compile_code(ThreadContext* context, const std::string &source,
@@ -55,3 +85,4 @@ void ThreadContext::leave(mtpython::interpreter::PyFrame* frame)
 {
 	frame_stack.pop();
 }
+
