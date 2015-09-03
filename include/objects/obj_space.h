@@ -108,6 +108,8 @@ public:
 	virtual std::string unwrap_str(M_BaseObject* obj) { return obj->to_string(this); }
 	virtual void unwrap_tuple(M_BaseObject* obj, std::vector<M_BaseObject*>& list) { }
 
+	M_BaseObject* id(M_BaseObject* obj) { return obj->unique_id(this); }
+
 	M_BaseObject* get(M_BaseObject* descr, M_BaseObject* obj, M_BaseObject* type=nullptr);
 
 	M_BaseObject* get_and_call_function(vm::ThreadContext* context, M_BaseObject* descr, const std::initializer_list<M_BaseObject*> args);

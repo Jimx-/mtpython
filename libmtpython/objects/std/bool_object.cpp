@@ -1,5 +1,6 @@
 #include <string>
-#include <iostream>
+#include <assert.h>
+
 #include <unordered_map>
 #include "interpreter/typedef.h"
 #include "interpreter/gateway.h"
@@ -11,16 +12,34 @@ using namespace mtpython::interpreter;
 
 static mtpython::interpreter::Typedef bool_typedef("bool", {
 	{ "__bool__", new InterpFunctionWrapper("__bool__", M_StdBoolObject::__bool__) },
+	{ "__repr__", new InterpFunctionWrapper("__repr__", M_StdBoolObject::__repr__) },
+	{ "__str__", new InterpFunctionWrapper("__str__", M_StdBoolObject::__str__) },
 });
 
 M_StdBoolObject::M_StdBoolObject(bool x) : M_StdIntObject(x ? 1 : 0)
 {
 }
 
+M_BaseObject* M_StdBoolObject::__repr__(mtpython::vm::ThreadContext* context, mtpython::objects::M_BaseObject* self)
+{
+	M_StdBoolObject* as_bool = M_STDBOOLOBJECT(self);
+	assert(as_bool);
+
+	return context->get_space()->wrap_str((as_bool->intval == 1) ? "True" : "False");
+}
+
+M_BaseObject* M_StdBoolObject::__str__(mtpython::vm::ThreadContext* context, mtpython::objects::M_BaseObject* self)
+{
+	M_StdBoolObject* as_bool = M_STDBOOLOBJECT(self);
+	assert(as_bool);
+
+	return context->get_space()->wrap_str((as_bool->intval == 1) ? "True" : "False");
+}
+
 bool M_StdBoolObject::i_is(ObjSpace* space, M_BaseObject* other)
 {
 	M_StdBoolObject* as_bool = M_STDBOOLOBJECT(other);
-	if (!as_bool) return false;
+	assert(as_bool);
 
 	return intval == as_bool->intval;
 }

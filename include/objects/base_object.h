@@ -22,6 +22,8 @@ public:
 
 	virtual M_BaseObject* bind_space(ObjSpace* space) { return this; }
 
+	M_BaseObject* unique_id(ObjSpace* space);
+
 	virtual M_BaseObject* get_dict(ObjSpace* space) { return nullptr; }
 	virtual M_BaseObject* get_dict_value(ObjSpace* space, const std::string& attr);
 	virtual bool set_dict_value(ObjSpace* space,const std::string& attr, M_BaseObject* value);

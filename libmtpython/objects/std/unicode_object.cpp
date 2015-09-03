@@ -2,6 +2,8 @@
 #include <iostream>
 #include <unordered_map>
 #include <functional>
+#include <assert.h>
+
 #include "interpreter/typedef.h"
 #include "interpreter/gateway.h"
 #include "objects/std/unicode_object.h"
@@ -11,6 +13,7 @@ using namespace mtpython::interpreter;
 
 static mtpython::interpreter::Typedef str_typedef("str", {
 	{ "__repr__", new InterpFunctionWrapper("__repr__", M_StdUnicodeObject::__repr__) },
+	{ "__str__", new InterpFunctionWrapper("__str__", M_StdUnicodeObject::__str__) },
 	{ "__hash__", new InterpFunctionWrapper("__hash__", M_StdUnicodeObject::__hash__) },
 	{ "__eq__", new InterpFunctionWrapper("__eq__", M_StdUnicodeObject::__eq__) },
 });
@@ -31,6 +34,14 @@ mtpython::interpreter::Typedef* M_StdUnicodeObject::get_typedef()
 }
 
 M_BaseObject* M_StdUnicodeObject::__repr__(mtpython::vm::ThreadContext* context, M_BaseObject* self)
+{
+	M_StdUnicodeObject* as_str = M_STDUNICODEOBJECT(self);
+	assert(as_str);
+
+	return context->get_space()->wrap_str("'" + as_str->value + "'");
+}
+
+M_BaseObject* M_StdUnicodeObject::__str__(mtpython::vm::ThreadContext* context, M_BaseObject* self)
 {
 	return self;
 }

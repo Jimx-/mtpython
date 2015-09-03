@@ -1,3 +1,5 @@
+#include <memory>
+
 #include "objects/base_object.h"
 #include "objects/obj_space.h"
 #include "macros.h"
@@ -7,6 +9,11 @@ using namespace mtpython::objects;
 M_BaseObject* M_BaseObject::get_class(ObjSpace* space)
 {
 	return space->get_typeobject(get_typedef());
+}
+
+M_BaseObject* M_BaseObject::unique_id(ObjSpace* space)
+{
+	return space->wrap_int(reinterpret_cast<unsigned long>(this));
 }
 
 M_BaseObject* M_BaseObject::get_dict_value(ObjSpace* space, const std::string& attr)
@@ -46,6 +53,13 @@ bool M_BaseObject::del_dict_value(ObjSpace* space, const std::string& attr)
 
 M_BaseObject* M_BaseObject::get_repr(ObjSpace* space, const std::string& info)
 {
-	std::string repr_string = "<" + info + ">";
+	M_BaseObject* id = space->id(this);
+	unsigned long id_int = space->unwrap_int(id);
+	/* max id: 0xffffffffffffffff */
+	std::unique_ptr<char[]> buf(new char[20]);
+	snprintf(buf.get(), 20, "0x%lx", id_int);
+	std::string addr(buf.get());
+
+	std::string repr_string = "<" + info + " at " + addr + ">";
 	return space->wrap_str(repr_string);
 }
