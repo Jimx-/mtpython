@@ -10,7 +10,7 @@
 namespace mtpython {
 namespace objects {
 
-class StdTypeObject : public M_BaseObject {
+class M_StdTypeObject : public M_BaseObject {
 private:
 	ObjSpace* space;
 	std::string name;
@@ -20,7 +20,7 @@ private:
 
 	void init_mro();
 public:
-	StdTypeObject(ObjSpace* space, std::string& name, std::vector<M_BaseObject*>& bases, std::unordered_map<std::string, M_BaseObject*>& dict);
+	M_StdTypeObject(ObjSpace* space, std::string& name, std::vector<M_BaseObject*>& bases, std::unordered_map<std::string, M_BaseObject*>& dict);
 
 	static interpreter::Typedef* _type_typedef();
 

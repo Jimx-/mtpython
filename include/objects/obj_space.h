@@ -66,6 +66,7 @@ public:
 
 	virtual M_BaseObject* get_typeobject(interpreter::Typedef* def) { return typedef_cache->get(def); }
 	virtual M_BaseObject* type(M_BaseObject* obj) { throw NotImplementedException("Abstract"); }
+	std::string get_type_name(M_BaseObject* obj);
 
 	virtual M_BaseObject* lookup(M_BaseObject* obj, const std::string& name) { throw NotImplementedException("Abstract"); }
 	virtual M_BaseObject* lookup_type_cls(M_BaseObject* obj, const std::string& attr, M_BaseObject*& cls) { throw NotImplementedException("Abstract"); }
@@ -118,6 +119,7 @@ public:
 	M_BaseObject* getitem_str(M_BaseObject* obj, const std::string& key);
 	void setitem(M_BaseObject* obj, M_BaseObject* key, M_BaseObject* value);
 	void setitem_str(M_BaseObject* obj, const std::string& key, M_BaseObject* value);
+	M_BaseObject* delitem(M_BaseObject* obj, M_BaseObject* key);
 
 	M_BaseObject* getattr(M_BaseObject* obj, M_BaseObject* name);
 	M_BaseObject* setattr(M_BaseObject* obj, M_BaseObject* name, M_BaseObject* value);
@@ -129,6 +131,9 @@ public:
 	bool i_is(M_BaseObject* obj1, M_BaseObject* obj2) { return (!obj2) ? false : obj2->i_is(this, obj1); }
 	bool i_eq(M_BaseObject* obj1, M_BaseObject* obj2);
 	std::size_t i_hash(M_BaseObject* obj);
+
+	M_BaseObject* str(M_BaseObject* obj);
+	M_BaseObject* repr(M_BaseObject* obj);
 
 	M_BaseObject* iter(M_BaseObject* obj);
 	M_BaseObject* next(M_BaseObject* obj);

@@ -24,11 +24,13 @@ public:
 
 	virtual M_BaseObject* get_dict(ObjSpace* space) { return nullptr; }
 	virtual M_BaseObject* get_dict_value(ObjSpace* space, const std::string& attr);
-	virtual bool set_dict_value(ObjSpace* space,const std::string&  ttr, M_BaseObject* value);
+	virtual bool set_dict_value(ObjSpace* space,const std::string& attr, M_BaseObject* value);
+	virtual bool del_dict_value(ObjSpace* space, const std::string& attr);
 
 	virtual bool i_is(ObjSpace* space, M_BaseObject* other) { throw NotImplementedException("Abstract"); }
 
 	virtual int to_int(ObjSpace* space, bool allow_conversion) { throw NotImplementedException("Abstract"); }
+	virtual M_BaseObject* get_repr(ObjSpace* space, const std::string& info);
 	virtual std::string to_string(ObjSpace* space) { throw NotImplementedException("Abstract"); }
 
 	void lock() {}

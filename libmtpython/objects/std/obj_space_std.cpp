@@ -28,7 +28,7 @@ StdObjSpace::StdObjSpace() : ObjSpace()
 	builtin_types["object"] = get_typeobject(M_StdObjectObject::_object_typedef());
 	builtin_types["str"] = get_typeobject(M_StdUnicodeObject::_str_typedef());
 	builtin_types["tuple"] = get_typeobject(M_StdTupleObject::_tuple_typedef());
-	builtin_types["type"] = get_typeobject(StdTypeObject::_type_typedef());
+	builtin_types["type"] = get_typeobject(M_StdTypeObject::_type_typedef());
 
 	make_builtins();
 }
@@ -40,7 +40,7 @@ mtpython::interpreter::PyFrame* StdObjSpace::create_frame(ThreadContext* context
 
 M_BaseObject* StdObjSpace::lookup(M_BaseObject* obj, const std::string& name)
 {
-	StdTypeObject* obj_type = dynamic_cast<StdTypeObject*>(type(obj));
+	M_StdTypeObject* obj_type = dynamic_cast<M_StdTypeObject*>(type(obj));
 	if (!obj_type) return nullptr;
 	
 	return obj_type->lookup(name);
@@ -48,7 +48,7 @@ M_BaseObject* StdObjSpace::lookup(M_BaseObject* obj, const std::string& name)
 
 M_BaseObject* StdObjSpace::lookup_type_cls(M_BaseObject* obj, const std::string& attr, M_BaseObject*& where)
 {
-	StdTypeObject* type = dynamic_cast<StdTypeObject*>(obj);
+	M_StdTypeObject* type = dynamic_cast<M_StdTypeObject*>(obj);
 	if (!type) return nullptr;
 
 	type->lock();

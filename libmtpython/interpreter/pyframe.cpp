@@ -341,7 +341,7 @@ void PyFrame::load_global(int arg, int next_pc)
 	M_BaseObject* value = space->getitem(globals, name);
 	if (!value) {
 		value = space->get_builtin()->get_dict_value(space, unwrapped_name);
-		if (!value) throw InterpError::format(space, space->NameError_type(), "global name %s not found", unwrapped_name.c_str());
+		if (!value) throw InterpError::format(space, space->NameError_type(), "global name '%s' not found", unwrapped_name.c_str());
 	}
 
 	push_value(value);

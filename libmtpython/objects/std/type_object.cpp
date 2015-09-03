@@ -8,25 +8,25 @@ using namespace mtpython::objects;
 
 static mtpython::interpreter::Typedef type_typedef("type", {});
 
-StdTypeObject::StdTypeObject(ObjSpace* space, std::string& name, std::vector<M_BaseObject*>& bases, std::unordered_map<std::string, M_BaseObject*>& dict) :
+M_StdTypeObject::M_StdTypeObject(ObjSpace* space, std::string& name, std::vector<M_BaseObject*>& bases, std::unordered_map<std::string, M_BaseObject*>& dict) :
 			space(space), name(name), bases(bases), dict(dict)
 {
 	init_mro();
 }
 
-mtpython::interpreter::Typedef* StdTypeObject::_type_typedef()
+mtpython::interpreter::Typedef* M_StdTypeObject::_type_typedef()
 {
 	return &type_typedef;
 }
 
-void StdTypeObject::init_mro()
+void M_StdTypeObject::init_mro()
 {
 	std::list<std::vector<M_BaseObject*>> orderlist;
 	std::vector<M_BaseObject*> _bases;
 	_bases.push_back(this);
 	for (auto base : bases) {
 		_bases.push_back(base);
-		StdTypeObject* typeobj = dynamic_cast<StdTypeObject*>(base);
+		M_StdTypeObject* typeobj = dynamic_cast<M_StdTypeObject*>(base);
 		if (!typeobj) continue;
 
 		orderlist.push_back(typeobj->mro);
@@ -63,7 +63,7 @@ void StdTypeObject::init_mro()
 	}
 }
 
-M_BaseObject* StdTypeObject::get_dict_value(ObjSpace* space, const std::string& attr)
+M_BaseObject* M_StdTypeObject::get_dict_value(ObjSpace* space, const std::string& attr)
 {
 	auto got = dict.find(attr);
 	if (got == dict.end()) return nullptr;
@@ -71,7 +71,7 @@ M_BaseObject* StdTypeObject::get_dict_value(ObjSpace* space, const std::string& 
 	return got->second;
 }
 
-M_BaseObject* StdTypeObject::lookup(const std::string& name)
+M_BaseObject* M_StdTypeObject::lookup(const std::string& name)
 {
 	for (auto base : mro) {
 		M_BaseObject* value = base->get_dict_value(space, name);
@@ -83,7 +83,7 @@ M_BaseObject* StdTypeObject::lookup(const std::string& name)
 	return nullptr;
 }
 
-M_BaseObject* StdTypeObject::lookup_cls(const std::string& attr, M_BaseObject*& cls)
+M_BaseObject* M_StdTypeObject::lookup_cls(const std::string& attr, M_BaseObject*& cls)
 {
 	for (auto base : mro) {
 		M_BaseObject* value = base->get_dict_value(space, attr);
@@ -120,7 +120,7 @@ M_BaseObject* StdTypedefCache::build(mtpython::interpreter::Typedef* key)
 		wrapped_dict[it->first] = space->wrap(it->second);
 	}
 
-	StdTypeObject* wrapped_type = new StdTypeObject(space, key->get_name(), wrapped_bases, wrapped_dict);
+	M_StdTypeObject* wrapped_type = new M_StdTypeObject(space, key->get_name(), wrapped_bases, wrapped_dict);
 
 	return wrapped_type;
 }

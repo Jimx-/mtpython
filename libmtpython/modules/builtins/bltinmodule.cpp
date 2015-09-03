@@ -74,7 +74,8 @@ static M_BaseObject* builtin_print(mtpython::vm::ThreadContext* context, M_BaseO
 
 	for (std::size_t i = 0; i < values.size(); i++) {
 		if (i > 0) std::cout << seq;
-		std::cout << values[i]->to_string(space);
+		M_BaseObject* value = space->str(values[i]);
+		std::cout << value->to_string(space);
 	}
 
 	std::cout << end;

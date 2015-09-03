@@ -12,6 +12,7 @@ using namespace mtpython::interpreter;
 
 static mtpython::interpreter::Typedef int_typedef("int", {
 	{ "__repr__", new InterpFunctionWrapper("__repr__", M_StdIntObject::__repr__) },
+	{ "__str__", new InterpFunctionWrapper("__str__", M_StdIntObject::__repr__) },
 	{ "__bool__", new InterpFunctionWrapper("__bool__", M_StdIntObject::__bool__) },
 	{ "__add__", new InterpFunctionWrapper("__add__", M_StdIntObject::__add__) },
 	{ "__sub__", new InterpFunctionWrapper("__sub__", M_StdIntObject::__sub__) },
@@ -54,10 +55,15 @@ void M_StdIntObject::dbg_print()
 M_BaseObject* M_StdIntObject::__repr__(mtpython::vm::ThreadContext* context, M_BaseObject* self)
 {
 	ObjSpace* space = context->get_space();
-
 	int i = space->unwrap_int(self);
-
 	return space->wrap_str(std::to_string(i)); 
+}
+
+M_BaseObject* M_StdIntObject::__str__(mtpython::vm::ThreadContext* context, M_BaseObject* self)
+{
+	ObjSpace* space = context->get_space();
+	int i = space->unwrap_int(self);
+	return space->wrap_str(std::to_string(i));
 }
 
 M_BaseObject* M_StdIntObject::__bool__(mtpython::vm::ThreadContext* context, M_BaseObject* self)

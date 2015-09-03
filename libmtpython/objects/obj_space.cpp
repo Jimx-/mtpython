@@ -57,6 +57,14 @@ BaseCompiler* ObjSpace::get_compiler(ThreadContext* context)
 	return new PyCompiler(context);
 }
 
+std::string ObjSpace::get_type_name(M_BaseObject* obj)
+{
+	Typedef* def = obj->get_typedef();
+	if (!def) return "";
+
+	return def->get_name();
+}
+
 M_BaseObject* ObjSpace::execute_binop(M_BaseObject* impl, M_BaseObject* left, M_BaseObject* right)
 {
 	Function* func = dynamic_cast<Function*>(impl);
@@ -87,7 +95,7 @@ bool ObjSpace::is_true(M_BaseObject* obj)
 	if (i_is(result, wrap_True())) return true;
 	if (i_is(result, wrap_False())) return false;
 
-	throw InterpError(TypeError_type(), wrap_str("__bool__ should return bool"));
+	throw InterpError::format(this, TypeError_type(), "__bool__ should return bool, return %s", get_type_name(result).c_str());
 
 	return false;
 }
@@ -120,7 +128,7 @@ std::size_t ObjSpace::i_hash(M_BaseObject* obj)
 	M_BaseObject* ObjSpace::name(M_BaseObject* obj) \
 	{	\
 		M_BaseObject* impl = lookup(obj, #special_name);	\
- 		if (!impl) throw InterpError::format(this, TypeError_type(), "unsupported operand type for unary %s", #name);	\
+ 		if (!impl) throw InterpError::format(this, TypeError_type(), "unsupported operand type for unary %s: '%s'", #name, get_type_name(obj).c_str());	\
 		return get_and_call_function(current_thread(), impl, {obj});	\
 	}
 
@@ -155,12 +163,30 @@ M_BaseObject* ObjSpace::not_(M_BaseObject* obj)
 	return new_bool(!is_true(obj));
 }
 
+M_BaseObject* ObjSpace::str(M_BaseObject* obj)
+{
+	M_BaseObject* descr = lookup(obj, "__str__");
+	if (!descr) {
+		throw InterpError::format(this, TypeError_type(), "unsupported operand type for str '%s'", get_type_name(obj).c_str());
+	}
+	return get_and_call_function(current_thread(), descr, {obj});
+}
+
+M_BaseObject* ObjSpace::repr(M_BaseObject* obj)
+{
+	M_BaseObject* descr = lookup(obj, "__repr__");
+	if (!descr) {
+		throw InterpError::format(this, TypeError_type(), "unsupported operand type for repr '%s'", get_type_name(obj).c_str());
+	}
+	return get_and_call_function(current_thread(), descr, {obj});
+}
+
 M_BaseObject* ObjSpace::iter(M_BaseObject* obj)
 {
 	M_BaseObject* descr = lookup(obj, "__iter__");
     if (!descr) {
         descr = lookup(obj, "__getitem__");
-        if (!descr) throw InterpError(TypeError_type(), wrap_str("object is not iterable"));
+        if (!descr) throw InterpError::format(this, TypeError_type(), "'%s' object is not iterable", get_type_name(obj).c_str());
     }
 
     M_BaseObject* iterator = get_and_call_function(current_thread(), descr, {obj});
@@ -174,7 +200,7 @@ M_BaseObject* ObjSpace::next(M_BaseObject* obj)
 {
     M_BaseObject* descr = lookup(obj, "__next__");
     if (!descr) {
-        throw InterpError(TypeError_type(), wrap_str("object is not an iterator"));
+		throw InterpError::format(this, TypeError_type(), "'%s' object is not an iterator", get_type_name(obj).c_str());
     }
     return get_and_call_function(current_thread(), descr, {obj});
 }
@@ -254,7 +280,7 @@ M_BaseObject* ObjSpace::getitem(M_BaseObject* obj, M_BaseObject* key)
 {
 	M_BaseObject* descr = lookup(obj, "__getitem__");
 
-	if (!descr) throw InterpError(TypeError_type(), wrap_str("object is not subscriptable"));
+	if (!descr) throw InterpError::format(this, TypeError_type(), "'%s' object is not subscriptable", get_type_name(obj).c_str());
 
 	return get_and_call_function(current_thread(), descr, {obj, key});
 }
@@ -269,9 +295,18 @@ void ObjSpace::setitem(M_BaseObject* obj, M_BaseObject* key, M_BaseObject* value
 {
 	M_BaseObject* descr = lookup(obj, "__setitem__");
 
-	if (!descr) throw InterpError(TypeError_type(), wrap_str("object item assignment not supported"));
+	if (!descr) throw InterpError::format(this, TypeError_type(), "'%s' object does not support item assignment", get_type_name(obj).c_str());
 
 	get_and_call_function(current_thread(), descr, {obj, key, value});
+}
+
+M_BaseObject* ObjSpace::delitem(M_BaseObject* obj, M_BaseObject* key)
+{
+	M_BaseObject* descr = lookup(obj, "__delitem__");
+
+	if (!descr) throw InterpError::format(this, TypeError_type(), "'%s' object does not support item deletion", get_type_name(obj).c_str());
+
+	return get_and_call_function(current_thread(), descr, {obj, key});
 }
 
 M_BaseObject* ObjSpace::getattr(M_BaseObject* obj, M_BaseObject* name)
@@ -292,14 +327,14 @@ M_BaseObject* ObjSpace::getattr(M_BaseObject* obj, M_BaseObject* name)
 M_BaseObject* ObjSpace::setattr(M_BaseObject* obj, M_BaseObject* name, M_BaseObject* value)
 {
 	M_BaseObject* descr = lookup(obj, "__setattr__");
-	if (!descr) throw InterpError(TypeError_type(), wrap_str("object is readonly"));
+	if (!descr) throw InterpError::format(this, TypeError_type(), "'%s' object is readonly", get_type_name(obj).c_str());
 	return get_and_call_function(current_thread(), descr, {obj, name});
 }
 
 M_BaseObject* ObjSpace::delattr(M_BaseObject* obj, M_BaseObject* name)
 {
 	M_BaseObject* descr = lookup(obj, "__delattr__");
-	if (!descr) throw InterpError(TypeError_type(), wrap_str("object does not support attribute removal"));
+	if (!descr) throw InterpError::format(this, TypeError_type(), "'%s' object does not support attribute removal", get_type_name(obj).c_str());
 	return get_and_call_function(current_thread(), descr, {obj, name});
 }
 
