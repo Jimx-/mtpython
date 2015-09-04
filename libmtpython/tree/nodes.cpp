@@ -174,3 +174,13 @@ NODE_CONSTRUCTOR(AttributeNode)
 {
 	value = nullptr;
 }
+
+NODE_CONSTRUCTOR(AliasNode), name(""), asname("")
+{
+
+}
+
+NODE_CONSTRUCTOR(ImportNode)
+{
+
+}

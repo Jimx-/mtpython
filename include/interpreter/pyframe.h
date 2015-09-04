@@ -92,6 +92,7 @@ protected:
     objects::ObjSpace* space;
     PyCode* pycode;
     mtpython::objects::M_BaseObject* globals;
+    mtpython::objects::M_BaseObject* locals;
 
     std::stack<mtpython::objects::M_BaseObject*> value_stack;
     std::vector<mtpython::objects::M_BaseObject*> local_vars;
@@ -184,6 +185,7 @@ protected:
     void load_attr(int arg, int next_pc);
     void store_attr(int arg, int next_pc);
     void delete_attr(int arg, int next_pc);
+    void import_name(int arg, int next_pc);
 
     objects::M_BaseObject* end_finally();
 

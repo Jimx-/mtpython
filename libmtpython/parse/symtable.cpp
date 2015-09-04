@@ -102,6 +102,21 @@ void SymtableVisitor::add_name(const std::string& id, int flags)
 	if (flags & SYM_GLOB) root->add_name(id, flags);
 }
 
+ASTNode* SymtableVisitor::visit_alias(AliasNode* node)
+{
+	std::string name = node->get_asname();
+	if (name == "") {
+		name = node->get_name();
+		if (name == "*") return node;
+
+		std::size_t dot = name.find('.');
+		if (dot != std::string::npos) name = name.substr(0, dot);
+	}
+
+	add_name(name, SYM_ASSIGN);
+	return node;
+}
+
 ASTNode* SymtableVisitor::visit_functiondef(FunctionDefNode* node)
 {
 	add_name(node->get_name(), SYM_ASSIGN);

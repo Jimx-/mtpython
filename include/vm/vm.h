@@ -37,6 +37,9 @@ public:
 
 	void gc_track_object(mtpython::objects::M_BaseObject* obj) { }
 	void gc_untrack_object(mtpython::objects::M_BaseObject* obj) { }
+
+	void acquire_import_lock() { }
+	void release_import_lock() { }
 };
 
 class PyVM {

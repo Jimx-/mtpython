@@ -2,12 +2,11 @@
 #include "interpreter/compiler.h"
 #include "interpreter/function.h"
 #include "interpreter/error.h"
-#include "objects/obj_space.h"
 
 #include "modules/builtins/bltinmodule.h"
+#include "modules/sys/sysmodule.h"
 
 #include "macros.h"
-#include "exceptions.h"
 
 using namespace mtpython::objects;
 using namespace mtpython::vm;
@@ -32,14 +31,24 @@ ThreadContext* ObjSpace::current_thread()
 
 void ObjSpace::make_builtins()
 {
-	M_BaseObject* builtins_name;
-	builtins_name = wrap("builtins");
+	M_BaseObject* sys_name = wrap_str("sys");
+	mtpython::modules::SysModule* sys_mod = new mtpython::modules::SysModule(this, sys_name);
+	sys_mod->install();
+	sys = sys_mod;
+
+	M_BaseObject* builtins_name = wrap_str("builtins");
 	mtpython::modules::BuiltinsModule* builtins_mod = new mtpython::modules::BuiltinsModule(this, builtins_name);
 	builtins_mod->install();
 	builtin = builtins_mod;
 	setitem(builtins_mod->get_dict(), wrap("__builtins__"), wrap(builtins_mod));
 
 	init_builtin_exceptions();
+}
+
+void ObjSpace::setup_builtin_modules()
+{
+	get_builtin_module("sys");
+	get_builtin_module("builtins");
 }
 
 void ObjSpace::init_builtin_exceptions()
@@ -50,6 +59,24 @@ void ObjSpace::init_builtin_exceptions()
 	SET_EXCEPTION_TYPE(NameError);
 	SET_EXCEPTION_TYPE(UnboundLocalError);
 	SET_EXCEPTION_TYPE(AttributeError);
+	SET_EXCEPTION_TYPE(ImportError);
+	SET_EXCEPTION_TYPE(ValueError);
+	SET_EXCEPTION_TYPE(SystemError);
+}
+
+M_BaseObject* ObjSpace::get_builtin_module(const std::string& name)
+{
+	M_BaseObject* wrapped_name = wrap_str(name);
+	M_BaseObject* sys_modules = sys->get(this, "modules");
+
+	auto got = builtin_modules.find(name);
+	if (got == builtin_modules.end()) {
+		throw InterpError::format(this, SystemError_type(), "try to get non-builtin module %s", name.c_str());
+	}
+
+	setitem(sys_modules, wrapped_name, got->second);
+
+	return got->second;
 }
 
 BaseCompiler* ObjSpace::get_compiler(ThreadContext* context)

@@ -1,8 +1,8 @@
 #include <memory>
 
 #include "objects/base_object.h"
-#include "objects/obj_space.h"
 #include "macros.h"
+#include "interpreter/error.h"
 
 using namespace mtpython::objects;
 
@@ -14,6 +14,16 @@ M_BaseObject* M_BaseObject::get_class(ObjSpace* space)
 M_BaseObject* M_BaseObject::unique_id(ObjSpace* space)
 {
 	return space->wrap_int(reinterpret_cast<unsigned long>(this));
+}
+
+M_BaseObject* M_BaseObject::get(ObjSpace* space, const std::string& attr)
+{
+	M_BaseObject* obj = get_dict_value(space, attr);
+	if (!obj) {
+		throw mtpython::interpreter::InterpError(space->AttributeError_type(), space->wrap_str(attr));
+	}
+
+	return obj;
 }
 
 M_BaseObject* M_BaseObject::get_dict_value(ObjSpace* space, const std::string& attr)
@@ -63,3 +73,4 @@ M_BaseObject* M_BaseObject::get_repr(ObjSpace* space, const std::string& info)
 	std::string repr_string = "<" + info + " at " + addr + ">";
 	return space->wrap_str(repr_string);
 }
+

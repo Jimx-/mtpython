@@ -44,6 +44,8 @@ namespace mtpython {
 			mtpython::tree::ASTNode* return_stmt();
 			mtpython::tree::ASTNode* raise_stmt();
 			mtpython::tree::ASTNode* try_stmt();
+			mtpython::tree::ASTNode* import_stmt();
+			mtpython::tree::AliasNode* dotted_as_name();
 			mtpython::tree::ASTNode* arguments();
 			mtpython::tree::ASTNode* exprlist();
 			mtpython::tree::ASTNode* testlist_comp();

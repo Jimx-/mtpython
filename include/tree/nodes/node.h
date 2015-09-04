@@ -14,7 +14,7 @@ typedef enum {
 	NT_CATCH, NT_FINALLY, NT_RETURN, NT_BREAK, NT_CONTINUE, NT_IDENT, NT_UNARY, NT_ARGUMENTS, NT_CALL,
     NT_MODULE, NT_FUNCDEF, NT_NUMBER, NT_BINOP, NT_COMPARE, NT_IFEXP, NT_TUPLE, NT_DELETE,
     NT_YIELD, NT_YIELDFROM, NT_RAISE, NT_PASS, NT_KEYWORD, NT_STRING, NT_EXPR, NT_CONST,
-    NT_EXCEPTHANDLER, NT_ATTRIBUTE,
+    NT_EXCEPTHANDLER, NT_ATTRIBUTE, NT_ALIAS, NT_IMPORT,
 } NodeType;
 
 class ASTVisitor;
@@ -51,6 +51,7 @@ public:
 };
 
 class ModuleNode;
+class AliasNode;
 class AttributeNode;
 class ArgumentsNode;
 class AssignNode;
@@ -68,6 +69,7 @@ class ForNode;
 class FunctionDefNode;
 class IfNode;
 class IfExpNode;
+class ImportNode;
 class KeywordNode;
 class NameNode;
 class NumberNode;
@@ -93,6 +95,7 @@ public:
     }
 
     virtual ASTNode* visit_module(ModuleNode* node) { return nullptr; }
+    virtual ASTNode* visit_alias(AliasNode* node) { return nullptr; }
     virtual ASTNode* visit_attribute(AttributeNode* node) { return nullptr; }
     virtual ASTNode* visit_arguments(ArgumentsNode* node) { return nullptr; }
     virtual ASTNode* visit_assign(AssignNode* node) { return nullptr; }
@@ -110,6 +113,7 @@ public:
     virtual ASTNode* visit_functiondef(FunctionDefNode* node) { return nullptr; }
     virtual ASTNode* visit_if(IfNode* node) { return nullptr; }
     virtual ASTNode* visit_ifexp(IfExpNode* node) { return nullptr; }
+    virtual ASTNode* visit_import(ImportNode* node) { return nullptr; }
     virtual ASTNode* visit_keyword(KeywordNode* node) { return nullptr; }
     virtual ASTNode* visit_name(NameNode* node) { return nullptr; }
     virtual ASTNode* visit_string(StringNode* node) { return nullptr; }

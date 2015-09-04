@@ -31,6 +31,7 @@ SET(LIBMTPYTHON_SRCLIST
 		interpreter/module.cpp
 		interpreter/descriptor.cpp
 		modules/builtins/bltinmodule.cpp
+		modules/sys/sysmodule.cpp
 		vm/thread_context.cpp
 		vm/vm.cpp)
 

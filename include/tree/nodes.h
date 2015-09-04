@@ -35,5 +35,7 @@
 #include "tree/nodes/excepthandler_node.h"
 #include "tree/nodes/try_node.h"
 #include "tree/nodes/attribute_node.h"
+#include "tree/nodes/alias_node.h"
+#include "tree/nodes/import_node.h"
 
 #endif /* _NODES_H_ */

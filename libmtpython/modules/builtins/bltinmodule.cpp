@@ -12,10 +12,53 @@ using namespace mtpython::modules;
 using namespace mtpython::objects;
 using namespace mtpython::interpreter;
 
-static M_BaseObject* builtin___import__(mtpython::vm::ThreadContext* context, const std::vector<M_BaseObject*>& args)
+/* find the module named mod_name in sys.modules */
+static M_BaseObject* check_sys_modules(ObjSpace* space, const std::string& mod_name)
+{
+	return space->getitem_str(space->get_sys()->get(space, "modules"),mod_name);
+}
+
+/* only look up the module in sys.modules without loading anything */
+static M_BaseObject* lookup_sys_modules(ObjSpace* space, const std::string& mod_name)
+{
+	M_BaseObject* first_mod;
+	if (mod_name.find('.') == std::string::npos) {
+		first_mod = check_sys_modules(space, mod_name);
+	}
+
+	return first_mod;
+}
+
+static M_BaseObject* _absolute_import(mtpython::vm::ThreadContext* context, const std::string& mod_name, int level)
 {
 	return nullptr;
+}
 
+static M_BaseObject* absolute_import(mtpython::vm::ThreadContext* context, const std::string& mod_name, int level)
+{
+	ObjSpace* space = context->get_space();
+	M_BaseObject* mod = nullptr;
+	context->acquire_import_lock();
+
+	mod = lookup_sys_modules(space, mod_name);
+	if (mod && !space->i_is(mod, space->wrap_None())) goto out;
+
+	mod = _absolute_import(context, mod_name, level);
+out:
+	context->release_import_lock();
+	return mod;
+}
+
+static M_BaseObject* builtin___import__(mtpython::vm::ThreadContext* context, const std::vector<M_BaseObject*>& args)
+{
+	ObjSpace* space = context->get_space();
+	std::string mod_name = space->unwrap_str(args[0]);
+	int level = space->unwrap_int(args[4]);
+	M_BaseObject* globals = args[1];
+	M_BaseObject* mod;
+
+	mod = absolute_import(context, mod_name, level);
+	return mod;
 }
 
 static M_BaseObject* builtin_abs(mtpython::vm::ThreadContext* context, M_BaseObject* obj)
@@ -118,7 +161,11 @@ BuiltinsModule::BuiltinsModule(ObjSpace* space, M_BaseObject* name) : BuiltinMod
 	ADD_EXCEPTION(NameError);
 	ADD_EXCEPTION(UnboundLocalError);
 	ADD_EXCEPTION(AttributeError);
+	ADD_EXCEPTION(ImportError);
+	ADD_EXCEPTION(ValueError);
+	ADD_EXCEPTION(SystemError);
 
+	add_def("__doc__", new InterpDocstringWrapper("Built-in functions, exceptions, and other objects.\n\nNoteworthy: None is the `nil' object; Ellipsis represents `...' in slices."));
 	add_def("__import__", new InterpFunctionWrapper("__import__", builtin___import__, Signature({"name", "globals", "locals", "from_list", "level"})));
 
 	add_def("abs", new InterpFunctionWrapper("abs", builtin_abs));

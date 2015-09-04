@@ -336,11 +336,57 @@ ASTNode* BaseCodeGenerator::visit_ifexp(IfExpNode* node)
 	return node;
 }
 
+ASTNode* BaseCodeGenerator::visit_import(ImportNode* node)
+{
+	set_lineno(node->get_line());
+	for (auto alias : node->get_names()) {
+		int level = 0;
+		load_const(space->wrap_int(level));
+		load_const(space->wrap_None());
+		emit_op_arg(IMPORT_NAME, add_name(names, alias->get_name()));
+
+		if (alias->get_asname() == "") {
+			std::string name = alias->get_name();
+			std::size_t dot = name.find('.');
+			if (dot != std::string::npos) {
+				name = name.substr(0, dot);
+			}
+
+			gen_name(name, EC_STORE);
+		} else
+			import_as(alias);
+	}
+}
+
+void BaseCodeGenerator::import_as(AliasNode* node)
+{
+	std::string src_name = node->get_name();
+	std::size_t dot = src_name.find('.');
+
+	if (dot != std::string::npos) {
+		while (true) {
+			std::size_t start = dot + 1;
+			dot = src_name.find('.', start);
+			std::size_t end;
+
+			if (dot != std::string::npos)
+				end = dot;
+			else
+				end = src_name.size();
+			std::string attr = src_name.substr(start, end);
+			emit_op_arg(LOAD_ATTR, add_name(names, attr));
+
+			if (dot == std::string::npos) break;
+		}
+	}
+
+	gen_name(node->get_asname(), EC_STORE);
+}
+
 ASTNode* BaseCodeGenerator::visit_name(NameNode* node)
 {
 	set_lineno(node->get_line());
 	gen_name(node->get_name(), node->get_context());
-
 	return node;
 }
 

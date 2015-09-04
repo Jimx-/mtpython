@@ -37,6 +37,7 @@ public:
     void pop_frame_block() { frame_block.pop_back(); }
 
 	/*virtual ASTNode* visit_module(ModuleNode* node); */
+    //virtual mtpython::tree::ASTNode* visit_alias(mtpython::tree::AliasNode* node);
     virtual mtpython::tree::ASTNode* visit_attribute(mtpython::tree::AttributeNode* node);
     //virtual mtpython::tree::ASTNode* visit_arguments(mtpython::tree::ArgumentsNode* node);
     virtual mtpython::tree::ASTNode* visit_assign(mtpython::tree::AssignNode* node);
@@ -53,6 +54,8 @@ public:
     virtual mtpython::tree::ASTNode* visit_functiondef(mtpython::tree::FunctionDefNode* node);
     virtual mtpython::tree::ASTNode* visit_if(mtpython::tree::IfNode* node);
     virtual mtpython::tree::ASTNode* visit_ifexp(mtpython::tree::IfExpNode* node);
+    virtual mtpython::tree::ASTNode* visit_import(mtpython::tree::ImportNode* node);
+    void import_as(mtpython::tree::AliasNode* node);
     virtual mtpython::tree::ASTNode* visit_keyword(mtpython::tree::KeywordNode* node);
     virtual mtpython::tree::ASTNode* visit_name(mtpython::tree::NameNode* node);
     virtual mtpython::tree::ASTNode* visit_number(mtpython::tree::NumberNode* node);

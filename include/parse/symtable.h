@@ -74,6 +74,7 @@ public:
 	Scope* find_scope(mtpython::tree::ASTNode* node);
 
 	/*virtual ASTNode* visit_module(ModuleNode* node); */
+	virtual mtpython::tree::ASTNode* visit_alias(mtpython::tree::AliasNode* node);
     virtual mtpython::tree::ASTNode* visit_arguments(mtpython::tree::ArgumentsNode* node);
     /*virtual ASTNode* visit_assign(AssignNode* node);
     virtual ASTNode* visit_augassign(AugAssignNode* node);

@@ -31,6 +31,7 @@ StdObjSpace::StdObjSpace() : ObjSpace()
 	builtin_types["type"] = get_typeobject(M_StdTypeObject::_type_typedef());
 
 	make_builtins();
+	setup_builtin_modules();
 }
 
 mtpython::interpreter::PyFrame* StdObjSpace::create_frame(ThreadContext* context, mtpython::interpreter::Code* code, M_BaseObject* globals)

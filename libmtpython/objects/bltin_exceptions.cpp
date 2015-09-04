@@ -11,6 +11,9 @@ static mtpython::interpreter::Typedef TypeError_typedef("TypeError", { &Exceptio
 static mtpython::interpreter::Typedef StopIteration_typedef("StopIteration", { &Exception_typedef }, {});
 static mtpython::interpreter::Typedef NameError_typedef("NameError", { &Exception_typedef }, {});
 static mtpython::interpreter::Typedef AttributeError_typedef("AttributeError", { &Exception_typedef }, {});
+static mtpython::interpreter::Typedef ImportError_typedef("ImportError", { &Exception_typedef }, {});
+static mtpython::interpreter::Typedef ValueError_typedef("ValueError", { &Exception_typedef }, {});
+static mtpython::interpreter::Typedef SystemError_typedef("SystemError", { &Exception_typedef }, {});
 
 static mtpython::interpreter::Typedef UnboundLocalError_typedef("UnboundLocalError", { &NameError_typedef }, {});
 
@@ -22,6 +25,9 @@ static std::unordered_map<std::string, Typedef*> exception_typedefs{
 	{ "NameError", &NameError_typedef },
 	{ "UnboundLocalError", &UnboundLocalError_typedef },
 	{ "AttributeError", &AttributeError_typedef },
+	{ "ImportError", &ImportError_typedef },
+	{ "ValueError", &ValueError_typedef },
+	{ "SystemError", &ValueError_typedef },
 };
 
 M_BaseObject* BaseException::get_bltin_exception_type(ObjSpace* space, const std::string& name)

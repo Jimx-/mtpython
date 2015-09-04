@@ -17,7 +17,7 @@ void Diagnostics::error(int line, int col, const std::string& error_msg)
 	std::cerr << info->get_filename() << ":" << line << ":" << col << ":";
 	std::cerr << "error: " << error_msg << std::endl;
 	std::cerr << "  " << source->get_line(line) << std::endl;
-	std::cerr << "  " << std::string(" ", col - 1) << "^" << std::endl; 
+	std::cerr << "  " << std::string(col - 1, ' ') << "^" << std::endl;
 
 	throw mtpython::SyntaxError(error_msg.c_str());
 }

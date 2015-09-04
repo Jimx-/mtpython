@@ -15,7 +15,7 @@
 namespace mtpython {
 namespace interpreter {
 
-/* Wrapper of interpreter level function */
+/* Wrapper of interpreter-level functions */
 typedef mtpython::objects::M_BaseObject* (*InterpFunction)(mtpython::vm::ThreadContext* context, const std::vector<mtpython::objects::M_BaseObject*>& args);
 typedef mtpython::objects::M_BaseObject* (*InterpFunction0)(mtpython::vm::ThreadContext* context);
 typedef mtpython::objects::M_BaseObject* (*InterpFunction1)(mtpython::vm::ThreadContext* context, mtpython::objects::M_BaseObject* arg1);
@@ -117,6 +117,16 @@ public:
 	virtual M_BaseObject* bind_space(objects::ObjSpace* space) { return space->get_gateway_cache(this); }
 
 	Code* get_code() { return code; }
+};
+
+/* Wrapper of interpreter-level strings */
+class InterpDocstringWrapper : public mtpython::objects::M_BaseObject {
+private:
+	std::string doc;
+public:
+	InterpDocstringWrapper(const std::string& doc) : doc(doc) { }
+
+	virtual M_BaseObject* bind_space(objects::ObjSpace* space) { return space->wrap_str(doc); }
 };
 
 }

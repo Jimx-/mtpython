@@ -68,6 +68,7 @@ PyFrame::PyFrame(ThreadContext* context, Code* code, M_BaseObject* globals)
 	local_vars.resize(nlocals, nullptr);
 
 	this->globals = globals;
+	this->locals = nullptr;
 
 	pc = -1;
 }
@@ -250,6 +251,8 @@ int PyFrame::dispatch_bytecode(ThreadContext* context, std::vector<unsigned char
 			store_attr(arg, next_pc);
 		else if (opcode == DELETE_ATTR)
 			delete_attr(arg, next_pc);
+		else if (opcode == IMPORT_NAME)
+			import_name(arg, next_pc);
 	}
 }
 
@@ -623,3 +626,27 @@ void PyFrame::delete_attr(int arg, int next_pc)
 	space->delattr(obj, attr);
 	context->gc_track_object(obj);
 }
+
+void PyFrame::import_name(int arg, int next_pc)
+{
+	M_BaseObject* mod_name = get_name(arg);
+	M_BaseObject* from_list = pop_value_untrack();
+	M_BaseObject* level = pop_value_untrack();
+
+	M_BaseObject* import_func = space->get_builtin()->get_dict_value(space, "__import__");
+	if (!import_func) {
+		throw InterpError(space->ImportError_type(), space->wrap_str("__import__ not found"));
+	}
+
+	M_BaseObject* wrapped_locals = locals;
+	if (!wrapped_locals) wrapped_locals = space->wrap_None();
+
+	M_BaseObject* wrapped_globals = globals;
+	M_BaseObject* obj = space->call_function(context, import_func, {mod_name, wrapped_globals, wrapped_locals, from_list, level});
+
+	push_value(obj);
+	context->gc_track_object(mod_name);
+	context->gc_track_object(from_list);
+	context->gc_track_object(level);
+}
+

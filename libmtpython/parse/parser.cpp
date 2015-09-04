@@ -74,6 +74,7 @@ void Parser::init_res_words(Scanner& scn)
 	scn.add_res_word("raise", TOK_RAISE);
 	scn.add_res_word("pass", TOK_PASS);
 	scn.add_res_word("as", TOK_AS);
+	scn.add_res_word("import", TOK_IMPORT);
 }
 
 /*
@@ -205,6 +206,9 @@ ASTNode* Parser::stmt()
 	case TOK_TRY:
 		compound_stmt = true;
 		node = try_stmt();
+		break;
+	case TOK_IMPORT:
+		node = import_stmt();
 		break;
 	case TOK_IDENT:
 	case TOK_INTLITERAL:
@@ -1053,6 +1057,42 @@ ASTNode* Parser::try_stmt()
 		ASTNode* finalbody = suite();
 		if (!finalbody) diag.error(s.get_line(), s.get_col(), "invalid syntax");
 		node->set_finalbody(finalbody);
+	}
+
+	return node;
+}
+
+ASTNode* Parser::import_stmt()
+{
+	ImportNode* node = new ImportNode(s.get_line());
+	match(TOK_IMPORT);
+	node->push_name(dotted_as_name());
+
+	while (cur_tok == TOK_COMMA) {
+		match(TOK_COMMA);
+		node->push_name(dotted_as_name());
+	}
+
+	return node;
+}
+
+AliasNode* Parser::dotted_as_name()
+{
+	AliasNode* node = new AliasNode(s.get_line());
+	std::string name = s.get_last_word();
+	match(TOK_IDENT);
+
+	while (cur_tok == TOK_DOT) {
+		match(TOK_DOT);
+		name += "." + s.get_last_word();
+		match(TOK_IDENT);
+	}
+	node->set_name(name);
+
+	if (cur_tok == TOK_AS) {
+		match(TOK_AS);
+		node->set_asname(s.get_last_word());
+		match(TOK_IDENT);
 	}
 
 	return node;

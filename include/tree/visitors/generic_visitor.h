@@ -16,6 +16,11 @@ public:
 		return node;
 	}
 
+	virtual ASTNode* visit_alias(AliasNode* node)
+	{
+		return node;
+	}
+
 	virtual ASTNode* visit_attribute(AttributeNode* node)
 	{
 		node->get_value()->visit(this);
@@ -136,7 +141,17 @@ public:
 	}
 	
 	virtual ASTNode* visit_ifexp(IfExpNode* node) {return node; }
-	
+
+	virtual ASTNode* visit_import(ImportNode* node)
+	{
+		std::vector<AliasNode*>& names = node->get_names();
+		for (unsigned int i = 0; i < names.size(); i++) {
+			names[i]->visit(this);
+		}
+
+		return node;
+	}
+
 	virtual ASTNode* visit_keyword(KeywordNode* node) { return node; }
 
 	virtual ASTNode* visit_name(NameNode* node) 

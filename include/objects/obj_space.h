@@ -32,6 +32,9 @@ private:
 	M_BaseObject* type_NameError;
 	M_BaseObject* type_UnboundLocalError;
 	M_BaseObject* type_AttributeError;
+	M_BaseObject* type_ImportError;
+	M_BaseObject* type_ValueError;
+	M_BaseObject* type_SystemError;
 
 	void init_builtin_exceptions();
 protected:
@@ -44,10 +47,14 @@ protected:
 	std::unordered_map<std::string, M_BaseObject*> interned_str;
 
 	M_BaseObject* builtin;
+	M_BaseObject* sys;
 	std::unordered_map<std::string, M_BaseObject*> builtin_modules;
 
 	vm::ThreadContext* current_thread();
 
+	void make_builtins();
+	void setup_builtin_modules();
+	M_BaseObject* get_builtin_module(const std::string& name);
 	M_BaseObject* execute_binop(M_BaseObject* impl, M_BaseObject* left, M_BaseObject* right);
 public:
 	ObjSpace();
@@ -56,7 +63,7 @@ public:
 	void set_vm(mtpython::vm::PyVM* vm) { this->vm = vm; }
 
 	M_BaseObject* get_builtin() { return builtin; }
-	void make_builtins();
+	M_BaseObject* get_sys() { return sys; }
 	void set_builtin_module(std::string& name, M_BaseObject* mod) { builtin_modules[name] = mod; }
 
 	M_BaseObject* get_gateway_cache(M_BaseObject* key) { return gateway_cache.get(key); }
@@ -84,6 +91,9 @@ public:
 	M_BaseObject* NameError_type() { return type_NameError; }
 	M_BaseObject* UnboundLocalError_type() { return type_UnboundLocalError; }
 	M_BaseObject* AttributeError_type() { return type_AttributeError; }
+	M_BaseObject* ImportError_type() { return type_ImportError; }
+	M_BaseObject* ValueError_type() { return type_ValueError; }
+	M_BaseObject* SystemError_type() { return type_SystemError; }
 	bool match_exception(M_BaseObject* type1, M_BaseObject* type2) { return (type1 == type2); }
 
 	virtual M_BaseObject* wrap(int x) { return wrap_int(x); }
@@ -131,6 +141,7 @@ public:
 
 	bool is_true(M_BaseObject* obj);
 	bool i_is(M_BaseObject* obj1, M_BaseObject* obj2) { return (!obj2) ? false : obj2->i_is(this, obj1); }
+	bool i_isinstance(M_BaseObject* obj, M_BaseObject* cls) { return true; }
 	bool i_eq(M_BaseObject* obj1, M_BaseObject* obj2);
 	std::size_t i_hash(M_BaseObject* obj);
 
