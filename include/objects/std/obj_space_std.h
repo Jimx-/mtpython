@@ -34,6 +34,7 @@ public:
 	virtual M_BaseObject* object_type() { return builtin_types["object"]; }
 	virtual M_BaseObject* str_type() { return builtin_types["str"]; }
 	virtual M_BaseObject* tuple_type() { return builtin_types["tuple"]; }
+	virtual M_BaseObject* list_type() { return builtin_types["list"]; }
 	virtual M_BaseObject* type_type() { return builtin_types["type"]; }
 
 	virtual M_BaseObject* wrap(M_BaseObject* obj) { return obj->bind_space(this); }
@@ -48,6 +49,7 @@ public:
 	virtual M_BaseObject* wrap_False() { return wrapped_False; }
 
 	virtual M_BaseObject* new_tuple(std::vector<M_BaseObject*>& items);
+	virtual M_BaseObject* new_list(std::vector<M_BaseObject*>& items);
 	virtual M_BaseObject* new_dict();
 
 	virtual void unwrap_tuple(M_BaseObject* obj, std::vector<M_BaseObject*>& list);

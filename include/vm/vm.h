@@ -54,10 +54,12 @@ private:
 	void run_eval_string(ThreadContext* context, const std::string &source,
 							   const std::string &filename, bool eval);
 public:
-	PyVM(mtpython::objects::ObjSpace* space);
+	PyVM(mtpython::objects::ObjSpace* space, const std::string& executable);
 
 	/* we have only one thread now */
 	ThreadContext* current_thread() { return &main_thread; }
+
+	void init_bootstrap_path(const std::string& executable);
 
 	void run_file(std::string& filename);
 };

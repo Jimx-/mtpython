@@ -13,7 +13,7 @@ Typedef* GetSetDescriptor::get_typedef()
     return &GetSetDescriptor_typedef;
 }
 
-M_BaseObject* GetSetDescriptor::__get__(mtpython::vm::ThreadContext* context, objects::M_BaseObject* self,  M_BaseObject* obj, M_BaseObject* cls)
+M_BaseObject* GetSetDescriptor::__get__(mtpython::vm::ThreadContext* context, M_BaseObject* self,  M_BaseObject* obj, M_BaseObject* cls)
 {
     ObjSpace* space = context->get_space();
     GetSetDescriptor* descr = static_cast<GetSetDescriptor*>(self);

@@ -1,8 +1,9 @@
 #ifndef _BASE_OBJECT_H_
 #define _BASE_OBJECT_H_
 
-#include "exceptions.h"
+#include <vector>
 #include <string>
+#include "exceptions.h"
 
 namespace mtpython {
 
@@ -35,6 +36,8 @@ public:
 	virtual int to_int(ObjSpace* space, bool allow_conversion) { throw NotImplementedException("Abstract"); }
 	virtual M_BaseObject* get_repr(ObjSpace* space, const std::string& info);
 	virtual std::string to_string(ObjSpace* space) { throw NotImplementedException("Abstract"); }
+
+	virtual void unpack_iterable(ObjSpace* space, std::vector<M_BaseObject*>& list) { throw NotImplementedException("Abstract"); }
 
 	void lock() {}
 	void unlock() {}

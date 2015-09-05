@@ -3,6 +3,7 @@
 #include "objects/std/obj_space_std.h"
 #include "objects/std/type_object.h"
 #include "objects/std/int_object.h"
+#include "objects/std/list_object.h"
 #include "objects/std/bool_object.h"
 #include "objects/std/none_object.h"
 #include "objects/std/unicode_object.h"
@@ -28,6 +29,7 @@ StdObjSpace::StdObjSpace() : ObjSpace()
 	builtin_types["object"] = get_typeobject(M_StdObjectObject::_object_typedef());
 	builtin_types["str"] = get_typeobject(M_StdUnicodeObject::_str_typedef());
 	builtin_types["tuple"] = get_typeobject(M_StdTupleObject::_tuple_typedef());
+	builtin_types["list"] = get_typeobject(M_StdListObject::_list_typedef());
 	builtin_types["type"] = get_typeobject(M_StdTypeObject::_type_typedef());
 
 	make_builtins();
@@ -77,6 +79,11 @@ M_BaseObject* StdObjSpace::wrap_str(const std::string& x)
 M_BaseObject* StdObjSpace::new_tuple(std::vector<M_BaseObject*>& items)
 {
 	return new M_StdTupleObject(items);
+}
+
+M_BaseObject* StdObjSpace::new_list(std::vector<M_BaseObject*>& items)
+{
+	return new M_StdListObject(items);
 }
 
 M_BaseObject* StdObjSpace::new_dict()

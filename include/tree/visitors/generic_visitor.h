@@ -24,6 +24,7 @@ public:
 	virtual ASTNode* visit_attribute(AttributeNode* node)
 	{
 		node->get_value()->visit(this);
+		return node;
 	}
 
 	virtual ASTNode* visit_arguments(ArgumentsNode* node) 

@@ -35,6 +35,7 @@ private:
 	M_BaseObject* type_ImportError;
 	M_BaseObject* type_ValueError;
 	M_BaseObject* type_SystemError;
+	M_BaseObject* type_KeyError;
 
 	void init_builtin_exceptions();
 protected:
@@ -84,6 +85,7 @@ public:
 	virtual M_BaseObject* object_type() { throw NotImplementedException("Abstract"); }
 	virtual M_BaseObject* str_type() { throw NotImplementedException("Abstract"); }
 	virtual M_BaseObject* tuple_type() { throw NotImplementedException("Abstract"); }
+	virtual M_BaseObject* list_type() { throw NotImplementedException("Abstract"); }
 	virtual M_BaseObject* type_type() { throw NotImplementedException("Abstract"); }
 
 	M_BaseObject* TypeError_type() { return type_TypeError; }
@@ -94,6 +96,7 @@ public:
 	M_BaseObject* ImportError_type() { return type_ImportError; }
 	M_BaseObject* ValueError_type() { return type_ValueError; }
 	M_BaseObject* SystemError_type() { return type_SystemError; }
+	M_BaseObject* KeyError_type() { return type_KeyError;  }
 	bool match_exception(M_BaseObject* type1, M_BaseObject* type2) { return (type1 == type2); }
 
 	virtual M_BaseObject* wrap(int x) { return wrap_int(x); }
@@ -112,6 +115,7 @@ public:
 	virtual M_BaseObject* new_bool(bool x) { if (x) return wrap_True(); else return wrap_False(); }
 	virtual M_BaseObject* new_interned_str(const std::string& x);
 	virtual M_BaseObject* new_tuple(std::vector<M_BaseObject*>& items) { throw NotImplementedException("Abstract"); }
+	virtual M_BaseObject* new_list(std::vector<M_BaseObject*>& items) { throw NotImplementedException("Abstract"); }
 	virtual M_BaseObject* new_dict() { throw NotImplementedException("Abstract"); }
 
 	virtual int unwrap_int(M_BaseObject* obj, bool allow_conversion=true) { return obj->to_int(this, allow_conversion); }

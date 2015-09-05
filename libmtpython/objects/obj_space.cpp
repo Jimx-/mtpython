@@ -40,7 +40,7 @@ void ObjSpace::make_builtins()
 	mtpython::modules::BuiltinsModule* builtins_mod = new mtpython::modules::BuiltinsModule(this, builtins_name);
 	builtins_mod->install();
 	builtin = builtins_mod;
-	setitem(builtins_mod->get_dict(), wrap("__builtins__"), wrap(builtins_mod));
+	setitem(builtins_mod->get_dict(this), wrap("__builtins__"), wrap(builtins_mod));
 
 	init_builtin_exceptions();
 }
@@ -62,6 +62,7 @@ void ObjSpace::init_builtin_exceptions()
 	SET_EXCEPTION_TYPE(ImportError);
 	SET_EXCEPTION_TYPE(ValueError);
 	SET_EXCEPTION_TYPE(SystemError);
+	SET_EXCEPTION_TYPE(KeyError);
 }
 
 M_BaseObject* ObjSpace::get_builtin_module(const std::string& name)

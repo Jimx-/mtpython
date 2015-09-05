@@ -1,4 +1,5 @@
 SET(LIBMTPYTHON_SRCLIST
+		file_helper.cpp
 		parse/token.cpp
 		parse/diagnostics.cpp
 		parse/scanner.cpp
@@ -15,6 +16,7 @@ SET(LIBMTPYTHON_SRCLIST
 		objects/std/dict_object.cpp
 		objects/std/int_object.cpp
 		objects/std/iter_object.cpp
+		objects/std/list_object.cpp
 		objects/std/none_object.cpp
 		objects/std/object_object.cpp
 		objects/std/unicode_object.cpp
@@ -32,6 +34,7 @@ SET(LIBMTPYTHON_SRCLIST
 		interpreter/descriptor.cpp
 		modules/builtins/bltinmodule.cpp
 		modules/sys/sysmodule.cpp
+		vm/initpath.cpp
 		vm/thread_context.cpp
 		vm/vm.cpp)
 

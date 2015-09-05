@@ -1,0 +1,1 @@
+#define CPYTHON_VERSION "34"

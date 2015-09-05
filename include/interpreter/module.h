@@ -27,7 +27,7 @@ public:
 
 	Typedef* get_typedef();
 
-	objects::M_BaseObject* get_dict() { return dict; }
+	virtual objects::M_BaseObject* get_dict(objects::ObjSpace* space) { return dict; }
 	objects::M_BaseObject* get(const std::string& name);
 	objects::M_BaseObject* call(vm::ThreadContext* context, const std::string& name, const std::initializer_list<objects::M_BaseObject*> args);
 	virtual objects::M_BaseObject* get_dict_value(objects::ObjSpace* space, const std::string& attr);

@@ -109,6 +109,8 @@ ASTNode* BaseCodeGenerator::visit_break(BreakNode* node)
 	if (!in_loop) throw mtpython::SyntaxError("'break' outside loop");
 
 	emit_op(BREAK_LOOP);
+
+	return node;
 }
 
 ASTNode* BaseCodeGenerator::visit_call(CallNode* node)
@@ -356,6 +358,8 @@ ASTNode* BaseCodeGenerator::visit_import(ImportNode* node)
 		} else
 			import_as(alias);
 	}
+
+	return node;
 }
 
 void BaseCodeGenerator::import_as(AliasNode* node)

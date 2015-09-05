@@ -1,3 +1,6 @@
+#include <fstream>
+#include <iostream>
+
 #include "modules/builtins/bltinmodule.h"
 #include "objects/bltin_exceptions.h"
 #include "interpreter/gateway.h"
@@ -5,17 +8,33 @@
 #include "interpreter/compiler.h"
 #include "interpreter/error.h"
 #include "interpreter/pyframe.h"
-
-#include <iostream>
+#include "interpreter/module.h"
+#include "file_helper.h"
 
 using namespace mtpython::modules;
 using namespace mtpython::objects;
 using namespace mtpython::interpreter;
 
+typedef enum {
+	UNKNOWN_MODTYPE, PY_SOURCE,
+} ModType;
+
+class ModuleSpec {
+private:
+	ModType type;
+	std::string filename;
+	std::string suffix;
+public:
+	ModuleSpec(ModType type, const std::string& filename, const std::string& suffix) : type(type), suffix(suffix), filename(filename) { }
+
+	ModType get_type() { return type;  }
+	std::string& get_filename() { return filename;  }
+};
+
 /* find the module named mod_name in sys.modules */
 static M_BaseObject* check_sys_modules(ObjSpace* space, const std::string& mod_name)
 {
-	return space->getitem_str(space->get_sys()->get(space, "modules"),mod_name);
+	return space->getitem_str(space->get_sys()->get(space, "modules"), mod_name);
 }
 
 /* only look up the module in sys.modules without loading anything */
@@ -29,9 +48,160 @@ static M_BaseObject* lookup_sys_modules(ObjSpace* space, const std::string& mod_
 	return first_mod;
 }
 
-static M_BaseObject* _absolute_import(mtpython::vm::ThreadContext* context, const std::string& mod_name, int level)
+static ModType get_modtype(mtpython::vm::ThreadContext* context, const std::string& filepart,std::string& suffix)
 {
+	std::string py_file = filepart + ".py";
+	if (mtpython::FileHelper::file_exists(py_file)) {
+		suffix.assign(".py");
+		return PY_SOURCE;
+	}
+
+	return UNKNOWN_MODTYPE;
+}
+
+static ModuleSpec* find_module(mtpython::vm::ThreadContext* context, const std::string& modulename, 
+					M_BaseObject* w_modulename, const std::string& part, M_BaseObject* path)
+{
+	ObjSpace* space = context->get_space();
+	if (!path) {	/* use sys.path */
+		path = space->get_sys()->get(space, "path");
+	}
+
+	if (path) {
+		std::vector<M_BaseObject*> path_items;
+		path->unpack_iterable(space, path_items);
+		for (auto wrapped_path : path_items) {
+			std::string dir = space->unwrap_str(wrapped_path) + mtpython::FileHelper::sep;
+			dir += part;
+
+			std::string suffix;
+			ModType mod_type = get_modtype(context, dir, suffix);
+			if (mod_type == PY_SOURCE) {
+				return new ModuleSpec(mod_type, dir + suffix, suffix);
+			}
+		}
+	}
+
 	return nullptr;
+}
+
+static void exec_code_module(mtpython::vm::ThreadContext* context, M_BaseObject* module, Code* code, const std::string& filename, bool set_path=true)
+{
+	ObjSpace* space = context->get_space();
+	M_BaseObject* dict_name = space->wrap_str("__dict__");
+	M_BaseObject* dict = space->getattr(module, dict_name);
+	context->gc_track_object(dict_name);
+
+	if (set_path) {
+		space->setitem(dict, space->wrap_str("__file__"), space->wrap_str(filename));
+	}
+
+	code->exec_code(context, dict, dict);
+}
+
+static M_BaseObject* load_source_module(mtpython::vm::ThreadContext* context, M_BaseObject* w_modulename, M_BaseObject* mod,
+	const std::string& pathname, const std::string& source)
+{
+	Code* code_obj = context->get_compiler()->compile(source, pathname, "exec", 0);
+	exec_code_module(context, mod, code_obj, pathname, false);
+
+	return mod;
+}
+
+static M_BaseObject* load_module(mtpython::vm::ThreadContext* context, M_BaseObject* w_modulename, ModuleSpec* spec)
+{
+	ObjSpace* space = context->get_space();
+	ModType mod_type = spec->get_type();
+	if (mod_type == PY_SOURCE) {
+		M_BaseObject* module = nullptr;
+		try {
+			module = space->getitem(space->get_sys()->get(space, "modules"), w_modulename);
+		} catch (InterpError& exc) {
+			if (!exc.match(space, space->KeyError_type())) throw exc;
+		}
+		if (!module) module = space->wrap(new Module(space, w_modulename));
+
+		std::string filename = spec->get_filename();
+		std::ifstream file;
+		file.open(filename);
+		std::string source;
+		file.seekg(0, std::ios::end);
+		source.resize((unsigned int)file.tellg());
+		file.seekg(0, std::ios::beg);
+		file.read(&source[0], source.size());
+		file.close();
+
+		space->setitem(space->get_sys()->get(space, "modules"), w_modulename, module);
+		space->setattr(space->get_sys(), space->wrap_str("__file__"), space->wrap_str(filename));
+		module = load_source_module(context, w_modulename, module, filename, source);
+
+		return module;
+	}
+
+	return nullptr;
+}
+
+static M_BaseObject* load_part(mtpython::vm::ThreadContext* context, M_BaseObject* path, const std::string& prefix, const std::string& part, M_BaseObject* parent)
+{
+	ObjSpace* space = context->get_space();
+	std::string mod_name = prefix + part;
+	M_BaseObject* w_mod_name = space->wrap_str(mod_name);
+	M_BaseObject* mod = check_sys_modules(space, mod_name);
+
+	if (mod && !space->i_is(mod, space->wrap_None())) {
+		return mod;
+	} else if (prefix.size() == 0 || path) {
+		ModuleSpec* spec = find_module(context, mod_name, w_mod_name, part, path);
+
+		if (spec) {
+			M_BaseObject* mod = load_module(context, w_mod_name, spec);
+
+			try {
+				mod = space->getitem(space->get_sys()->get(space, "modules"), w_mod_name);
+			} catch (InterpError& exc) {
+				if (!exc.match(space, space->KeyError_type())) throw exc;
+				else throw InterpError(space->ImportError_type(), w_mod_name);
+			}
+
+			if (parent) {
+				space->setattr(parent, space->wrap_str(part), mod);
+			}
+
+			return mod;
+		}
+	}
+
+	return nullptr;
+}
+
+static M_BaseObject* _absolute_import(mtpython::vm::ThreadContext* context, const std::string& mod_name, int baselevel)
+{
+	std::size_t start = 0;
+	M_BaseObject* mod = nullptr, *first = nullptr;
+	M_BaseObject* path = nullptr;
+	int level = 0;
+	std::string prefix = "";
+		
+	while (true) {
+		std::size_t dot = mod_name.find('.', start);
+		std::size_t end;
+		if (dot == std::string::npos) {
+			end = mod_name.size();
+		} else {
+			end = dot;
+		}
+
+		std::string part = mod_name.substr(start, end);
+
+		mod = load_part(context, path, prefix, part, mod);
+		if (baselevel == level) first = mod;
+
+		level++;
+
+		start = end + 1;
+		if (dot == std::string::npos) break;
+	}
+	return first;
 }
 
 static M_BaseObject* absolute_import(mtpython::vm::ThreadContext* context, const std::string& mod_name, int level)
@@ -57,7 +227,7 @@ static M_BaseObject* builtin___import__(mtpython::vm::ThreadContext* context, co
 	M_BaseObject* globals = args[1];
 	M_BaseObject* mod;
 
-	mod = absolute_import(context, mod_name, level);
+	mod = absolute_import(context, mod_name, 0);
 	return mod;
 }
 
@@ -125,6 +295,7 @@ static M_BaseObject* builtin_print(mtpython::vm::ThreadContext* context, M_BaseO
 		if (i > 0) std::cout << seq;
 		M_BaseObject* value = space->str(values[i]);
 		std::cout << value->to_string(space);
+		context->gc_track_object(value);
 	}
 
 	std::cout << end;
@@ -149,6 +320,7 @@ BuiltinsModule::BuiltinsModule(ObjSpace* space, M_BaseObject* name) : BuiltinMod
 	add_def("object", space->object_type());
 	add_def("str", space->str_type());
 	add_def("tuple", space->tuple_type());
+	add_def("list", space->list_type());
 	add_def("type", space->type_type());
 
 	/* builtin exceptions */
@@ -164,6 +336,7 @@ BuiltinsModule::BuiltinsModule(ObjSpace* space, M_BaseObject* name) : BuiltinMod
 	ADD_EXCEPTION(ImportError);
 	ADD_EXCEPTION(ValueError);
 	ADD_EXCEPTION(SystemError);
+	ADD_EXCEPTION(KeyError);
 
 	add_def("__doc__", new InterpDocstringWrapper("Built-in functions, exceptions, and other objects.\n\nNoteworthy: None is the `nil' object; Ellipsis represents `...' in slices."));
 	add_def("__import__", new InterpFunctionWrapper("__import__", builtin___import__, Signature({"name", "globals", "locals", "from_list", "level"})));

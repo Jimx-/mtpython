@@ -10,10 +10,11 @@ using namespace mtpython::objects;
 using namespace mtpython::parse;
 using namespace mtpython::interpreter;
 
-PyVM::PyVM(ObjSpace* space) : main_thread(this, space)
+PyVM::PyVM(ObjSpace* space, const std::string& executable) : main_thread(this, space)
 {
 	this->space = space;
 	space->set_vm(this);
+	init_bootstrap_path(executable);
 }
 
 Module* PyVM::init_main_module(ThreadContext* context)
@@ -55,7 +56,7 @@ void PyVM::run_eval_string(ThreadContext* context, const std::string &source,
 
 	ObjSpace* space = context->get_space();
 	Module* main_module = init_main_module(context);
-	M_BaseObject* globals = main_module->get_dict();
+	M_BaseObject* globals = main_module->get_dict(space);
 
 	space->setitem(globals, space->wrap_str("__builtins__"), space->get_builtin());
 	if (filename != "")
