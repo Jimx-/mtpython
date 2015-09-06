@@ -4,9 +4,9 @@
 #include <sys/stat.h>
 
 char mtpython::FileHelper::sep = '/';
-char mtpython::FileHelper::pathseq = ':';
+char mtpython::FileHelper::pathsep = ':';
 
-static bool mtpython::FileHelper::file_exists(const std::string& name)
+bool mtpython::FileHelper::file_exists(const std::string& name)
 {
 	struct stat sbuf;
 	return (stat(name.c_str(), &sbuf) == 0);

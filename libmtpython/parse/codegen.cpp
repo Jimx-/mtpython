@@ -157,11 +157,15 @@ void BaseCodeGenerator::gen_name(const std::string& name, ExprContext ctx)
 	int arg = -1;
 
 	if (scope == SCOPE_LOCAL) {
-		op = name_ops_fast[ctx];
-		arg = add_name(varnames, name);
+		if (this->scope->can_be_optimized()) {
+			op = name_ops_fast[ctx];
+			arg = add_name(varnames, name);
+		}
 	} else if (scope == SCOPE_GLOBAL_IMPLICIT) {
-		op = name_ops_global[ctx];
-		arg = add_name(names, name);
+		if (this->scope->can_be_optimized()) {
+			op = name_ops_global[ctx];
+			arg = add_name(names, name);
+		}
 	}
 
 	if (op == NOP) {

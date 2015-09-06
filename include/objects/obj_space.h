@@ -133,6 +133,8 @@ public:
 
 	M_BaseObject* getitem(M_BaseObject* obj, M_BaseObject* key);
 	M_BaseObject* getitem_str(M_BaseObject* obj, const std::string& key);
+	M_BaseObject* finditem(M_BaseObject* obj, M_BaseObject* key);
+	M_BaseObject* finditem_str(M_BaseObject* obj, const std::string& key);
 	void setitem(M_BaseObject* obj, M_BaseObject* key, M_BaseObject* value);
 	void setitem_str(M_BaseObject* obj, const std::string& key, M_BaseObject* value);
 	M_BaseObject* delitem(M_BaseObject* obj, M_BaseObject* key);

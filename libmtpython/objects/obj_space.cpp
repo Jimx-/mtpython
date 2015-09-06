@@ -313,6 +313,28 @@ M_BaseObject* ObjSpace::getitem(M_BaseObject* obj, M_BaseObject* key)
 	return get_and_call_function(current_thread(), descr, {obj, key});
 }
 
+M_BaseObject* ObjSpace::finditem_str(M_BaseObject* obj, const std::string& key)
+{
+	M_BaseObject* wrapped_key = wrap_str(key);
+	M_BaseObject* value = finditem(obj, wrapped_key);
+	SAFE_DELETE(wrapped_key);
+
+	return value;
+}
+
+M_BaseObject* ObjSpace::finditem(M_BaseObject* obj, M_BaseObject* key)
+{
+	M_BaseObject* value;
+	try {
+		value = getitem(obj, key);
+	} catch (InterpError& exc) {
+		if (exc.match(this, type_KeyError)) return nullptr;
+		throw exc;
+	}
+
+	return value;
+}
+
 void ObjSpace::setitem_str(M_BaseObject* obj, const std::string& key, M_BaseObject* value)
 {
 	M_BaseObject* wrapped_key = wrap_str(key);

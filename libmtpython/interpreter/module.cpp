@@ -66,7 +66,11 @@ M_BaseObject* Module::__repr__(mtpython::vm::ThreadContext* context, M_BaseObjec
 	if (dynamic_cast<BuiltinModule*>(as_mod)) {
 		str += " (built-in)>";
 	} else {
-
+		M_BaseObject* attr = space->wrap_str("__file__");
+		M_BaseObject* wrapped_file = space->getattr(self, attr);
+		context->gc_track_object(attr);
+		std::string filename = space->unwrap_str(wrapped_file);
+		str += " from '" + filename + "'>";
 	}
 
 	return space->wrap_str(str);

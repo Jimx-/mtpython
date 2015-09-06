@@ -68,7 +68,7 @@ PyFrame::PyFrame(ThreadContext* context, Code* code, M_BaseObject* globals)
 	local_vars.resize(nlocals, nullptr);
 
 	this->globals = globals;
-	this->locals = nullptr;
+	this->locals = globals;
 
 	pc = -1;
 }
@@ -253,6 +253,12 @@ int PyFrame::dispatch_bytecode(ThreadContext* context, std::vector<unsigned char
 			delete_attr(arg, next_pc);
 		else if (opcode == IMPORT_NAME)
 			import_name(arg, next_pc);
+		else if (opcode == STORE_GLOBAL)
+			store_global(arg, next_pc);
+		else if (opcode == LOAD_NAME)
+			load_name(arg, next_pc);
+		else if (opcode == STORE_NAME)
+			store_name(arg, next_pc);
 	}
 }
 
@@ -341,7 +347,7 @@ void PyFrame::load_global(int arg, int next_pc)
 	M_BaseObject* name = get_name(arg);
 	std::string unwrapped_name = space->unwrap_str(name);
 
-	M_BaseObject* value = space->getitem(globals, name);
+	M_BaseObject* value = space->finditem_str(globals, unwrapped_name);
 	if (!value) {
 		value = space->get_builtin()->get_dict_value(space, unwrapped_name);
 		if (!value) throw InterpError::format(space, space->NameError_type(), "global name '%s' not found", unwrapped_name.c_str());
@@ -648,5 +654,46 @@ void PyFrame::import_name(int arg, int next_pc)
 	context->gc_track_object(mod_name);
 	context->gc_track_object(from_list);
 	context->gc_track_object(level);
+}
+
+void PyFrame::store_global(int arg, int next_pc)
+{
+	M_BaseObject* w_name = get_name(arg);
+	std::string name = space->unwrap_str(w_name);
+	M_BaseObject* value = pop_value_untrack();
+	space->setitem_str(globals, name, value);
+	context->gc_track_object(value);
+}
+
+void PyFrame::load_name(int arg, int next_pc)
+{
+	M_BaseObject* w_name = get_name(arg);
+	std::string name = space->unwrap_str(w_name);
+	M_BaseObject* value = nullptr;
+
+	if (locals != globals) {
+		value = space->finditem_str(locals, name);
+		if (value) {
+			push_value(value);
+			return;
+		}
+	}
+
+	value = space->finditem_str(globals, name);
+	if (!value) {
+		value = space->get_builtin()->get_dict_value(space, name);
+		if (!value) throw InterpError::format(space, space->NameError_type(), "name '%s' not found", name.c_str());
+	}
+
+	push_value(value);
+}
+
+void PyFrame::store_name(int arg, int next_pc)
+{
+	M_BaseObject* w_name = get_name(arg);
+	std::string name = space->unwrap_str(w_name);
+	M_BaseObject* value = pop_value_untrack();
+	space->setitem_str(locals, name, value);
+	context->gc_track_object(value);
 }
 

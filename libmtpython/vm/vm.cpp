@@ -62,7 +62,7 @@ void PyVM::run_eval_string(ThreadContext* context, const std::string &source,
 	if (filename != "")
 		space->setitem(globals, space->wrap_str("__file__"), space->wrap_str(filename));
 
-	compile_code(context, source, filename, mode)->exec_code(context, globals, nullptr);
+	compile_code(context, source, filename, mode)->exec_code(context, globals, globals);
 }
 
 mtpython::interpreter::Code* PyVM::compile_code(ThreadContext* context, const std::string &source,

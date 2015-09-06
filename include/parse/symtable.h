@@ -26,6 +26,7 @@ protected:
 	int line, col;
 	Scope* parent;
 	std::vector<Scope*> children;
+	bool _can_be_optimized;
 	std::vector<std::string> varnames;
 	std::unordered_map<std::string, int> id2flags;
 
@@ -34,12 +35,13 @@ protected:
 	void finalize_name(const std::string& id, int flags);
 
 public:
-	Scope(const std::string& name, int line, int col) : name(name), line(line), col(col) { }
+	Scope(const std::string& name, int line, int col) : name(name), line(line), col(col) { _can_be_optimized = false; }
 
 	void add_child(Scope* child);
 	const std::string& add_name(const std::string& id, int flags);
 	int lookup(const std::string& id);
 
+	bool can_be_optimized() { return _can_be_optimized; }
 	std::vector<std::string>& get_varnames() { return varnames; }
 
 	void finalize();
@@ -52,7 +54,7 @@ public:
 
 class FunctionScope : public Scope {
 public:
-	FunctionScope(const std::string& name, int line, int col) : Scope(name, line, col) { }
+	FunctionScope(const std::string& name, int line, int col) : Scope(name, line, col) { _can_be_optimized = true; }
 };
 
 class SymtableVisitor : public mtpython::tree::GenericVisitor {

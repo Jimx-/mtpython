@@ -103,7 +103,7 @@ static M_BaseObject* load_source_module(mtpython::vm::ThreadContext* context, M_
 	const std::string& pathname, const std::string& source)
 {
 	Code* code_obj = context->get_compiler()->compile(source, pathname, "exec", 0);
-	exec_code_module(context, mod, code_obj, pathname, false);
+	exec_code_module(context, mod, code_obj, pathname);
 
 	return mod;
 }
@@ -132,7 +132,7 @@ static M_BaseObject* load_module(mtpython::vm::ThreadContext* context, M_BaseObj
 		file.close();
 
 		space->setitem(space->get_sys()->get(space, "modules"), w_modulename, module);
-		space->setattr(space->get_sys(), space->wrap_str("__file__"), space->wrap_str(filename));
+		space->setattr(module, space->wrap_str("__file__"), space->wrap_str(filename));
 		module = load_source_module(context, w_modulename, module, filename, source);
 
 		return module;

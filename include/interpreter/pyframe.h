@@ -186,6 +186,9 @@ protected:
     void store_attr(int arg, int next_pc);
     void delete_attr(int arg, int next_pc);
     void import_name(int arg, int next_pc);
+    void store_global(int arg, int next_pc);
+    void load_name(int arg, int next_pc);
+    void store_name(int arg, int next_pc);
 
     objects::M_BaseObject* end_finally();
 

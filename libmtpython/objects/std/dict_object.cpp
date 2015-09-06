@@ -4,6 +4,7 @@
 
 #include "interpreter/typedef.h"
 #include "interpreter/gateway.h"
+#include "interpreter/error.h"
 #include "objects/std/dict_object.h"
 
 using namespace mtpython::objects;
@@ -57,6 +58,7 @@ M_BaseObject* M_StdDictObject::__repr__(mtpython::vm::ThreadContext* context, M_
 
 M_BaseObject* M_StdDictObject::__getitem__(mtpython::vm::ThreadContext* context, M_BaseObject* obj, M_BaseObject* key)
 {
+	ObjSpace* space = context->get_space();
 	M_StdDictObject* as_dict = dynamic_cast<M_StdDictObject*>(obj);
 	assert(as_dict);
 
@@ -64,6 +66,7 @@ M_BaseObject* M_StdDictObject::__getitem__(mtpython::vm::ThreadContext* context,
 	M_BaseObject* value = as_dict->getitem(key);
 	as_dict->unlock();
 
+	if (!value) throw InterpError(space->KeyError_type(), key);
 	return value;
 }
 
