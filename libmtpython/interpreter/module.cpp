@@ -37,7 +37,7 @@ void Module::install()
 
 M_BaseObject* Module::get_dict_value(ObjSpace* space, const std::string& attr)
 {
-	return space->getitem_str(dict, attr);
+	return space->finditem_str(dict, attr);
 }
 
 M_BaseObject* Module::get(const std::string &name)

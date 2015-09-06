@@ -30,7 +30,7 @@ M_BaseObject* M_BaseObject::get_dict_value(ObjSpace* space, const std::string& a
 {
 	M_BaseObject* dict = get_dict(space);
 	if (dict) {
-		return space->getitem_str(dict, attr);
+		return space->finditem_str(dict, attr);
 	}
 	return nullptr;
 }

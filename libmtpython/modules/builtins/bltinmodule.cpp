@@ -34,7 +34,7 @@ public:
 /* find the module named mod_name in sys.modules */
 static M_BaseObject* check_sys_modules(ObjSpace* space, const std::string& mod_name)
 {
-	return space->getitem_str(space->get_sys()->get(space, "modules"), mod_name);
+	return space->finditem_str(space->get_sys()->get(space, "modules"), mod_name);
 }
 
 /* only look up the module in sys.modules without loading anything */
@@ -283,16 +283,16 @@ static M_BaseObject* builtin_print(mtpython::vm::ThreadContext* context, M_BaseO
 	std::vector<M_BaseObject*> values;
 	ObjSpace* space = context->get_space();
 
-	M_BaseObject* wrapped_seq = space->getitem_str(kwargs, "seq");
-	std::string seq = wrapped_seq ? space->unwrap_str(wrapped_seq) : " ";
+	M_BaseObject* wrapped_sep = space->finditem_str(kwargs, "sep");
+	std::string sep = wrapped_sep ? space->unwrap_str(wrapped_sep) : " ";
 
-	M_BaseObject* wrapped_end = space->getitem_str(kwargs, "end");
+	M_BaseObject* wrapped_end = space->finditem_str(kwargs, "end");
 	std::string end = wrapped_end ? space->unwrap_str(wrapped_end) : "\n";
 
 	space->unwrap_tuple(args, values);
 
 	for (std::size_t i = 0; i < values.size(); i++) {
-		if (i > 0) std::cout << seq;
+		if (i > 0) std::cout << sep;
 		M_BaseObject* value = space->str(values[i]);
 		std::cout << value->to_string(space);
 		context->gc_track_object(value);
