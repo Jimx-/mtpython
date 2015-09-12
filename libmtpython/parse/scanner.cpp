@@ -303,14 +303,23 @@ Token Scanner::get_token()
     	}
     }
 
+	char str_prefix = '\0';
 	if (isalpha(last_char) || last_char == '_') { // reserved word or id
-		do {
+		if (last_char == 'r' || last_char == 'u' || last_char == 'b') {
+			str_prefix = last_char;
+			last_char =  read_char();
+			if (last_char == '"' || last_char == '\'') goto scan_str_lit;
+		}
+
+		if (str_prefix) last_word = last_word + str_prefix;
+
+		while (isalpha(last_char) || isdigit(last_char) || last_char == '_') {
 			last_word = last_word + last_char;
 			last_char = read_char();
 			if (last_char == -1)
 				break;
-		} while (isalpha(last_char) || isdigit(last_char) || last_char == '_');
-			return look_up_res_word(last_word);
+		}
+		return look_up_res_word(last_word);
 	}
 
 	/* octal or hex */
@@ -383,10 +392,36 @@ Token Scanner::get_token()
 
 	/* string literal */
 	else if (last_char == '\"' || last_char == '\'') {
+		scan_str_lit:
 		char end_char = last_char;
+		bool triple = false;
 		last_string = "";
 		last_char = read_char();
-		while (last_char != end_char && last_char != '\n' && last_char != '\r' && last_char != (-1)) {
+		if (last_char == end_char) {
+			last_char = read_char();
+			if (last_char == end_char) triple = true;
+			else {
+				last_string = "";
+				return TOK_STRINGLITERAL;
+			}
+		}
+		int expected_end_char = triple ? 3 : 1;
+		int end_char_count = 0;
+		while (true) {
+			if (last_char == end_char) {
+				end_char_count++;
+				if (end_char_count == expected_end_char)
+					break;
+				else {
+					last_char = read_char();
+					continue;
+				}
+			} else
+				end_char_count = 0;
+
+			if ((last_char == '\n' || last_char == '\r') && !triple) break;
+			if (last_char == -1) break;
+
 			last_string = last_string + scan_char_lit();
 		}
 		if (last_char == end_char) {
