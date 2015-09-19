@@ -15,6 +15,7 @@ Scanner::Scanner(SourceBuffer* sb, Diagnostics* diag) : buf(sb), diagnostics(dia
 	dedentation_count = 0;
 	at_start = true;
 	update_indent = false;
+	implicit_line_joining = false;
 }
 
 /* read_char: read a char from input stream, -1 if eof */
@@ -271,6 +272,9 @@ Token Scanner::get_token()
 		last_char = read_char();
     }
 
+	/* omit newline */
+	if (implicit_line_joining) new_line = false;
+
     if (new_line) {
     	update_indent = true;
     	return TOK_NEWLINE;
@@ -399,7 +403,10 @@ Token Scanner::get_token()
 		last_char = read_char();
 		if (last_char == end_char) {
 			last_char = read_char();
-			if (last_char == end_char) triple = true;
+			if (last_char == end_char){
+				triple = true;
+				last_char = read_char();
+			}
 			else {
 				last_string = "";
 				return TOK_STRINGLITERAL;
@@ -420,6 +427,7 @@ Token Scanner::get_token()
 				end_char_count = 0;
 
 			if ((last_char == '\n' || last_char == '\r') && !triple) break;
+			if (last_char == '\n') line++;
 			if (last_char == -1) break;
 
 			last_string = last_string + scan_char_lit();

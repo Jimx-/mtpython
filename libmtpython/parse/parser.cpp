@@ -212,6 +212,7 @@ ASTNode* Parser::stmt()
 		break;
 	case TOK_IDENT:
 	case TOK_INTLITERAL:
+	case TOK_STRINGLITERAL:
 		node = expr_stmt();
 		break;
 	case TOK_INDENT:
@@ -296,6 +297,7 @@ ASTNode* Parser::testlist_comp()
 ASTNode* Parser::testlist()
 {
 	ASTNode* elt = test();
+	s.set_implicit_line_joining(true);
 	if (cur_tok == TOK_COMMA) {
 		TupleNode* tuple = new TupleNode(s.get_line());
 		tuple->push_element(elt);
@@ -308,6 +310,7 @@ ASTNode* Parser::testlist()
 		}
 		elt = tuple;
 	}
+	s.set_implicit_line_joining(false);
 
 	return elt;
 }
@@ -645,6 +648,15 @@ ASTNode* Parser::atom()
     		node = testlist_comp();
 		match(TOK_RPAREN);
         break;
+	case TOK_LSQUARE:
+	{
+		match(TOK_LSQUARE);
+		if (cur_tok != TOK_RSQUARE) {
+			ASTNode* elts = testlist_comp();
+		}
+		match(TOK_RSQUARE);
+		break;
+	}
     case TOK_INTLITERAL:
     case TOK_LONGLITERAL:
     case TOK_FLOATLITERAL:

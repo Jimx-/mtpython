@@ -25,6 +25,7 @@ namespace mtpython {
 			/* if dedentation_count > 0, throw a DEDENT token and dedentation_count-- */
 			int dedentation_count;
 			bool update_indent;
+			bool implicit_line_joining;
 
 			int peek_start_pos;
 			bool at_start;
@@ -70,6 +71,7 @@ namespace mtpython {
 			std::string get_last_string() { return last_string; }
 			char get_last_char_lit() { return last_char_lit; }
 			std::string get_last_strnum() { return last_strnum; }
+			void set_implicit_line_joining(bool value) { implicit_line_joining = value; }
 		};
 	}
 }
