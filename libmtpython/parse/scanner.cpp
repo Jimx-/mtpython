@@ -273,7 +273,9 @@ Token Scanner::get_token()
     }
 
 	/* omit newline */
-	if (implicit_line_joining) new_line = false;
+	if (implicit_line_joining && new_line) {
+		return get_token();
+	}
 
     if (new_line) {
     	update_indent = true;

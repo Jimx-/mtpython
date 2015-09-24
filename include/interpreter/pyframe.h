@@ -189,6 +189,8 @@ protected:
     void store_global(int arg, int next_pc);
     void load_name(int arg, int next_pc);
     void store_name(int arg, int next_pc);
+    void binary_getitem(int arg, int next_pc);
+    void binary_subscr(int arg, int next_pc);
 
     objects::M_BaseObject* end_finally();
 

@@ -275,6 +275,7 @@ ASTNode* Parser::expr_stmt()
 ASTNode* Parser::testlist_comp()
 {
 	ASTNode* elt = test();
+	s.set_implicit_line_joining(true);
 	if (cur_tok == TOK_COMMA) {
 		TupleNode* tuple = new TupleNode(s.get_line());
 		tuple->push_element(elt);
@@ -287,10 +288,42 @@ ASTNode* Parser::testlist_comp()
 		}
 		elt = tuple;
 	} else if (cur_tok == TOK_FOR) {
-		return nullptr;
+		GeneratorExpNode* genexp = new GeneratorExpNode(s.get_line());
+		genexp->set_elt(elt);
+
+		while (cur_tok == TOK_FOR) {
+			genexp->push_comprehension(comp_for());
+		}
+
+		elt = genexp;
 	}
+	s.set_implicit_line_joining(false);
 
 	return elt;
+}
+
+ASTNode* Parser::comp_if()
+{
+	match(TOK_IF);
+	return or_test();
+}
+
+ComprehensionNode* Parser::comp_for()
+{
+	ComprehensionNode* node = new ComprehensionNode(s.get_line());
+	match(TOK_FOR);
+	ASTNode* target = exprlist();
+	node->set_target(target);
+	match(TOK_IN);
+	ASTNode* iter = or_test();
+	node->set_iter(iter);
+
+	while (cur_tok == TOK_IF) {
+		ASTNode* ifexp = comp_if();
+		node->push_if(ifexp);
+	}
+
+	return node;
 }
 
 /* testlist: test (',' test)* [','] */
@@ -398,7 +431,8 @@ ASTNode* Parser::comparison()
 	ASTNode* node = expr();
     CompareNode* p = new CompareNode(s.get_line());
     bool used = false;
-    while ((cur_tok == TOK_EQLEQL) || (cur_tok == TOK_NEQ) || (cur_tok == TOK_LSS) || (cur_tok == TOK_GTR) || (cur_tok == TOK_LEQ) || (cur_tok == TOK_GEQ)) {
+    while ((cur_tok == TOK_EQLEQL) || (cur_tok == TOK_NEQ) || (cur_tok == TOK_LSS) || (cur_tok == TOK_GTR) ||
+		(cur_tok == TOK_LEQ) || (cur_tok == TOK_GEQ) || (cur_tok == TOK_IN)) {
         p->set_left(node);
         p->push_op(tok2cmpop(cur_tok));  
         match(cur_tok);
@@ -601,6 +635,31 @@ ASTNode* Parser::power()
     return node;    
 }
 
+ASTNode* Parser::slice()
+{
+	ASTNode* node = nullptr;
+
+	/* empty subscript */
+	if (cur_tok == TOK_RSQUARE) diag.error(s.get_line(), s.get_col(), "invalid syntax");
+
+	ASTNode* first = test();
+	ASTNode* second = nullptr;
+	ASTNode* third = nullptr;
+
+	if (cur_tok == TOK_COLON) second = test();
+	if (cur_tok == TOK_COLON) third = test();
+
+
+	if (first && !second && !third) {
+		IndexNode* index = new IndexNode(s.get_line());
+		index->set_value(first);
+
+		node = index;
+	}
+
+	return node;
+}
+
 /* trailer: '(' [arglist] ')' | '[' subscriptlist ']' | '.' NAME */
 ASTNode* Parser::trailer(ASTNode* left)
 {
@@ -621,6 +680,19 @@ ASTNode* Parser::trailer(ASTNode* left)
 		SAFE_DELETE(as_name);
 		attr_node->set_context(EC_LOAD);
 		node = attr_node;
+		break;
+	}
+	case TOK_LSQUARE:
+	{
+		SubscriptNode* sub_node = new SubscriptNode(s.get_line());
+
+		match(TOK_LSQUARE);
+		ASTNode* slice_node = slice();
+		sub_node->set_value(left);
+		sub_node->set_slice(slice_node);
+		sub_node->set_context(EC_LOAD);
+		match(TOK_RSQUARE);
+		node = sub_node;
 		break;
 	}
 	}

@@ -36,46 +36,47 @@ public:
     void push_frame_block(FrameType type, CodeBlock* block) { frame_block.push_back(std::make_pair(type, block)); }
     void pop_frame_block() { frame_block.pop_back(); }
 
-	/*virtual ASTNode* visit_module(ModuleNode* node); */
-    //virtual mtpython::tree::ASTNode* visit_alias(mtpython::tree::AliasNode* node);
-    virtual mtpython::tree::ASTNode* visit_attribute(mtpython::tree::AttributeNode* node);
-    //virtual mtpython::tree::ASTNode* visit_arguments(mtpython::tree::ArgumentsNode* node);
-    virtual mtpython::tree::ASTNode* visit_assign(mtpython::tree::AssignNode* node);
-    /*virtual ASTNode* visit_augassign(AugAssignNode* node);*/
-    virtual mtpython::tree::ASTNode* visit_binop(mtpython::tree::BinOpNode* node);
-    virtual mtpython::tree::ASTNode* visit_break(mtpython::tree::BreakNode* node);
-    virtual mtpython::tree::ASTNode* visit_call(mtpython::tree::CallNode* node);
-    virtual mtpython::tree::ASTNode* visit_compare(mtpython::tree::CompareNode* node);
-    virtual mtpython::tree::ASTNode* visit_const(mtpython::tree::ConstNode* node);
-    /*virtual ASTNode* visit_continue(ContinueNode* node);
-    virtual ASTNode* visit_delete(DeleteNode* node); */
-	virtual mtpython::tree::ASTNode* visit_expr(mtpython::tree::ExprNode* node);
-    virtual mtpython::tree::ASTNode* visit_for(mtpython::tree::ForNode* node);
-    virtual mtpython::tree::ASTNode* visit_functiondef(mtpython::tree::FunctionDefNode* node);
-    virtual mtpython::tree::ASTNode* visit_if(mtpython::tree::IfNode* node);
-    virtual mtpython::tree::ASTNode* visit_ifexp(mtpython::tree::IfExpNode* node);
-    virtual mtpython::tree::ASTNode* visit_import(mtpython::tree::ImportNode* node);
+	/*ASTNode* visit_module(ModuleNode* node); */
+    //mtpython::tree::ASTNode* visit_alias(mtpython::tree::AliasNode* node);
+    mtpython::tree::ASTNode* visit_attribute(mtpython::tree::AttributeNode* node);
+    //mtpython::tree::ASTNode* visit_arguments(mtpython::tree::ArgumentsNode* node);
+    mtpython::tree::ASTNode* visit_assign(mtpython::tree::AssignNode* node);
+    /*ASTNode* visit_augassign(AugAssignNode* node);*/
+    mtpython::tree::ASTNode* visit_binop(mtpython::tree::BinOpNode* node);
+    mtpython::tree::ASTNode* visit_break(mtpython::tree::BreakNode* node);
+    mtpython::tree::ASTNode* visit_call(mtpython::tree::CallNode* node);
+    mtpython::tree::ASTNode* visit_compare(mtpython::tree::CompareNode* node);
+    mtpython::tree::ASTNode* visit_const(mtpython::tree::ConstNode* node);
+    /*ASTNode* visit_continue(ContinueNode* node);
+    ASTNode* visit_delete(DeleteNode* node); */
+	mtpython::tree::ASTNode* visit_expr(mtpython::tree::ExprNode* node);
+    mtpython::tree::ASTNode* visit_for(mtpython::tree::ForNode* node);
+    mtpython::tree::ASTNode* visit_functiondef(mtpython::tree::FunctionDefNode* node);
+    mtpython::tree::ASTNode* visit_if(mtpython::tree::IfNode* node);
+    mtpython::tree::ASTNode* visit_ifexp(mtpython::tree::IfExpNode* node);
+    mtpython::tree::ASTNode* visit_import(mtpython::tree::ImportNode* node);
     void import_as(mtpython::tree::AliasNode* node);
-    virtual mtpython::tree::ASTNode* visit_keyword(mtpython::tree::KeywordNode* node);
-    virtual mtpython::tree::ASTNode* visit_name(mtpython::tree::NameNode* node);
-    virtual mtpython::tree::ASTNode* visit_number(mtpython::tree::NumberNode* node);
-    virtual mtpython::tree::ASTNode* visit_string(mtpython::tree::StringNode* node);
-    virtual mtpython::tree::ASTNode* visit_pass(mtpython::tree::PassNode* node);
-    /*virtual ASTNode* visit_raise(RaiseNode* node);*/
-    virtual mtpython::tree::ASTNode* visit_return(mtpython::tree::ReturnNode* node);
-    virtual mtpython::tree::ASTNode* visit_try(mtpython::tree::TryNode* node);
+    mtpython::tree::ASTNode* visit_keyword(mtpython::tree::KeywordNode* node);
+    mtpython::tree::ASTNode* visit_name(mtpython::tree::NameNode* node);
+    mtpython::tree::ASTNode* visit_number(mtpython::tree::NumberNode* node);
+    mtpython::tree::ASTNode* visit_string(mtpython::tree::StringNode* node);
+    mtpython::tree::ASTNode* visit_pass(mtpython::tree::PassNode* node);
+    /*ASTNode* visit_raise(RaiseNode* node);*/
+    mtpython::tree::ASTNode* visit_return(mtpython::tree::ReturnNode* node);
+    mtpython::tree::ASTNode* visit_subscript(mtpython::tree::SubscriptNode* node);
+    mtpython::tree::ASTNode* visit_try(mtpython::tree::TryNode* node);
     mtpython::tree::ASTNode* visit_try_except(mtpython::tree::TryNode* node);
     mtpython::tree::ASTNode* visit_try_finally(mtpython::tree::TryNode* node);
-    virtual mtpython::tree::ASTNode* visit_tuple(mtpython::tree::TupleNode* node);
-    virtual mtpython::tree::ASTNode* visit_unaryop(mtpython::tree::UnaryOpNode* node);
-    virtual mtpython::tree::ASTNode* visit_while(mtpython::tree::WhileNode* node);
-    /*virtual ASTNode* visit_yield(YieldNode* node);
-    virtual ASTNode* visit_yieldfrom(YieldFromNode* node);*/
+    mtpython::tree::ASTNode* visit_tuple(mtpython::tree::TupleNode* node);
+    mtpython::tree::ASTNode* visit_unaryop(mtpython::tree::UnaryOpNode* node);
+    mtpython::tree::ASTNode* visit_while(mtpython::tree::WhileNode* node);
+    /*ASTNode* visit_yield(YieldNode* node);
+    ASTNode* visit_yieldfrom(YieldFromNode* node);*/
 };
 
 class ModuleCodeGenerator : public BaseCodeGenerator {
 private:
-	virtual void compile(mtpython::tree::ASTNode* node);
+	void compile(mtpython::tree::ASTNode* node);
 public:
 	ModuleCodeGenerator(mtpython::objects::ObjSpace* space, mtpython::tree::ASTNode* module, SymtableVisitor* symtab, CompileInfo* info);
 };
@@ -83,7 +84,7 @@ public:
 class FunctionCodeGenerator : public BaseCodeGenerator {
 private:
     int argcount;
-    virtual void compile(mtpython::tree::ASTNode* tree);
+    void compile(mtpython::tree::ASTNode* tree);
 public:
     FunctionCodeGenerator(const std::string& name, mtpython::objects::ObjSpace* space, mtpython::tree::ASTNode* tree, SymtableVisitor* symtab, int lineno, CompileInfo* info);
 };

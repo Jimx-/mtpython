@@ -15,6 +15,7 @@ static mtpython::interpreter::Typedef tuple_typedef("tuple", {
 	{ "__repr__", new InterpFunctionWrapper("__repr__", M_StdTupleObject::__repr__) },
 	{ "__iter__", new InterpFunctionWrapper("__iter__", M_StdTupleObject::__iter__) },
 	{ "__len__", new InterpFunctionWrapper("__len__", M_StdTupleObject::__len__) },
+	{ "__getitem__", new InterpFunctionWrapper("__getitem__", M_StdTupleObject::__getitem__) },
 });
 
 mtpython::interpreter::Typedef* M_StdTupleObject::_tuple_typedef()
@@ -63,3 +64,28 @@ M_BaseObject* M_StdTupleObject::__repr__(mtpython::vm::ThreadContext* context, M
 	return space->wrap_str(str);
 }
 
+M_BaseObject* M_StdTupleObject::__getitem__(mtpython::vm::ThreadContext* context, M_BaseObject* obj, M_BaseObject* key)
+{
+	ObjSpace* space = context->get_space();
+	int index;
+	try {
+		index = space->unwrap_int(key, false);
+	} catch(...) {
+		throw InterpError::format(space, space->IndexError_type(), "tuple indices must be integers, not %s", space->get_type_name(key).c_str());
+	};
+
+	M_BaseObject* item = nullptr;
+	M_StdTupleObject* as_tuple = static_cast<M_StdTupleObject*>(obj);
+	if (index < 0) {
+		if (index < -(as_tuple->items.size())) throw InterpError(space->IndexError_type(), space->wrap_str("tuple index out of range"));
+		item = as_tuple->items[as_tuple->items.size() + index];
+	} else {
+		if (index >= as_tuple->items.size()) throw InterpError(space->IndexError_type(), space->wrap_str("tuple index out of range"));
+		item = as_tuple->items[index];
+	}
+
+	context->gc_track_object(obj);
+	context->gc_track_object(key);
+
+	return item;
+}

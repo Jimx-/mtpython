@@ -14,7 +14,8 @@ typedef enum {
 	NT_CATCH, NT_FINALLY, NT_RETURN, NT_BREAK, NT_CONTINUE, NT_IDENT, NT_UNARY, NT_ARGUMENTS, NT_CALL,
     NT_MODULE, NT_FUNCDEF, NT_NUMBER, NT_BINOP, NT_COMPARE, NT_IFEXP, NT_TUPLE, NT_DELETE,
     NT_YIELD, NT_YIELDFROM, NT_RAISE, NT_PASS, NT_KEYWORD, NT_STRING, NT_EXPR, NT_CONST,
-    NT_EXCEPTHANDLER, NT_ATTRIBUTE, NT_ALIAS, NT_IMPORT,
+    NT_EXCEPTHANDLER, NT_ATTRIBUTE, NT_ALIAS, NT_IMPORT, NT_COMPREHENSION, NT_GENERATOREXP,
+    NT_SUBSCRIPT, NT_INDEX,
 } NodeType;
 
 class ASTVisitor;
@@ -60,6 +61,7 @@ class BinOpNode;
 class BreakNode;
 class CallNode;
 class CompareNode;
+class ComprehensionNode;
 class ConstNode;
 class ContinueNode;
 class DeleteNode;
@@ -67,13 +69,16 @@ class ExceptHandlerNode;
 class ExprNode;
 class ForNode;
 class FunctionDefNode;
+class GeneratorExpNode;
 class IfNode;
 class IfExpNode;
 class ImportNode;
+class IndexNode;
 class KeywordNode;
 class NameNode;
 class NumberNode;
 class StringNode;
+class SubscriptNode;
 class PassNode;
 class RaiseNode;
 class ReturnNode;
@@ -104,6 +109,7 @@ public:
     virtual ASTNode* visit_break(BreakNode* node) { return nullptr; }
     virtual ASTNode* visit_call(CallNode* node) { return nullptr; }
     virtual ASTNode* visit_compare(CompareNode* node) { return nullptr; }
+    virtual ASTNode* visit_comprehension(ComprehensionNode* node) { return nullptr; }
     virtual ASTNode* visit_const(ConstNode* node) { return nullptr; }
     virtual ASTNode* visit_continue(ContinueNode* node) { return nullptr; }
     virtual ASTNode* visit_delete(DeleteNode* node) { return nullptr; }
@@ -111,8 +117,10 @@ public:
     virtual ASTNode* visit_expr(ExprNode* node) { return nullptr; }
     virtual ASTNode* visit_for(ForNode* node) { return nullptr; }
     virtual ASTNode* visit_functiondef(FunctionDefNode* node) { return nullptr; }
+    virtual ASTNode* visit_generatorexp(GeneratorExpNode* node) { return nullptr; }
     virtual ASTNode* visit_if(IfNode* node) { return nullptr; }
     virtual ASTNode* visit_ifexp(IfExpNode* node) { return nullptr; }
+    virtual ASTNode* visit_index(IndexNode* node) { return nullptr; }
     virtual ASTNode* visit_import(ImportNode* node) { return nullptr; }
     virtual ASTNode* visit_keyword(KeywordNode* node) { return nullptr; }
     virtual ASTNode* visit_name(NameNode* node) { return nullptr; }
@@ -121,6 +129,7 @@ public:
     virtual ASTNode* visit_pass(PassNode* node) { return nullptr; }
     virtual ASTNode* visit_raise(RaiseNode* node) { return nullptr; }
     virtual ASTNode* visit_return(ReturnNode* node) { return nullptr; }
+    virtual ASTNode* visit_subscript(SubscriptNode* node) { return nullptr; }
     virtual ASTNode* visit_try(TryNode* node) { return nullptr; }
     virtual ASTNode* visit_tuple(TupleNode* node) { return nullptr; }
     virtual ASTNode* visit_unaryop(UnaryOpNode* node) { return nullptr; }

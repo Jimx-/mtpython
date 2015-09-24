@@ -263,6 +263,8 @@ int PyFrame::dispatch_bytecode(ThreadContext* context, std::vector<unsigned char
 			load_name(arg, next_pc);
 		else if (opcode == STORE_NAME)
 			store_name(arg, next_pc);
+		else if (opcode == BINARY_SUBSCR)
+			binary_subscr(arg, next_pc);
 	}
 }
 
@@ -316,9 +318,21 @@ const std::string& PyFrame::get_localname(int index)
 		context->gc_track_object(obj2);	\
 	}
 
+#define DEF_BINARY_OPER_ALIAS(name, opname) \
+	void PyFrame::binary_##name(int arg, int next_pc) \
+	{ \
+		M_BaseObject* obj2 = pop_value_untrack(); \
+		M_BaseObject* obj1 = pop_value_untrack(); \
+		M_BaseObject* result = space->opname(obj1, obj2); \
+		push_value(result);	\
+		context->gc_track_object(obj1);	\
+		context->gc_track_object(obj2);	\
+	}
+
 DEF_BINARY_OPER(add)
 DEF_BINARY_OPER(sub)
 DEF_BINARY_OPER(mul)
+DEF_BINARY_OPER_ALIAS(subscr, getitem)
 
 void PyFrame::pop_top(int arg, int next_pc)
 {

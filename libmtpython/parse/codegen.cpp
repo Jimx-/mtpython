@@ -9,6 +9,7 @@ using namespace mtpython::objects;
 static std::unordered_map<int, int> name_ops_default = {{EC_LOAD, LOAD_NAME}, {EC_STORE, STORE_NAME}, {EC_DEL, DELETE_NAME}};
 static std::unordered_map<int, int> name_ops_fast = {{EC_LOAD, LOAD_FAST}, {EC_STORE, STORE_FAST}, {EC_DEL, DELETE_FAST}};
 static std::unordered_map<int, int> name_ops_global = {{EC_LOAD, LOAD_GLOBAL}, {EC_STORE, STORE_GLOBAL}, {EC_DEL, DELETE_GLOBAL}};
+static std::unordered_map<int, int> subscr_op = {{EC_LOAD, BINARY_SUBSCR}, {EC_STORE, STORE_SUBSCR}, {EC_DEL, DELETE_SUBSCR}};
 
 BaseCodeGenerator::BaseCodeGenerator(const std::string& name, ObjSpace* space, ASTNode* module, SymtableVisitor* symtab, int lineno, CompileInfo* info) : CodeBuilder(name, space, symtab->find_scope(module), lineno, info)
 {
@@ -448,6 +449,28 @@ ASTNode* BaseCodeGenerator::visit_string(StringNode* node)
 {
 	set_lineno(node->get_line());
 	load_const(node->get_value());
+
+	return node;
+}
+
+ASTNode* BaseCodeGenerator::visit_subscript(SubscriptNode* node)
+{
+	set_lineno(node->get_line());
+
+	if (node->get_context() != EC_AUGSTORE) {
+		node->get_value()->visit(this);
+	}
+
+	ASTNode* slice = node->get_slice();
+	ExprContext ctx = node->get_context();
+	if (slice->get_tag() == NT_INDEX) {
+		if (ctx != EC_AUGSTORE) {
+			IndexNode* index = dynamic_cast<IndexNode*>(slice);
+			index->get_value()->visit(this);
+		}
+	}
+
+	emit_op(subscr_op[ctx]);
 
 	return node;
 }

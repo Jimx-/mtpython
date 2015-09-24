@@ -49,6 +49,8 @@ namespace mtpython {
 			mtpython::tree::ASTNode* arguments();
 			mtpython::tree::ASTNode* exprlist();
 			mtpython::tree::ASTNode* testlist_comp();
+			mtpython::tree::ASTNode* comp_if();
+			mtpython::tree::ComprehensionNode* comp_for();
 			mtpython::tree::ASTNode* testlist();
 			mtpython::tree::ASTNode* test();
 			mtpython::tree::ASTNode* or_test();
@@ -62,6 +64,7 @@ namespace mtpython {
 			mtpython::tree::ASTNode* term();
 			mtpython::tree::ASTNode* factor();
 			mtpython::tree::ASTNode* power();
+			mtpython::tree::ASTNode* slice();
 			mtpython::tree::ASTNode* trailer(mtpython::tree::ASTNode* left);
 			mtpython::tree::ASTNode* atom();
 			mtpython::tree::ASTNode* parse_number();

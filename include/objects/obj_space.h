@@ -36,6 +36,7 @@ private:
 	M_BaseObject* type_ValueError;
 	M_BaseObject* type_SystemError;
 	M_BaseObject* type_KeyError;
+	M_BaseObject* type_IndexError;
 
 	void init_builtin_exceptions();
 protected:
@@ -97,6 +98,7 @@ public:
 	M_BaseObject* ValueError_type() { return type_ValueError; }
 	M_BaseObject* SystemError_type() { return type_SystemError; }
 	M_BaseObject* KeyError_type() { return type_KeyError;  }
+	M_BaseObject* IndexError_type() { return type_IndexError; }
 	bool match_exception(M_BaseObject* type1, M_BaseObject* type2) { return (type1 == type2); }
 
 	virtual M_BaseObject* wrap(int x) { return wrap_int(x); }

@@ -84,6 +84,19 @@ public:
 
 	virtual ASTNode* visit_compare(CompareNode* node) { return node; }
 
+	virtual ASTNode* visit_comprehension(ComprehensionNode* node)
+	{
+		node->get_target()->visit(this);
+		node->get_iter()->visit(this);
+
+		std::vector<ASTNode*>& ifs = node->get_ifs();
+		for (unsigned int i = 0; i < ifs.size(); i++) {
+			ifs[i]->visit(this);
+		}
+
+		return node;
+	}
+
 	virtual ASTNode* visit_const(ConstNode* node) { return node; }
 	
 	virtual ASTNode* visit_continue(ContinueNode* node) 
@@ -131,6 +144,15 @@ public:
 		return node; 
 	}
 
+	virtual  ASTNode* visit_generatorexp(GeneratorExpNode* node)
+	{
+		node->get_elt()->visit(this);
+		std::vector<ComprehensionNode*>& comprehensions = node->get_comprehensions();
+		for (unsigned int i = 0; i < comprehensions.size(); i++) {
+			comprehensions[i]->visit(this);
+		}
+	}
+
 	virtual ASTNode* visit_if(IfNode* node) 
 	{
 		node->get_test()->visit(this);
@@ -149,6 +171,13 @@ public:
 		for (unsigned int i = 0; i < names.size(); i++) {
 			names[i]->visit(this);
 		}
+
+		return node;
+	}
+
+	virtual ASTNode* visit_index(IndexNode* node)
+	{
+		node->get_value()->visit(this);
 
 		return node;
 	}
@@ -177,6 +206,14 @@ public:
 
 	virtual ASTNode* visit_raise(RaiseNode* node) {return node; }
 	virtual ASTNode* visit_return(ReturnNode* node) { return node;}
+
+	virtual ASTNode* visit_subscript(SubscriptNode* node)
+	{
+		node->get_value()->visit(this);
+		node->get_slice()->visit(this);
+
+		return node;
+	}
 
 	virtual ASTNode* visit_try(TryNode* node)
 	{

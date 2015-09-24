@@ -25,6 +25,7 @@ public:
 	static M_BaseObject* __iter__(vm::ThreadContext* context, M_BaseObject* self);
 	static M_BaseObject* __len__(vm::ThreadContext* context, M_BaseObject* self);
 	static M_BaseObject* __repr__(vm::ThreadContext* context, M_BaseObject* self);
+	static M_BaseObject* __getitem__(vm::ThreadContext* context, M_BaseObject* obj, M_BaseObject* key);
 };
 
 }

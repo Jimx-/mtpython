@@ -24,7 +24,6 @@ public:
 		std::string blank(padding, ' ');
 		std::cout << blank << line << ": Expr: " << std::endl;
 		value->print(padding + 4);
-		std::cout << std::endl;
 	}
 	
 	virtual void visit(ASTVisitor* visitor) { visitor->visit_expr(this); }

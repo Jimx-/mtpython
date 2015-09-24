@@ -184,3 +184,26 @@ NODE_CONSTRUCTOR(ImportNode)
 {
 
 }
+
+NODE_CONSTRUCTOR(ComprehensionNode)
+{
+	target = nullptr;
+	iter = nullptr;
+}
+
+NODE_CONSTRUCTOR(GeneratorExpNode)
+{
+	elt = nullptr;
+}
+
+NODE_CONSTRUCTOR(SubscriptNode)
+{
+	value = nullptr;
+	slice = nullptr;
+}
+
+NODE_CONSTRUCTOR(IndexNode)
+{
+	value = nullptr;
+}
+
