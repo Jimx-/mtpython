@@ -265,6 +265,8 @@ int PyFrame::dispatch_bytecode(ThreadContext* context, std::vector<unsigned char
 			store_name(arg, next_pc);
 		else if (opcode == BINARY_SUBSCR)
 			binary_subscr(arg, next_pc);
+		else if (opcode == BUILD_LIST)
+			build_list(arg, next_pc);
 	}
 }
 
@@ -715,3 +717,10 @@ void PyFrame::store_name(int arg, int next_pc)
 	context->gc_track_object(value);
 }
 
+void PyFrame::build_list(int arg, int next_pc)
+{
+	std::vector<M_BaseObject*> args;
+	pop_values_untrack(arg, args);
+	M_BaseObject* list = space->new_list(args);
+	push_value(list);
+}

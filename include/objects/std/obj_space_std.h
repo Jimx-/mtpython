@@ -21,38 +21,38 @@ private:
 public:
 	StdObjSpace();
 
-	virtual interpreter::PyFrame* create_frame(vm::ThreadContext* context, interpreter::Code* code, M_BaseObject* globals);
+	interpreter::PyFrame* create_frame(vm::ThreadContext* context, interpreter::Code* code, M_BaseObject* globals);
 	
-	virtual M_BaseObject* lookup(M_BaseObject* obj, const std::string& name);
-	virtual M_BaseObject* lookup_type_cls(M_BaseObject* obj, const std::string& attr, M_BaseObject*& where);
+	M_BaseObject* lookup(M_BaseObject* obj, const std::string& name);
+	M_BaseObject* lookup_type_cls(M_BaseObject* obj, const std::string& attr, M_BaseObject*& where);
 
-	virtual M_BaseObject* type(M_BaseObject* obj) { return obj->get_class(this); }
+	M_BaseObject* type(M_BaseObject* obj) { return obj->get_class(this); }
 
-	virtual M_BaseObject* bool_type() { return builtin_types["bool"]; }
-	virtual M_BaseObject* dict_type() { return builtin_types["dict"]; }
-	virtual M_BaseObject* int_type() { return builtin_types["int"]; }
-	virtual M_BaseObject* object_type() { return builtin_types["object"]; }
-	virtual M_BaseObject* str_type() { return builtin_types["str"]; }
-	virtual M_BaseObject* tuple_type() { return builtin_types["tuple"]; }
-	virtual M_BaseObject* list_type() { return builtin_types["list"]; }
-	virtual M_BaseObject* type_type() { return builtin_types["type"]; }
+	M_BaseObject* bool_type() { return builtin_types["bool"]; }
+	M_BaseObject* dict_type() { return builtin_types["dict"]; }
+	M_BaseObject* int_type() { return builtin_types["int"]; }
+	M_BaseObject* object_type() { return builtin_types["object"]; }
+	M_BaseObject* str_type() { return builtin_types["str"]; }
+	M_BaseObject* tuple_type() { return builtin_types["tuple"]; }
+	M_BaseObject* list_type() { return builtin_types["list"]; }
+	M_BaseObject* type_type() { return builtin_types["type"]; }
 
-	virtual M_BaseObject* wrap(M_BaseObject* obj) { return obj->bind_space(this); }
+	M_BaseObject* wrap(M_BaseObject* obj) { return obj->bind_space(this); }
 
-	virtual M_BaseObject* wrap_int(int x);
-	virtual M_BaseObject* wrap_int(const std::string& x);
+	M_BaseObject* wrap_int(int x);
+	M_BaseObject* wrap_int(const std::string& x);
 
-	virtual M_BaseObject* wrap_str(const std::string& x);
+	M_BaseObject* wrap_str(const std::string& x);
 
-	virtual M_BaseObject* wrap_None() { return wrapped_None; }
-	virtual M_BaseObject* wrap_True() { return wrapped_True; }
-	virtual M_BaseObject* wrap_False() { return wrapped_False; }
+	M_BaseObject* wrap_None() { return wrapped_None; }
+	M_BaseObject* wrap_True() { return wrapped_True; }
+	M_BaseObject* wrap_False() { return wrapped_False; }
 
-	virtual M_BaseObject* new_tuple(std::vector<M_BaseObject*>& items);
-	virtual M_BaseObject* new_list(std::vector<M_BaseObject*>& items);
-	virtual M_BaseObject* new_dict();
+	M_BaseObject* new_tuple(std::vector<M_BaseObject*>& items);
+	M_BaseObject* new_list(std::vector<M_BaseObject*>& items);
+	M_BaseObject* new_dict();
 
-	virtual void unwrap_tuple(M_BaseObject* obj, std::vector<M_BaseObject*>& list);
+	void unwrap_tuple(M_BaseObject* obj, std::vector<M_BaseObject*>& list);
 };
 
 }

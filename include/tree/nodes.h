@@ -41,5 +41,6 @@
 #include "tree/nodes/generatorexp_node.h"
 #include "tree/nodes/subscript_node.h"
 #include "tree/nodes/slice_node.h"
+#include "tree/nodes/list_node.h"
 
 #endif /* _NODES_H_ */

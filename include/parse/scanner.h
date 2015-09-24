@@ -72,6 +72,7 @@ namespace mtpython {
 			char get_last_char_lit() { return last_char_lit; }
 			std::string get_last_strnum() { return last_strnum; }
 			void set_implicit_line_joining(bool value) { implicit_line_joining = value; }
+			bool get_implicit_line_joining() { return implicit_line_joining; }
 		};
 	}
 }

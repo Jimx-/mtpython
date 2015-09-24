@@ -275,7 +275,6 @@ ASTNode* Parser::expr_stmt()
 ASTNode* Parser::testlist_comp()
 {
 	ASTNode* elt = test();
-	s.set_implicit_line_joining(true);
 	if (cur_tok == TOK_COMMA) {
 		TupleNode* tuple = new TupleNode(s.get_line());
 		tuple->push_element(elt);
@@ -297,7 +296,27 @@ ASTNode* Parser::testlist_comp()
 
 		elt = genexp;
 	}
-	s.set_implicit_line_joining(false);
+
+	return elt;
+}
+
+ASTNode* Parser::testlist_comp_list()
+{
+	ASTNode* elt = test();
+	if (cur_tok == TOK_COMMA) {
+		ListNode* list = new ListNode(s.get_line());
+		list->push_element(elt);
+		while (cur_tok == TOK_COMMA) {
+			match(TOK_COMMA);
+			elt = test();
+			if (elt != nullptr) {
+				list->push_element(elt);
+			}
+		}
+		elt = list;
+	} else if (cur_tok == TOK_FOR) {
+		return nullptr;
+	}
 
 	return elt;
 }
@@ -330,7 +349,6 @@ ComprehensionNode* Parser::comp_for()
 ASTNode* Parser::testlist()
 {
 	ASTNode* elt = test();
-	s.set_implicit_line_joining(true);
 	if (cur_tok == TOK_COMMA) {
 		TupleNode* tuple = new TupleNode(s.get_line());
 		tuple->push_element(elt);
@@ -343,7 +361,6 @@ ASTNode* Parser::testlist()
 		}
 		elt = tuple;
 	}
-	s.set_implicit_line_joining(false);
 
 	return elt;
 }
@@ -646,6 +663,7 @@ ASTNode* Parser::slice()
 	ASTNode* second = nullptr;
 	ASTNode* third = nullptr;
 
+
 	if (cur_tok == TOK_COLON) second = test();
 	if (cur_tok == TOK_COLON) third = test();
 
@@ -713,19 +731,28 @@ ASTNode* Parser::atom()
         node = name();
         break;
     case TOK_LPAREN :
-    	match(TOK_LPAREN);
-    	if (cur_tok == TOK_RPAREN) 
+	{
+		bool joining = s.get_implicit_line_joining();
+		s.set_implicit_line_joining(true);
+		match(TOK_LPAREN);
+		if (cur_tok == TOK_RPAREN)
 			node = new TupleNode(s.get_line());
-    	else 
-    		node = testlist_comp();
+		else
+			node = testlist_comp();
+		s.set_implicit_line_joining(joining);
 		match(TOK_RPAREN);
-        break;
+		break;
+	}
 	case TOK_LSQUARE:
 	{
+		bool joining = s.get_implicit_line_joining();
+		s.set_implicit_line_joining(true);
 		match(TOK_LSQUARE);
-		if (cur_tok != TOK_RSQUARE) {
-			ASTNode* elts = testlist_comp();
-		}
+		if (cur_tok == TOK_RSQUARE)
+			node = new ListNode(s.get_line());
+		else
+			node = testlist_comp_list();
+		s.set_implicit_line_joining(joining);
 		match(TOK_RSQUARE);
 		break;
 	}

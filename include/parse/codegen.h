@@ -57,6 +57,7 @@ public:
     mtpython::tree::ASTNode* visit_import(mtpython::tree::ImportNode* node);
     void import_as(mtpython::tree::AliasNode* node);
     mtpython::tree::ASTNode* visit_keyword(mtpython::tree::KeywordNode* node);
+    mtpython::tree::ASTNode* visit_list(mtpython::tree::ListNode* node);
     mtpython::tree::ASTNode* visit_name(mtpython::tree::NameNode* node);
     mtpython::tree::ASTNode* visit_number(mtpython::tree::NumberNode* node);
     mtpython::tree::ASTNode* visit_string(mtpython::tree::StringNode* node);

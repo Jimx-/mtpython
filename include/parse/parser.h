@@ -49,6 +49,7 @@ namespace mtpython {
 			mtpython::tree::ASTNode* arguments();
 			mtpython::tree::ASTNode* exprlist();
 			mtpython::tree::ASTNode* testlist_comp();
+			mtpython::tree::ASTNode* testlist_comp_list();
 			mtpython::tree::ASTNode* comp_if();
 			mtpython::tree::ComprehensionNode* comp_for();
 			mtpython::tree::ASTNode* testlist();

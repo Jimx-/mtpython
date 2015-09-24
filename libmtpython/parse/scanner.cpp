@@ -346,12 +346,15 @@ Token Scanner::get_token()
 			} else {
 				return scan_number(16);
 			}
+		/* 0o or 0O - oct */
+		} else if (last_char == 'o' || last_char == 'O') {
+			last_char = read_char();
+			return scan_number(8);
 		} else {
 			if (!isdigit(last_char)) {
 				last_strnum = "0";
 				return TOK_INTLITERAL;
 			}
-			return scan_number(8);
 		}
 	}
 
@@ -572,6 +575,12 @@ Token Scanner::get_token()
 	} else if (last_char == ']') {
 		last_char = read_char();
 		return TOK_RSQUARE;
+	} else if (last_char == '{') {
+		last_char = read_char();
+		return TOK_LBRACE;
+	} else if (last_char == '}') {
+		last_char = read_char();
+		return TOK_RBRACE;
 	}
 
 	else if (last_char == '&') {
@@ -620,7 +629,7 @@ Token Scanner::get_token()
 	ss << (int)last_char;
 	string error_msg("unknown character: \"");
 	error_msg += last_char;
-	error_msg += "(#";
+	error_msg += "\"(#";
 	error_msg += ss.str();
 	error_msg += ")";
 

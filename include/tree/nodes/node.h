@@ -15,7 +15,7 @@ typedef enum {
     NT_MODULE, NT_FUNCDEF, NT_NUMBER, NT_BINOP, NT_COMPARE, NT_IFEXP, NT_TUPLE, NT_DELETE,
     NT_YIELD, NT_YIELDFROM, NT_RAISE, NT_PASS, NT_KEYWORD, NT_STRING, NT_EXPR, NT_CONST,
     NT_EXCEPTHANDLER, NT_ATTRIBUTE, NT_ALIAS, NT_IMPORT, NT_COMPREHENSION, NT_GENERATOREXP,
-    NT_SUBSCRIPT, NT_INDEX,
+    NT_SUBSCRIPT, NT_INDEX, NT_LIST,
 } NodeType;
 
 class ASTVisitor;
@@ -75,6 +75,7 @@ class IfExpNode;
 class ImportNode;
 class IndexNode;
 class KeywordNode;
+class ListNode;
 class NameNode;
 class NumberNode;
 class StringNode;
@@ -123,6 +124,7 @@ public:
     virtual ASTNode* visit_index(IndexNode* node) { return nullptr; }
     virtual ASTNode* visit_import(ImportNode* node) { return nullptr; }
     virtual ASTNode* visit_keyword(KeywordNode* node) { return nullptr; }
+    virtual ASTNode* visit_list(ListNode* node) { return nullptr; }
     virtual ASTNode* visit_name(NameNode* node) { return nullptr; }
     virtual ASTNode* visit_string(StringNode* node) { return nullptr; }
     virtual ASTNode* visit_number(NumberNode* node) { return nullptr; }

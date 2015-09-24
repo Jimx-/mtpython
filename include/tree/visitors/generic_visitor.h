@@ -184,6 +184,11 @@ public:
 
 	virtual ASTNode* visit_keyword(KeywordNode* node) { return node; }
 
+	virtual ASTNode* visit_list(ListNode* node)
+	{
+		return node;
+	}
+
 	virtual ASTNode* visit_name(NameNode* node) 
 	{
 		return node; 
@@ -228,7 +233,7 @@ public:
 		return node;
 	}
 
-	virtual ASTNode* visit_tuple(TupleNode* node) {return node; }
+	virtual ASTNode* visit_tuple(TupleNode* node) { return node; }
 	virtual ASTNode* visit_unaryop(UnaryOpNode* node) { return node;}
 
 	virtual ASTNode* visit_while(WhileNode* node)

@@ -207,3 +207,8 @@ NODE_CONSTRUCTOR(IndexNode)
 	value = nullptr;
 }
 
+NODE_CONSTRUCTOR(ListNode)
+{
+	ctx = EC_LOAD;
+	elts.clear();
+}

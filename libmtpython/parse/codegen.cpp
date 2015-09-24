@@ -407,6 +407,30 @@ ASTNode* BaseCodeGenerator::visit_keyword(KeywordNode* node)
 	return node;
 }
 
+ASTNode* BaseCodeGenerator::visit_list(ListNode* node)
+{
+	set_lineno(node->get_line());
+	std::vector<ASTNode*>& elements = node->get_elements();
+	std::size_t eltcount = elements.size();
+
+	ExprContext ctx = node->get_context();
+	if (ctx == ExprContext::EC_STORE) {
+		for (std::size_t i = 0; i < eltcount; i++) {
+			ASTNode* elt = elements[i];
+			/* TODO: Starred assignment PEP 3132 */
+		}
+	}
+
+	for (auto elt : elements) {
+		elt->visit(this);
+	}
+
+	if (ctx == ExprContext::EC_LOAD) emit_op_arg(BUILD_LIST, eltcount);
+
+
+	return node;
+}
+
 ASTNode* BaseCodeGenerator::visit_const(ConstNode* node)
 {
 	set_lineno(node->get_line());
