@@ -192,6 +192,10 @@ static int compare_operation(CmpOper op)
 		return 2;
 	case OP_NOTEQ:
 		return 3;
+	case OP_IS:
+		return 8;
+	case OP_IS_NOT:
+		return 9;
 	}
 
 	return 0;

@@ -151,6 +151,8 @@ public:
 		for (unsigned int i = 0; i < comprehensions.size(); i++) {
 			comprehensions[i]->visit(this);
 		}
+
+		return node;
 	}
 
 	virtual ASTNode* visit_if(IfNode* node) 

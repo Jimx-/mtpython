@@ -75,6 +75,7 @@ void Parser::init_res_words(Scanner& scn)
 	scn.add_res_word("pass", TOK_PASS);
 	scn.add_res_word("as", TOK_AS);
 	scn.add_res_word("import", TOK_IMPORT);
+	scn.add_res_word("is", TOK_IS);
 }
 
 /*
@@ -441,6 +442,7 @@ ASTNode* Parser::not_test()
     UnaryOpNode* tmp = nullptr;
 
     if (cur_tok == TOK_NOT) {
+		match(TOK_NOT);
     	tmp = new UnaryOpNode(s.get_line());
     	tmp->set_op(OP_NOT);
     	tmp->set_operand(not_test());
@@ -459,10 +461,17 @@ ASTNode* Parser::comparison()
     CompareNode* p = new CompareNode(s.get_line());
     bool used = false;
     while ((cur_tok == TOK_EQLEQL) || (cur_tok == TOK_NEQ) || (cur_tok == TOK_LSS) || (cur_tok == TOK_GTR) ||
-		(cur_tok == TOK_LEQ) || (cur_tok == TOK_GEQ) || (cur_tok == TOK_IN)) {
+		(cur_tok == TOK_LEQ) || (cur_tok == TOK_GEQ) || (cur_tok == TOK_IN) || (cur_tok == TOK_IS)) {
+		Token tok = cur_tok;
+		match(cur_tok);
+
+		if (cur_tok == TOK_NOT) {
+			match(TOK_NOT);
+			tok = TOK_IS_NOT;
+		}
+
         p->set_left(node);
-        p->push_op(tok2cmpop(cur_tok));  
-        match(cur_tok);
+        p->push_op(tok2cmpop(tok));
        	p->push_comparator(expr());
         used = true;
     }
