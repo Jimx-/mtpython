@@ -37,6 +37,8 @@ public:
 	virtual void print(const int padding) {
 		std::string blank(padding, ' ');
 		std::cout << blank << line << ": FunctionDef: "<< std::endl;
+		std::cout << blank << "  " << line << ": Args: "<< std::endl;
+		args->print(padding + 4);
 		std::cout << blank << "  " << line << ": Body: "<< std::endl;
 		ASTNode* stmt = body;
 		while (stmt) {

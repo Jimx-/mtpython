@@ -414,12 +414,6 @@ ASTNode* BaseCodeGenerator::visit_list(ListNode* node)
 	std::size_t eltcount = elements.size();
 
 	ExprContext ctx = node->get_context();
-	if (ctx == ExprContext::EC_STORE) {
-		for (std::size_t i = 0; i < eltcount; i++) {
-			ASTNode* elt = elements[i];
-			/* TODO: Starred assignment PEP 3132 */
-		}
-	}
 
 	for (auto elt : elements) {
 		elt->visit(this);

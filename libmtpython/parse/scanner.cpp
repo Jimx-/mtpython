@@ -525,6 +525,15 @@ Token Scanner::get_token()
 
 	else if (last_char == '.') {
 		last_char = read_char();
+		if (last_char == '.') {
+			peek_begin();
+			last_char = read_char();
+			if (last_char == '.') {
+				last_char = read_char();
+				return TOK_ELLIPSIS;
+			}
+			peek_end();
+		}
 		return TOK_DOT;
 	}
 

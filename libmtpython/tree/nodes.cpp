@@ -212,3 +212,9 @@ NODE_CONSTRUCTOR(ListNode)
 	ctx = EC_LOAD;
 	elts.clear();
 }
+
+NODE_CONSTRUCTOR(ImportFromNode)
+{
+
+}
+

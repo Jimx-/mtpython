@@ -175,6 +175,16 @@ public:
 		return node;
 	}
 
+	virtual ASTNode* visit_importfrom(ImportFromNode* node)
+	{
+		std::vector<AliasNode*>& names = node->get_names();
+		for (unsigned int i = 0; i < names.size(); i++) {
+			names[i]->visit(this);
+		}
+
+		return node;
+	}
+
 	virtual ASTNode* visit_index(IndexNode* node)
 	{
 		node->get_value()->visit(this);

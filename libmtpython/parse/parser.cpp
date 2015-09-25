@@ -210,6 +210,9 @@ ASTNode* Parser::stmt()
 	case TOK_IMPORT:
 		node = import_stmt();
 		break;
+	case TOK_FROM:
+		node = import_from_stmt();
+		break;
 	case TOK_IDENT:
 	case TOK_INTLITERAL:
 	case TOK_STRINGLITERAL:
@@ -315,7 +318,14 @@ ASTNode* Parser::testlist_comp_list()
 		}
 		elt = list;
 	} else if (cur_tok == TOK_FOR) {
-		return nullptr;
+		GeneratorExpNode* genexp = new GeneratorExpNode(s.get_line());
+		genexp->set_elt(elt);
+
+		while (cur_tok == TOK_FOR) {
+			genexp->push_comprehension(comp_for());
+		}
+
+		elt = genexp;
 	}
 
 	return elt;
@@ -1187,9 +1197,70 @@ ASTNode* Parser::import_stmt()
 	return node;
 }
 
-AliasNode* Parser::dotted_as_name()
+ASTNode* Parser::import_from_stmt()
 {
-	AliasNode* node = new AliasNode(s.get_line());
+	ImportFromNode* node = new ImportFromNode(s.get_line());
+
+	match(TOK_FROM);
+
+	std::string modname;
+	int dot_count = 0;
+	while (true) {
+		if (cur_tok == TOK_IDENT) {
+			modname = dotted_name();
+			break;
+		} else if (cur_tok == TOK_ELLIPSIS) {
+			dot_count += 2;
+			match(TOK_ELLIPSIS);
+		} else if (cur_tok != TOK_DOT) {
+			break;
+		}
+
+		match(TOK_DOT);
+		dot_count++;
+	}
+
+	match(TOK_IMPORT);
+	bool star_import = false;
+	bool lparen = false;
+	bool joining = s.get_implicit_line_joining();
+
+	if (cur_tok == TOK_STAR) {
+		star_import = true;
+		match(TOK_STAR);
+	} else if (cur_tok == TOK_LPAREN) {
+		lparen = true;
+		s.set_implicit_line_joining(true);
+		match(TOK_LPAREN);
+	}
+
+	node->set_module(modname);
+
+	if (!star_import) {
+		node->push_name(dotted_as_name());
+
+		while (cur_tok == TOK_COMMA) {
+			match(TOK_COMMA);
+			node->push_name(dotted_as_name());
+		}
+	} else {
+		AliasNode* star_name = new AliasNode(s.get_line());
+		star_name->set_name("*");
+		node->push_name(star_name);
+	}
+
+	if (lparen) {
+		s.set_implicit_line_joining(joining);
+		match(TOK_RPAREN);
+	}
+
+	node->set_level(dot_count);
+
+	return node;
+}
+
+std::string Parser::dotted_name()
+{
 	std::string name = s.get_last_word();
 	match(TOK_IDENT);
 
@@ -1198,6 +1269,14 @@ AliasNode* Parser::dotted_as_name()
 		name += "." + s.get_last_word();
 		match(TOK_IDENT);
 	}
+
+	return name;
+}
+
+AliasNode* Parser::dotted_as_name()
+{
+	AliasNode* node = new AliasNode(s.get_line());
+	std::string name = dotted_name();
 	node->set_name(name);
 
 	if (cur_tok == TOK_AS) {
@@ -1213,16 +1292,37 @@ ASTNode* Parser::arguments()
 {
 	ArgumentsNode* node = new ArgumentsNode(s.get_line());
 	ASTNode* p = nullptr;
+	bool have_default = false;
 	match(TOK_LPAREN);
 	if (cur_tok != TOK_RPAREN) {
 		p = expr();
 		p->set_context(EC_PARAM);
 		node->push_arg(p);
+
+		if (cur_tok == TOK_EQL) {
+			match(TOK_EQL);
+			have_default = true;
+			ASTNode* dfl = expr();
+			if (!dfl) diag.error(s.get_line(), s.get_col(), "invalid syntax");
+			node->push_default(dfl);
+		}
+
 		while (cur_tok == TOK_COMMA) {
             match(TOK_COMMA);
 			p = expr();
 			p->set_context(EC_PARAM);
 			node->push_arg(p);
+
+			if (cur_tok == TOK_EQL) {
+				match(TOK_EQL);
+
+				have_default = true;
+				ASTNode* dfl = expr();
+				if (!dfl) diag.error(s.get_line(), s.get_col(), "invalid syntax");
+				node->push_default(dfl);
+			} else if (have_default) {
+				diag.error(s.get_line(), s.get_col(), "non-default argument follows default argument");
+			}
 		}
 	}
 	match(TOK_RPAREN);
