@@ -218,3 +218,18 @@ NODE_CONSTRUCTOR(ImportFromNode)
 
 }
 
+NODE_CONSTRUCTOR(DictNode)
+{
+
+}
+
+NODE_CONSTRUCTOR(SetNode)
+{
+
+}
+
+NODE_CONSTRUCTOR(StarredNode)
+{
+	value = nullptr;
+	ctx = EC_LOAD;
+}

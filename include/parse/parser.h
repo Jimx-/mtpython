@@ -31,6 +31,7 @@ namespace mtpython {
 			mtpython::tree::ASTNode* suite();
 			mtpython::tree::ASTNode* stmt();
 			mtpython::tree::ASTNode* expr_stmt();
+			mtpython::tree::ASTNode* star_expr();
 			mtpython::tree::ASTNode* expr();
 			mtpython::tree::ASTNode* function_def();
 			mtpython::tree::ASTNode* inner_if_stmt();

@@ -43,5 +43,8 @@
 #include "tree/nodes/slice_node.h"
 #include "tree/nodes/list_node.h"
 #include "tree/nodes/importfrom_node.h"
+#include "tree/nodes/dict_node.h"
+#include "tree/nodes/set_node.h"
+#include "tree/nodes/starred_node.h"
 
 #endif /* _NODES_H_ */

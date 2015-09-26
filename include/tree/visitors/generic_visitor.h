@@ -113,6 +113,16 @@ public:
 		return node; 
 	}
 
+	virtual ASTNode* visit_dict(DictNode* node)
+	{
+		std::vector<ASTNode*>& keys = node->get_keys();
+		for (unsigned int i = 0; i < keys.size(); i++) {
+			keys[i]->visit(this);
+		}
+
+		return node;
+	}
+
 	virtual ASTNode* visit_excepthandler(ExceptHandlerNode* node)
 	{
 		node->get_type()->visit(this);
@@ -198,6 +208,11 @@ public:
 
 	virtual ASTNode* visit_list(ListNode* node)
 	{
+		std::vector<ASTNode*>& elements = node->get_elements();
+		for (unsigned int i = 0; i < elements.size(); i++) {
+			elements[i]->visit(this);
+		}
+
 		return node;
 	}
 
@@ -224,6 +239,21 @@ public:
 	virtual ASTNode* visit_raise(RaiseNode* node) {return node; }
 	virtual ASTNode* visit_return(ReturnNode* node) { return node;}
 
+	virtual ASTNode* visit_set(SetNode* node)
+	{
+		std::vector<ASTNode*>& elements = node->get_elements();
+		for (unsigned int i = 0; i < elements.size(); i++) {
+			elements[i]->visit(this);
+		}
+
+		return node;
+	}
+
+	virtual ASTNode* visit_starred(StarredNode* node)
+	{
+		node->get_value()->visit(this);
+	}
+
 	virtual ASTNode* visit_subscript(SubscriptNode* node)
 	{
 		node->get_value()->visit(this);
@@ -245,7 +275,16 @@ public:
 		return node;
 	}
 
-	virtual ASTNode* visit_tuple(TupleNode* node) { return node; }
+	virtual ASTNode* visit_tuple(TupleNode* node)
+	{
+		std::vector<ASTNode*>& elements = node->get_elements();
+		for (unsigned int i = 0; i < elements.size(); i++) {
+			elements[i]->visit(this);
+		}
+
+		return node;
+	}
+
 	virtual ASTNode* visit_unaryop(UnaryOpNode* node) { return node;}
 
 	virtual ASTNode* visit_while(WhileNode* node)

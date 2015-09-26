@@ -241,7 +241,6 @@ ASTNode* Parser::expr_stmt()
 	ASTNode* expression = testlist();
 
 	if (cur_tok == TOK_EQL) {
-		match(TOK_EQL);
 		expression->set_context(EC_STORE);
 		AssignNode* asgn = new AssignNode(s.get_line());
 
@@ -251,7 +250,18 @@ ASTNode* Parser::expr_stmt()
 		} else {
 			asgn->push_target(expression);
 		}
-		asgn->set_value(testlist());
+
+		ASTNode* tgt;
+		while (cur_tok == TOK_EQL) {
+			match(TOK_EQL);
+			tgt = testlist();
+			if (cur_tok == TOK_EQL) {
+				tgt->set_context(EC_STORE);
+				asgn->push_target(tgt);
+			}
+		}
+
+		asgn->set_value(tgt);
 		expression = asgn;
 	} else if (cur_tok == TOK_PLUSEQ || cur_tok == TOK_MINUSEQ || cur_tok == TOK_STAREQ || cur_tok == TOK_SLASHEQ) {
 		if (TupleNode* tuple = dynamic_cast<TupleNode*>(expression)) {
@@ -457,7 +467,7 @@ ASTNode* Parser::not_test()
 /* comparison: expr (comp_op expr)* */
 ASTNode* Parser::comparison()
 {
-	ASTNode* node = expr();
+	ASTNode* node = star_expr();
     CompareNode* p = new CompareNode(s.get_line());
     bool used = false;
     while ((cur_tok == TOK_EQLEQL) || (cur_tok == TOK_NEQ) || (cur_tok == TOK_LSS) || (cur_tok == TOK_GTR) ||
@@ -472,7 +482,7 @@ ASTNode* Parser::comparison()
 
         p->set_left(node);
         p->push_op(tok2cmpop(tok));
-       	p->push_comparator(expr());
+       	p->push_comparator(star_expr());
         used = true;
     }
 
@@ -502,6 +512,25 @@ ASTNode* Parser::exprlist()
 	}
 
 	return elt;
+}
+
+ASTNode* Parser::star_expr()
+{
+	bool starred = false;
+	if (cur_tok == TOK_STAR) {
+		starred = true;
+		match(TOK_STAR);
+	}
+
+	ASTNode* node = expr();
+	if (starred) {
+		StarredNode* starred_node = new StarredNode(s.get_line());
+		starred_node->set_value(node);
+		starred_node->set_context(EC_LOAD);
+		node = starred_node;
+	}
+
+	return node;
 }
 
 /* expr: xor_expr ('|' xor_expr)* */
@@ -683,8 +712,14 @@ ASTNode* Parser::slice()
 	ASTNode* third = nullptr;
 
 
-	if (cur_tok == TOK_COLON) second = test();
-	if (cur_tok == TOK_COLON) third = test();
+	if (cur_tok == TOK_COLON) {
+		match(TOK_COLON);
+		second = test();
+	}
+	if (cur_tok == TOK_COLON) {
+		match(TOK_COLON);
+		third = test();
+	}
 
 
 	if (first && !second && !third) {
@@ -773,6 +808,33 @@ ASTNode* Parser::atom()
 			node = testlist_comp_list();
 		s.set_implicit_line_joining(joining);
 		match(TOK_RSQUARE);
+		break;
+	}
+	case TOK_LBRACE:
+	{
+		bool joining = s.get_implicit_line_joining();
+		s.set_implicit_line_joining(true);
+		match(TOK_LBRACE);
+		if (cur_tok == TOK_RBRACE)
+			node = new DictNode(s.get_line());
+		else {
+			ASTNode* first_elt = test();
+			if (cur_tok == TOK_RBRACE || cur_tok == TOK_COMMA) {	/* set */
+				SetNode* set_node = new SetNode(s.get_line());
+				set_node->push_element(first_elt);
+				while (cur_tok == TOK_COMMA) {
+					match(TOK_COMMA);
+					ASTNode* elt = test();
+					if (!elt) break;
+					set_node->push_element(elt);
+				}
+				node = set_node;
+			} else {
+
+			}
+		}
+		s.set_implicit_line_joining(joining);
+		match(TOK_RBRACE);
 		break;
 	}
     case TOK_INTLITERAL:
@@ -881,11 +943,16 @@ ASTNode* Parser::call(ASTNode* callable)
 {
 	CallNode* node = new CallNode(s.get_line());
 	node->set_func(callable);
+
+	bool joining = s.get_implicit_line_joining();
+	s.set_implicit_line_joining(true);
 	match(TOK_LPAREN);
+	ASTNode* vararg = nullptr;
 
 	while (cur_tok != TOK_RPAREN) {
 		if (cur_tok == TOK_STAR) {
-
+			match(TOK_STAR);
+			vararg = test();
 		} else if (cur_tok == TOK_STARSTAR) {
 
 		} else {
@@ -901,6 +968,7 @@ ASTNode* Parser::call(ASTNode* callable)
 		if (cur_tok != TOK_RPAREN) match(TOK_COMMA);
 	}
 
+	s.set_implicit_line_joining(joining);
 	match(TOK_RPAREN);
 	return node;
 }
@@ -1082,14 +1150,14 @@ ASTNode* Parser::del_stmt()
 	DeleteNode* node = new DeleteNode(s.get_line());
 	match(TOK_DEL);
 
-	ASTNode* target = expr();
+	ASTNode* target = test();
 	if (!target) diag.error(s.get_line(), s.get_col(), "invalid syntax"); 
 
 	target->set_context(EC_DEL);
 	node->push_target(target);
 	while (cur_tok == TOK_COMMA) {
 		match(TOK_COMMA);
-		target = expr();
+		target = test();
 		if (target) {
 			target->set_context(EC_DEL);
 			node->push_target(target);
@@ -1302,35 +1370,45 @@ ASTNode* Parser::arguments()
 	ArgumentsNode* node = new ArgumentsNode(s.get_line());
 	ASTNode* p = nullptr;
 	bool have_default = false;
+	ASTNode* vararg = nullptr;
+
 	match(TOK_LPAREN);
 	if (cur_tok != TOK_RPAREN) {
-		p = expr();
+		p = test();
 		p->set_context(EC_PARAM);
 		node->push_arg(p);
 
 		if (cur_tok == TOK_EQL) {
 			match(TOK_EQL);
 			have_default = true;
-			ASTNode* dfl = expr();
+			ASTNode* dfl = test();
 			if (!dfl) diag.error(s.get_line(), s.get_col(), "invalid syntax");
 			node->push_default(dfl);
 		}
 
 		while (cur_tok == TOK_COMMA) {
             match(TOK_COMMA);
-			p = expr();
-			p->set_context(EC_PARAM);
-			node->push_arg(p);
 
-			if (cur_tok == TOK_EQL) {
-				match(TOK_EQL);
+			if (cur_tok == TOK_STAR) {
+				match(TOK_STAR);
+				if (cur_tok != TOK_COMMA) {
+					vararg = test();
+				}
+			} else {
+				p = test();
+				p->set_context(EC_PARAM);
+				node->push_arg(p);
 
-				have_default = true;
-				ASTNode* dfl = expr();
-				if (!dfl) diag.error(s.get_line(), s.get_col(), "invalid syntax");
-				node->push_default(dfl);
-			} else if (have_default) {
-				diag.error(s.get_line(), s.get_col(), "non-default argument follows default argument");
+				if (cur_tok == TOK_EQL) {
+					match(TOK_EQL);
+
+					have_default = true;
+					ASTNode* dfl = test();
+					if (!dfl) diag.error(s.get_line(), s.get_col(), "invalid syntax");
+					node->push_default(dfl);
+				} else if (have_default) {
+					diag.error(s.get_line(), s.get_col(), "non-default argument follows default argument");
+				}
 			}
 		}
 	}

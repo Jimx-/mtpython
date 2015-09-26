@@ -15,7 +15,7 @@ typedef enum {
     NT_MODULE, NT_FUNCDEF, NT_NUMBER, NT_BINOP, NT_COMPARE, NT_IFEXP, NT_TUPLE, NT_DELETE,
     NT_YIELD, NT_YIELDFROM, NT_RAISE, NT_PASS, NT_KEYWORD, NT_STRING, NT_EXPR, NT_CONST,
     NT_EXCEPTHANDLER, NT_ATTRIBUTE, NT_ALIAS, NT_IMPORT, NT_COMPREHENSION, NT_GENERATOREXP,
-    NT_SUBSCRIPT, NT_INDEX, NT_LIST, NT_IMPORTFROM,
+    NT_SUBSCRIPT, NT_INDEX, NT_LIST, NT_IMPORTFROM, NT_DICT, NT_SET, NT_STARRED,
 } NodeType;
 
 class ASTVisitor;
@@ -65,6 +65,7 @@ class ComprehensionNode;
 class ConstNode;
 class ContinueNode;
 class DeleteNode;
+class DictNode;
 class ExceptHandlerNode;
 class ExprNode;
 class ForNode;
@@ -84,6 +85,8 @@ class SubscriptNode;
 class PassNode;
 class RaiseNode;
 class ReturnNode;
+class SetNode;
+class StarredNode;
 class TryNode;
 class TupleNode;
 class UnaryOpNode;
@@ -115,6 +118,7 @@ public:
     virtual ASTNode* visit_const(ConstNode* node) { return nullptr; }
     virtual ASTNode* visit_continue(ContinueNode* node) { return nullptr; }
     virtual ASTNode* visit_delete(DeleteNode* node) { return nullptr; }
+    virtual ASTNode* visit_dict(DictNode* node) { return nullptr; }
     virtual ASTNode* visit_excepthandler(ExceptHandlerNode* node) { return nullptr; }
     virtual ASTNode* visit_expr(ExprNode* node) { return nullptr; }
     virtual ASTNode* visit_for(ForNode* node) { return nullptr; }
@@ -133,6 +137,8 @@ public:
     virtual ASTNode* visit_pass(PassNode* node) { return nullptr; }
     virtual ASTNode* visit_raise(RaiseNode* node) { return nullptr; }
     virtual ASTNode* visit_return(ReturnNode* node) { return nullptr; }
+    virtual ASTNode* visit_set(SetNode* node) { return nullptr; }
+    virtual ASTNode* visit_starred(StarredNode* node) { return nullptr; }
     virtual ASTNode* visit_subscript(SubscriptNode* node) { return nullptr; }
     virtual ASTNode* visit_try(TryNode* node) { return nullptr; }
     virtual ASTNode* visit_tuple(TupleNode* node) { return nullptr; }
