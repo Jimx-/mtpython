@@ -76,6 +76,7 @@ void Parser::init_res_words(Scanner& scn)
 	scn.add_res_word("as", TOK_AS);
 	scn.add_res_word("import", TOK_IMPORT);
 	scn.add_res_word("is", TOK_IS);
+	scn.add_res_word("with", TOK_WITH);
 }
 
 /*
@@ -171,6 +172,10 @@ ASTNode* Parser::stmt()
 		compound_stmt = true;
 		node = function_def();
 		break;
+	case TOK_CLASS:
+		compound_stmt = true;
+		node = class_def();
+		break;
 	case TOK_IF:
 		compound_stmt = true;
 		node = if_stmt();
@@ -207,6 +212,10 @@ ASTNode* Parser::stmt()
 	case TOK_TRY:
 		compound_stmt = true;
 		node = try_stmt();
+		break;
+	case TOK_WITH:
+		compound_stmt = true;
+		node = with_stmt();
 		break;
 	case TOK_IMPORT:
 		node = import_stmt();
@@ -471,13 +480,22 @@ ASTNode* Parser::comparison()
     CompareNode* p = new CompareNode(s.get_line());
     bool used = false;
     while ((cur_tok == TOK_EQLEQL) || (cur_tok == TOK_NEQ) || (cur_tok == TOK_LSS) || (cur_tok == TOK_GTR) ||
-		(cur_tok == TOK_LEQ) || (cur_tok == TOK_GEQ) || (cur_tok == TOK_IN) || (cur_tok == TOK_IS)) {
+		(cur_tok == TOK_LEQ) || (cur_tok == TOK_GEQ) || (cur_tok == TOK_IN) || (cur_tok == TOK_IS) || (cur_tok == TOK_NOT)) {
 		Token tok = cur_tok;
 		match(cur_tok);
 
-		if (cur_tok == TOK_NOT) {
+		if (tok == TOK_IS && cur_tok == TOK_NOT) {
 			match(TOK_NOT);
 			tok = TOK_IS_NOT;
+		}
+
+		if (tok == TOK_NOT) {
+			if (cur_tok == TOK_IN) {
+				match(TOK_IN);
+				tok = TOK_NOT_IN;
+			} else {
+				diag.error(s.get_line(), s.get_col(), "invalid syntax");
+			}
 		}
 
         p->set_left(node);
@@ -1067,6 +1085,36 @@ ASTNode* Parser::function_def()
 	return node;
 }
 
+ASTNode* Parser::class_def()
+{
+	ClassDefNode* node = new ClassDefNode(s.get_line());
+	match(TOK_CLASS);
+
+	node->set_name(s.get_last_word());
+	match(TOK_IDENT);
+
+	if (cur_tok == TOK_LPAREN) {
+		ASTNode* p;
+		match(TOK_LPAREN);
+		if (cur_tok != TOK_RPAREN) {
+			p = test();
+			if (p) node->push_base(p);
+
+			while (cur_tok == TOK_COMMA) {
+				match(TOK_COMMA);
+				p = test();
+				if (p) node->push_base(p);
+			}
+		}
+		match(TOK_RPAREN);
+	}
+
+	match(TOK_COLON);
+	node->set_body(suite());
+
+	return node;
+}
+
 ASTNode* Parser::inner_if_stmt()
 {
 	IfNode* node = new IfNode(s.get_line());
@@ -1256,6 +1304,45 @@ ASTNode* Parser::try_stmt()
 		if (!finalbody) diag.error(s.get_line(), s.get_col(), "invalid syntax");
 		node->set_finalbody(finalbody);
 	}
+
+	return node;
+}
+
+ASTNode* Parser::with_stmt()
+{
+	WithNode* node = new WithNode(s.get_line());
+	match(TOK_WITH);
+
+	ASTNode* context_expr = test();
+	ASTNode* opt_vars = nullptr;
+	if (cur_tok == TOK_AS) {
+		match(TOK_AS);
+		opt_vars = expr();
+	}
+
+	WithItemNode* with_item = new WithItemNode(s.get_line());
+	with_item->set_context_expr(context_expr);
+	with_item->set_optional_vars(opt_vars);
+	node->push_item(with_item);
+
+	while (cur_tok == TOK_COMMA) {
+		match(TOK_COMMA);
+
+		context_expr = test();
+		opt_vars = nullptr;
+		if (cur_tok == TOK_AS) {
+			match(TOK_AS);
+			opt_vars = expr();
+		}
+
+		with_item = new WithItemNode(s.get_line());
+		with_item->set_context_expr(context_expr);
+		with_item->set_optional_vars(opt_vars);
+		node->push_item(with_item);
+	}
+
+	match(TOK_COLON);
+	node->set_body(suite());
 
 	return node;
 }

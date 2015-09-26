@@ -233,3 +233,19 @@ NODE_CONSTRUCTOR(StarredNode)
 	value = nullptr;
 	ctx = EC_LOAD;
 }
+
+NODE_CONSTRUCTOR(WithNode)
+{
+	body = nullptr;
+}
+
+NODE_CONSTRUCTOR(WithItemNode)
+{
+	optional_vars = nullptr;
+	context_expr = nullptr;
+}
+
+NODE_CONSTRUCTOR(ClassDefNode)
+{
+	body = nullptr;
+}

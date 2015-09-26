@@ -46,5 +46,7 @@
 #include "tree/nodes/dict_node.h"
 #include "tree/nodes/set_node.h"
 #include "tree/nodes/starred_node.h"
+#include "tree/nodes/with_node.h"
+#include "tree/nodes/classdef_node.h"
 
 #endif /* _NODES_H_ */

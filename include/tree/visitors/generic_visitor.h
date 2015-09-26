@@ -82,6 +82,14 @@ public:
 		return node;
 	}
 
+	virtual ASTNode* visit_classdef(ClassDefNode* node)
+	{
+		visit_sequence(node->get_body());
+		std::vector<ASTNode*> bases = node->get_bases();
+		for(std::size_t i = 0; i < bases.size(); i++) bases[i]->visit(this);
+		return node;
+	}
+
 	virtual ASTNode* visit_compare(CompareNode* node) { return node; }
 
 	virtual ASTNode* visit_comprehension(ComprehensionNode* node)
@@ -293,6 +301,26 @@ public:
 		visit_sequence(node->get_body());
 		if (ASTNode* orelse = node->get_orelse())
 			visit_sequence(orelse);
+
+		return node;
+	}
+
+	virtual ASTNode* visit_with(WithNode* node)
+	{
+		std::vector<WithItemNode*> items = node->get_items();
+		for (unsigned int i = 0; i < items.size(); i++) {
+			items[i]->visit(this);
+		}
+		visit_sequence(node->get_body());
+
+		return node;
+	}
+
+	virtual  ASTNode* visit_withitem(WithItemNode* node)
+	{
+		node->get_context_expr()->visit(this);
+		ASTNode* opt_vars = node->get_optional_vars();
+		if (opt_vars) opt_vars->visit(this);
 
 		return node;
 	}

@@ -16,6 +16,7 @@ typedef enum {
     NT_YIELD, NT_YIELDFROM, NT_RAISE, NT_PASS, NT_KEYWORD, NT_STRING, NT_EXPR, NT_CONST,
     NT_EXCEPTHANDLER, NT_ATTRIBUTE, NT_ALIAS, NT_IMPORT, NT_COMPREHENSION, NT_GENERATOREXP,
     NT_SUBSCRIPT, NT_INDEX, NT_LIST, NT_IMPORTFROM, NT_DICT, NT_SET, NT_STARRED,
+    NT_WITH, NT_WITHITEM, NT_CLASSDEF,
 } NodeType;
 
 class ASTVisitor;
@@ -60,6 +61,7 @@ class AugAssignNode;
 class BinOpNode;
 class BreakNode;
 class CallNode;
+class ClassDefNode;
 class CompareNode;
 class ComprehensionNode;
 class ConstNode;
@@ -91,6 +93,8 @@ class TryNode;
 class TupleNode;
 class UnaryOpNode;
 class WhileNode;
+class WithNode;
+class WithItemNode;
 class YieldNode;
 class YieldFromNode;
 
@@ -113,6 +117,7 @@ public:
     virtual ASTNode* visit_binop(BinOpNode* node) { return nullptr; }
     virtual ASTNode* visit_break(BreakNode* node) { return nullptr; }
     virtual ASTNode* visit_call(CallNode* node) { return nullptr; }
+    virtual ASTNode* visit_classdef(ClassDefNode* node) { return nullptr; }
     virtual ASTNode* visit_compare(CompareNode* node) { return nullptr; }
     virtual ASTNode* visit_comprehension(ComprehensionNode* node) { return nullptr; }
     virtual ASTNode* visit_const(ConstNode* node) { return nullptr; }
@@ -144,6 +149,8 @@ public:
     virtual ASTNode* visit_tuple(TupleNode* node) { return nullptr; }
     virtual ASTNode* visit_unaryop(UnaryOpNode* node) { return nullptr; }
     virtual ASTNode* visit_while(WhileNode* node) { return nullptr; }
+    virtual ASTNode* visit_with(WithNode* node) { return nullptr; }
+    virtual ASTNode* visit_withitem(WithItemNode* node) { return nullptr; }
     virtual ASTNode* visit_yield(YieldNode* node) { return nullptr; }
     virtual ASTNode* visit_yieldfrom(YieldFromNode* node) { return nullptr; }
 };

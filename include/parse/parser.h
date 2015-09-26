@@ -34,6 +34,7 @@ namespace mtpython {
 			mtpython::tree::ASTNode* star_expr();
 			mtpython::tree::ASTNode* expr();
 			mtpython::tree::ASTNode* function_def();
+			mtpython::tree::ASTNode* class_def();
 			mtpython::tree::ASTNode* inner_if_stmt();
 			mtpython::tree::ASTNode* if_stmt();
 			mtpython::tree::ASTNode* for_stmt();
@@ -45,6 +46,7 @@ namespace mtpython {
 			mtpython::tree::ASTNode* return_stmt();
 			mtpython::tree::ASTNode* raise_stmt();
 			mtpython::tree::ASTNode* try_stmt();
+			mtpython::tree::ASTNode* with_stmt();
 			mtpython::tree::ASTNode* import_stmt();
 			mtpython::tree::ASTNode* import_from_stmt();
 			std::string dotted_name();
