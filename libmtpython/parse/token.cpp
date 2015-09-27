@@ -310,6 +310,10 @@ CmpOper mtpython::parse::tok2cmpop(Token tok)
 		return OP_LSSEQ;
 	case TOK_GEQ:
 		return OP_GTREQ;
+	case TOK_IN:
+		return OP_IN;
+	case TOK_NOT_IN:
+		return OP_NOT_IN;
 	case TOK_IS:
 		return OP_IS;
 	case TOK_IS_NOT:

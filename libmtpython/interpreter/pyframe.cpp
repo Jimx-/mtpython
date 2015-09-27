@@ -488,6 +488,11 @@ void PyFrame::compare_op(int arg, int next_pc)
 	case 5:
 		result = space->ge(v1, v2);
 		break;
+	case 6:
+		result = space->contains(v2, v1);
+		break;
+	case 7:
+		break;
 	}
 
 	push_value(result);

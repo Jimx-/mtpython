@@ -192,6 +192,10 @@ static int compare_operation(CmpOper op)
 		return 2;
 	case OP_NOTEQ:
 		return 3;
+	case OP_IN:
+		return 6;
+	case OP_NOT_IN:
+		return 7;
 	case OP_IS:
 		return 8;
 	case OP_IS_NOT:
@@ -215,7 +219,7 @@ ASTNode* BaseCodeGenerator::visit_compare(CompareNode *node) {
 		cleanup = new_block();
 		comparators[0]->visit(this);
 	}
-	for (unsigned int i = 1; i < opcount; i++) {
+	for (int i = 1; i < opcount; i++) {
 		emit_op(DUP_TOP);
 		emit_op(ROT_THREE);
 		int arg = compare_operation(ops[i - 1]);

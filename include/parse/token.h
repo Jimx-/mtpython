@@ -36,7 +36,7 @@ namespace mtpython {
 
 		typedef enum {
 			OP_LSS, OP_GTR, OP_LSSEQ, OP_GTREQ, OP_EQ, OP_NOTEQ,		/* < > <= >= == != */
-			OP_IS, OP_IS_NOT,		/* is is not */
+			OP_IN, OP_NOT_IN, OP_IS, OP_IS_NOT,		/* is is not */
 			INVALID_CMPOP,
 		} CmpOper;
 

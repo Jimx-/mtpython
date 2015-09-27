@@ -77,10 +77,10 @@ M_BaseObject* M_StdTupleObject::__getitem__(mtpython::vm::ThreadContext* context
 	M_BaseObject* item = nullptr;
 	M_StdTupleObject* as_tuple = static_cast<M_StdTupleObject*>(obj);
 	if (index < 0) {
-		if (index < -(as_tuple->items.size())) throw InterpError(space->IndexError_type(), space->wrap_str("tuple index out of range"));
+		if (index < -(int)(as_tuple->items.size())) throw InterpError(space->IndexError_type(), space->wrap_str("tuple index out of range"));
 		item = as_tuple->items[as_tuple->items.size() + index];
 	} else {
-		if (index >= as_tuple->items.size()) throw InterpError(space->IndexError_type(), space->wrap_str("tuple index out of range"));
+		if (index >= (int)as_tuple->items.size()) throw InterpError(space->IndexError_type(), space->wrap_str("tuple index out of range"));
 		item = as_tuple->items[index];
 	}
 

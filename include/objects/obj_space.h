@@ -165,6 +165,7 @@ public:
 	M_BaseObject* ge(M_BaseObject* obj1, M_BaseObject* obj2);
 	M_BaseObject* ne(M_BaseObject* obj1, M_BaseObject* obj2);
 	M_BaseObject* eq(M_BaseObject* obj1, M_BaseObject* obj2);
+	M_BaseObject* contains(M_BaseObject* obj1, M_BaseObject* obj2);
 
 	M_BaseObject* abs(M_BaseObject* obj);
 	M_BaseObject* len(M_BaseObject* obj);

@@ -191,6 +191,7 @@ DEF_CMP_OPER(le, __le__, __le__)
 DEF_CMP_OPER(gt, __gt__, __gt__)
 DEF_CMP_OPER(ge, __ge__, __ge__)
 DEF_CMP_OPER(ne, __ne__, __ne__)
+DEF_CMP_OPER(contains, __contains__, __contains__)
 
 M_BaseObject* ObjSpace::not_(M_BaseObject* obj)
 {
