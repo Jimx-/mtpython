@@ -16,7 +16,7 @@ typedef enum {
     NT_YIELD, NT_YIELDFROM, NT_RAISE, NT_PASS, NT_KEYWORD, NT_STRING, NT_EXPR, NT_CONST,
     NT_EXCEPTHANDLER, NT_ATTRIBUTE, NT_ALIAS, NT_IMPORT, NT_COMPREHENSION, NT_GENERATOREXP,
     NT_SUBSCRIPT, NT_INDEX, NT_LIST, NT_IMPORTFROM, NT_DICT, NT_SET, NT_STARRED,
-    NT_WITH, NT_WITHITEM, NT_CLASSDEF,
+    NT_WITH, NT_WITHITEM, NT_CLASSDEF, NT_LAMBDA, NT_SLICE,
 } NodeType;
 
 class ASTVisitor;
@@ -79,6 +79,7 @@ class ImportNode;
 class ImportFromNode;
 class IndexNode;
 class KeywordNode;
+class LambdaNode;
 class ListNode;
 class NameNode;
 class NumberNode;
@@ -88,6 +89,7 @@ class PassNode;
 class RaiseNode;
 class ReturnNode;
 class SetNode;
+class SliceNode;
 class StarredNode;
 class TryNode;
 class TupleNode;
@@ -135,6 +137,7 @@ public:
     virtual ASTNode* visit_import(ImportNode* node) { return nullptr; }
     virtual ASTNode* visit_importfrom(ImportFromNode* node) { return nullptr; }
     virtual ASTNode* visit_keyword(KeywordNode* node) { return nullptr; }
+    virtual ASTNode* visit_lambda(LambdaNode* node) { return nullptr; }
     virtual ASTNode* visit_list(ListNode* node) { return nullptr; }
     virtual ASTNode* visit_name(NameNode* node) { return nullptr; }
     virtual ASTNode* visit_string(StringNode* node) { return nullptr; }
@@ -143,6 +146,7 @@ public:
     virtual ASTNode* visit_raise(RaiseNode* node) { return nullptr; }
     virtual ASTNode* visit_return(ReturnNode* node) { return nullptr; }
     virtual ASTNode* visit_set(SetNode* node) { return nullptr; }
+    virtual ASTNode* visit_slice(SliceNode* node) { return nullptr; }
     virtual ASTNode* visit_starred(StarredNode* node) { return nullptr; }
     virtual ASTNode* visit_subscript(SubscriptNode* node) { return nullptr; }
     virtual ASTNode* visit_try(TryNode* node) { return nullptr; }

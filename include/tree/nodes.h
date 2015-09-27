@@ -48,5 +48,6 @@
 #include "tree/nodes/starred_node.h"
 #include "tree/nodes/with_node.h"
 #include "tree/nodes/classdef_node.h"
+#include "tree/nodes/lambda_node.h"
 
 #endif /* _NODES_H_ */

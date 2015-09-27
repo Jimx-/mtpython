@@ -223,9 +223,11 @@ ASTNode* Parser::stmt()
 	case TOK_FROM:
 		node = import_from_stmt();
 		break;
+	case TOK_LAMBDA:
 	case TOK_IDENT:
 	case TOK_INTLITERAL:
 	case TOK_STRINGLITERAL:
+	case TOK_NONE:
 		node = expr_stmt();
 		break;
 	case TOK_INDENT:
@@ -255,7 +257,6 @@ ASTNode* Parser::expr_stmt()
 
 		if (TupleNode* tuple = dynamic_cast<TupleNode*>(expression)) {
 			asgn->set_targets(tuple->get_elements());
-			delete tuple;
 		} else {
 			asgn->push_target(expression);
 		}
@@ -400,7 +401,7 @@ ASTNode* Parser::test()
 {
 	ASTNode* node = nullptr;
 	if (cur_tok == TOK_LAMBDA) {
-		return nullptr;
+		return lambda_def();
 	} else {
 		node = or_test();
 		if (!node) return node;
@@ -739,12 +740,18 @@ ASTNode* Parser::slice()
 		third = test();
 	}
 
-
 	if (first && !second && !third) {
 		IndexNode* index = new IndexNode(s.get_line());
 		index->set_value(first);
 
 		node = index;
+	} else {
+		SliceNode* slice_node = new SliceNode(s.get_line());
+		slice_node->set_lower(first);
+		slice_node->set_upper(second);
+		slice_node->set_step(third);
+
+		node = slice_node;
 	}
 
 	return node;
@@ -966,13 +973,15 @@ ASTNode* Parser::call(ASTNode* callable)
 	s.set_implicit_line_joining(true);
 	match(TOK_LPAREN);
 	ASTNode* vararg = nullptr;
+	ASTNode* kwarg = nullptr;
 
 	while (cur_tok != TOK_RPAREN) {
 		if (cur_tok == TOK_STAR) {
 			match(TOK_STAR);
 			vararg = test();
 		} else if (cur_tok == TOK_STARSTAR) {
-
+			match(TOK_STARSTAR);
+			kwarg = test();
 		} else {
 			ASTNode* arg = argument();
 			KeywordNode* keyword = dynamic_cast<KeywordNode*>(arg);
@@ -1077,7 +1086,9 @@ ASTNode* Parser::function_def()
 
 	node->set_name(s.get_last_word());
 	match(TOK_IDENT);
+	match(TOK_LPAREN);
 	node->set_args(arguments());
+	match(TOK_RPAREN);
 	match(TOK_COLON);
 
 	node->set_body(suite());
@@ -1112,6 +1123,23 @@ ASTNode* Parser::class_def()
 	match(TOK_COLON);
 	node->set_body(suite());
 
+	return node;
+}
+
+ASTNode* Parser::lambda_def()
+{
+	LambdaNode* node = new LambdaNode(s.get_line());
+	match(TOK_LAMBDA);
+
+	if (cur_tok == TOK_COLON) {
+		node->set_args(new ArgumentsNode(s.get_line()));
+	} else {
+		node->set_args(arguments());
+	}
+
+	match(TOK_COLON);
+
+	node->set_body(test());
 	return node;
 }
 
@@ -1458,8 +1486,8 @@ ASTNode* Parser::arguments()
 	ASTNode* p = nullptr;
 	bool have_default = false;
 	ASTNode* vararg = nullptr;
+	ASTNode* kwarg = nullptr;
 
-	match(TOK_LPAREN);
 	if (cur_tok != TOK_RPAREN) {
 		p = test();
 		p->set_context(EC_PARAM);
@@ -1481,6 +1509,9 @@ ASTNode* Parser::arguments()
 				if (cur_tok != TOK_COMMA) {
 					vararg = test();
 				}
+			} else if (cur_tok == TOK_STARSTAR) {
+				match(TOK_STARSTAR);
+				kwarg = test();
 			} else {
 				p = test();
 				p->set_context(EC_PARAM);
@@ -1499,7 +1530,7 @@ ASTNode* Parser::arguments()
 			}
 		}
 	}
-	match(TOK_RPAREN);
+
 	return node;
 }
 

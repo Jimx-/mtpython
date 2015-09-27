@@ -12,8 +12,10 @@ void Scope::add_child(Scope* child)
 const std::string& Scope::add_name(const std::string& id, int flags)
 {
 	auto iter = id2flags.find(id);
+	bool found = false;
 	if (iter != id2flags.end()) {
-		if (flags & SYM_PARAM && iter->second * SYM_PARAM) {
+		found = true;
+		if (flags & SYM_PARAM && iter->second & SYM_PARAM) {
 			throw SyntaxError("duplicate argument in function definition");
 		}
 
@@ -21,7 +23,9 @@ const std::string& Scope::add_name(const std::string& id, int flags)
 	}
 
 	id2flags[id] = flags;
-	if (flags & SYM_PARAM) varnames.push_back(id);
+	if (flags & SYM_PARAM && !found) {
+		varnames.push_back(id);
+	}
 
 	return id;
 }
@@ -125,6 +129,17 @@ ASTNode* SymtableVisitor::visit_functiondef(FunctionDefNode* node)
 	push_scope(scope, node);
 	node->get_args()->visit(this);
 	visit_sequence(node->get_body());
+	pop_scope();
+
+	return node;
+}
+
+ASTNode* SymtableVisitor::visit_lambda(LambdaNode* node)
+{
+	FunctionScope* scope = new FunctionScope("lambda", node->get_line(), 0);
+	push_scope(scope, node);
+	node->get_args()->visit(this);
+	node->get_body()->visit(this);
 	pop_scope();
 
 	return node;

@@ -159,7 +159,9 @@ public:
 
 	virtual ASTNode* visit_functiondef(FunctionDefNode* node) 
 	{
-		return node; 
+		node->get_args()->visit(this);
+		visit_sequence(node->get_body());
+		return node;
 	}
 
 	virtual  ASTNode* visit_generatorexp(GeneratorExpNode* node)
@@ -214,6 +216,13 @@ public:
 
 	virtual ASTNode* visit_keyword(KeywordNode* node) { return node; }
 
+	virtual ASTNode* visit_lambda(LambdaNode* node)
+	{
+		node->get_args()->visit(this);
+		visit_sequence(node->get_body());
+		return node;
+	}
+
 	virtual ASTNode* visit_list(ListNode* node)
 	{
 		std::vector<ASTNode*>& elements = node->get_elements();
@@ -253,6 +262,19 @@ public:
 		for (unsigned int i = 0; i < elements.size(); i++) {
 			elements[i]->visit(this);
 		}
+
+		return node;
+	}
+
+	virtual ASTNode* visit_slice(SliceNode* node)
+	{
+		ASTNode* tmp;
+		tmp = node->get_lower();
+		if (tmp) tmp->visit(this);
+		tmp = node->get_upper();
+		if (tmp) tmp->visit(this);
+		tmp = node->get_step();
+		if (tmp) tmp->visit(this);
 
 		return node;
 	}

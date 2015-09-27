@@ -249,3 +249,16 @@ NODE_CONSTRUCTOR(ClassDefNode)
 {
 	body = nullptr;
 }
+
+NODE_CONSTRUCTOR(LambdaNode)
+{
+	args = nullptr;
+	body = nullptr;
+}
+
+NODE_CONSTRUCTOR(SliceNode)
+{
+	upper = nullptr;
+	lower = nullptr;
+	step = nullptr;
+}

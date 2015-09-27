@@ -35,6 +35,7 @@ namespace mtpython {
 			mtpython::tree::ASTNode* expr();
 			mtpython::tree::ASTNode* function_def();
 			mtpython::tree::ASTNode* class_def();
+			mtpython::tree::ASTNode* lambda_def();
 			mtpython::tree::ASTNode* inner_if_stmt();
 			mtpython::tree::ASTNode* if_stmt();
 			mtpython::tree::ASTNode* for_stmt();

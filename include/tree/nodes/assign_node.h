@@ -22,7 +22,7 @@ public:
 	void set_value(ASTNode* value) { this->value = value; }
 	std::vector<ASTNode*>& get_targets() { return targets; }
 	void push_target(ASTNode* target) { targets.push_back(target); }
-	void set_targets(std::vector<ASTNode*>& targets) { this->targets = targets; }
+	void set_targets(std::vector<ASTNode*>& targets) { this->targets.insert(this->targets.end(), targets.begin(), targets.end()); }
 	
 	virtual NodeType get_tag() { return NT_ASSIGN; }
 
@@ -31,7 +31,7 @@ public:
 		std::cout << blank << line << ": Assign:" << std::endl;
 		std::cout << blank << "  " << line << ": Targets:" << std::endl;
 		for (unsigned int i = 0; i < targets.size(); i++) targets[i]->print(padding + 4);
-			std::cout << blank << "  " << line << ": Value:" << std::endl;
+		std::cout << blank << "  " << line << ": Value:" << std::endl;
 		value->print(padding + 4);
 	}
 

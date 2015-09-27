@@ -42,9 +42,11 @@ public:
 		for (unsigned int i = 0; i < args.size(); i++) {
 			args[i]->print(padding + 4);
 		}
-		std::cout << blank << "  " << line << ": Keywords: " << std::endl;
-		for (unsigned int i = 0; i < keywords.size(); i++) {
-			keywords[i]->print(padding + 4);
+		if (keywords.size()) {
+			std::cout << blank << "  " << line << ": Keywords: " << std::endl;
+			for (unsigned int i = 0; i < keywords.size(); i++) {
+				keywords[i]->print(padding + 4);
+			}
 		}
 	}
 	
