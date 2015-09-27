@@ -241,7 +241,7 @@ ASTNode* Parser::stmt()
 	}
 
 	if (!compound_stmt) {
-		if (cur_tok != TOK_EOF) match(TOK_NEWLINE);
+		if (cur_tok != TOK_EOF && cur_tok != TOK_DEDENT) match(TOK_NEWLINE);
 	}
 
 	return node;

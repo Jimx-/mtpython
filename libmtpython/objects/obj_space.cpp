@@ -31,18 +31,23 @@ ThreadContext* ObjSpace::current_thread()
 
 void ObjSpace::make_builtins()
 {
+	std::vector<M_BaseObject*> builtin_names;
 	M_BaseObject* sys_name = wrap_str("sys");
 	mtpython::modules::SysModule* sys_mod = new mtpython::modules::SysModule(this, sys_name);
 	sys_mod->install();
+	builtin_names.push_back(wrap_str("sys"));
 	sys = sys_mod;
 
 	M_BaseObject* builtins_name = wrap_str("builtins");
 	mtpython::modules::BuiltinsModule* builtins_mod = new mtpython::modules::BuiltinsModule(this, builtins_name);
 	builtins_mod->install();
+	builtin_names.push_back(wrap_str("builtins"));
 	builtin = builtins_mod;
 	setitem(builtins_mod->get_dict(this), wrap("__builtins__"), wrap(builtins_mod));
 
 	init_builtin_exceptions();
+
+	setitem(sys_mod->get_dict(this), wrap_str("builtin_module_names"), new_tuple(builtin_names));
 }
 
 void ObjSpace::setup_builtin_modules()

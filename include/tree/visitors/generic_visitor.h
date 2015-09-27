@@ -282,6 +282,8 @@ public:
 	virtual ASTNode* visit_starred(StarredNode* node)
 	{
 		node->get_value()->visit(this);
+
+		return node;
 	}
 
 	virtual ASTNode* visit_subscript(SubscriptNode* node)
