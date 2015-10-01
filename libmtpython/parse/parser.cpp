@@ -873,7 +873,6 @@ ASTNode* Parser::atom()
 		/* TODO: handle encoding, str concat */
 		StringNode* str_node = new StringNode(s.get_line());
 		str_node->set_value(parsestrplus());
-		match(TOK_STRINGLITERAL);
 		node = str_node;
 		break;
 	}
@@ -909,8 +908,14 @@ ASTNode* Parser::atom()
 
 M_BaseObject* Parser::parsestrplus()
 {
-	return space->wrap_str(s.get_last_string());
-	//return parsestr();
+	M_BaseObject* str = space->wrap_str(s.get_last_string());
+	match(TOK_STRINGLITERAL);
+
+	while (cur_tok == TOK_STRINGLITERAL) {
+		match(TOK_STRINGLITERAL);
+	}
+
+	return str;
 }
 
 M_BaseObject* Parser::parsestr()

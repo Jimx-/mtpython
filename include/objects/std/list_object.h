@@ -25,6 +25,9 @@ public:
 
 	static M_BaseObject* __len__(vm::ThreadContext* context, M_BaseObject* self);
 	static M_BaseObject* __repr__(vm::ThreadContext* context, M_BaseObject* self);
+
+	static M_BaseObject* append(vm::ThreadContext* context, M_BaseObject* self, M_BaseObject* item);
+	static M_BaseObject* extend(vm::ThreadContext* context, M_BaseObject* self, M_BaseObject* iterable);
 };
 
 }
