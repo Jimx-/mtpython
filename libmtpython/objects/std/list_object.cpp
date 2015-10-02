@@ -45,7 +45,7 @@ M_BaseObject* M_StdListObject::__repr__(mtpython::vm::ThreadContext* context, M_
 		if (i > 0) str += ", ";
 		M_BaseObject* repr_item = space->repr(as_list->items[i]);
 		str += space->unwrap_str(repr_item);
-		context->gc_track_object(repr_item);
+		context->delete_local_ref(repr_item);
 	}
 	str += "]";
 

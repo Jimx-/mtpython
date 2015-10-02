@@ -359,7 +359,7 @@ void PyFrame::store_fast(int arg, int next_pc)
 {
 	M_BaseObject* value = pop_value_untrack();
 	local_vars[arg] = value;
-	context->gc_track_object(value);
+	context->delete_local_ref(value);
 }
 
 void PyFrame::load_global(int arg, int next_pc)
@@ -444,7 +444,7 @@ int PyFrame::pop_jump_if_false(int arg, int next_pc)
 		next_pc = arg;
 	}
 
-	context->gc_track_object(value);
+	context->delete_local_ref(value);
 	return next_pc;
 }
 
@@ -496,8 +496,8 @@ void PyFrame::compare_op(int arg, int next_pc)
 	}
 
 	push_value(result);
-	context->gc_track_object(v1);
-	context->gc_track_object(v2);
+	context->delete_local_ref(v1);
+	context->delete_local_ref(v2);
 }
 
 int PyFrame::jump_if_false_or_pop(int arg, int next_pc)
@@ -542,7 +542,7 @@ void PyFrame::get_iter(int arg, int next_pc)
     M_BaseObject* iterable = pop_value_untrack();
     M_BaseObject* iterator = space->iter(iterable);
     push_value(iterator);
-    context->gc_track_object(iterable);
+    context->delete_local_ref(iterable);
 }
 
 int PyFrame::for_iter(int arg, int next_pc)
@@ -638,7 +638,7 @@ void PyFrame::load_attr(int arg, int next_pc)
 	M_BaseObject* attr = get_name(arg);
 	M_BaseObject* value = space->getattr(obj, attr);
 	push_value(value);
-	context->gc_track_object(obj);
+	context->delete_local_ref(obj);
 }
 void PyFrame::store_attr(int arg, int next_pc)
 {
@@ -646,8 +646,8 @@ void PyFrame::store_attr(int arg, int next_pc)
 	M_BaseObject* attr = get_name(arg);
 	M_BaseObject* value = pop_value_untrack();
 	space->setattr(obj, attr, value);
-	context->gc_track_object(obj);
-	context->gc_track_object(value);
+	context->delete_local_ref(obj);
+	context->delete_local_ref(value);
 }
 
 void PyFrame::delete_attr(int arg, int next_pc)
@@ -655,7 +655,7 @@ void PyFrame::delete_attr(int arg, int next_pc)
 	M_BaseObject* obj = pop_value_untrack();
 	M_BaseObject* attr = get_name(arg);
 	space->delattr(obj, attr);
-	context->gc_track_object(obj);
+	context->delete_local_ref(obj);
 }
 
 void PyFrame::import_name(int arg, int next_pc)
@@ -676,9 +676,9 @@ void PyFrame::import_name(int arg, int next_pc)
 	M_BaseObject* obj = space->call_function(context, import_func, {mod_name, wrapped_globals, wrapped_locals, from_list, level});
 
 	push_value(obj);
-	context->gc_track_object(mod_name);
-	context->gc_track_object(from_list);
-	context->gc_track_object(level);
+	context->delete_local_ref(mod_name);
+	context->delete_local_ref(from_list);
+	context->delete_local_ref(level);
 }
 
 void PyFrame::store_global(int arg, int next_pc)
@@ -687,7 +687,7 @@ void PyFrame::store_global(int arg, int next_pc)
 	std::string name = space->unwrap_str(w_name);
 	M_BaseObject* value = pop_value_untrack();
 	space->setitem_str(globals, name, value);
-	context->gc_track_object(value);
+	context->delete_local_ref(value);
 }
 
 void PyFrame::load_name(int arg, int next_pc)
@@ -719,7 +719,7 @@ void PyFrame::store_name(int arg, int next_pc)
 	std::string name = space->unwrap_str(w_name);
 	M_BaseObject* value = pop_value_untrack();
 	space->setitem_str(locals, name, value);
-	context->gc_track_object(value);
+	context->delete_local_ref(value);
 }
 
 void PyFrame::build_list(int arg, int next_pc)

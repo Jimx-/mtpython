@@ -84,8 +84,8 @@ M_BaseObject* M_StdTupleObject::__getitem__(mtpython::vm::ThreadContext* context
 		item = as_tuple->items[index];
 	}
 
-	context->gc_track_object(obj);
-	context->gc_track_object(key);
+	context->delete_local_ref(obj);
+	context->delete_local_ref(key);
 
 	return item;
 }

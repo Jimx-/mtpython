@@ -111,7 +111,7 @@ protected:
     mtpython::objects::M_BaseObject* pop_value_untrack()
     {
         mtpython::objects::M_BaseObject* tmp = value_stack.top();
-        context->gc_untrack_object(tmp);
+        context->add_local_ref(tmp);
         value_stack.pop();
         return tmp;
     }
@@ -122,7 +122,7 @@ protected:
         n--;
         while (n >= 0) {
             mtpython::objects::M_BaseObject* tmp = value_stack.top();
-            context->gc_untrack_object(tmp);
+            context->add_local_ref(tmp);
             value_stack.pop();
             v[n--] = tmp;
         }
@@ -202,7 +202,7 @@ public:
     void push_value(mtpython::objects::M_BaseObject* value)
     {
         value_stack.push(value);
-        if (value) context->gc_track_object(value);
+        if (value) context->delete_local_ref(value);
     }
 
     int value_stack_level() { return value_stack.size(); }

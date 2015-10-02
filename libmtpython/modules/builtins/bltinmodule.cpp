@@ -90,7 +90,7 @@ static void exec_code_module(mtpython::vm::ThreadContext* context, M_BaseObject*
 	ObjSpace* space = context->get_space();
 	M_BaseObject* dict_name = space->wrap_str("__dict__");
 	M_BaseObject* dict = space->getattr(module, dict_name);
-	context->gc_track_object(dict_name);
+	context->delete_local_ref(dict_name);
 
 	if (set_path) {
 		space->setitem(dict, space->wrap_str("__file__"), space->wrap_str(filename));
@@ -237,7 +237,7 @@ static M_BaseObject* builtin_abs(mtpython::vm::ThreadContext* context, M_BaseObj
 	M_BaseObject* result = space->abs(obj);
 
 	if (!result) throw InterpError(space->TypeError_type(), space->wrap("bad operand type for abs()"));
-	context->gc_track_object(obj);
+	context->delete_local_ref(obj);
 
 	return result;
 }
@@ -253,10 +253,10 @@ static M_BaseObject* builtin_compile(mtpython::vm::ThreadContext* context, const
 
 	M_BaseObject* code = context->get_compiler()->compile(source, filename, mode, flags);
 
-	context->gc_track_object(args[0]);
-	context->gc_track_object(args[1]);
-	context->gc_track_object(args[2]);
-	context->gc_track_object(args[3]);
+	context->delete_local_ref(args[0]);
+	context->delete_local_ref(args[1]);
+	context->delete_local_ref(args[2]);
+	context->delete_local_ref(args[3]);
 
 	return space->wrap(code);
 }
@@ -272,7 +272,7 @@ static M_BaseObject* builtin_len(mtpython::vm::ThreadContext* context, M_BaseObj
 	M_BaseObject* result = space->len(obj);
 
 	if (!result) throw InterpError(space->TypeError_type(), space->wrap("object has no len()"));
-	context->gc_track_object(obj);
+	context->delete_local_ref(obj);
 
 	return result;
 }
@@ -295,13 +295,13 @@ static M_BaseObject* builtin_print(mtpython::vm::ThreadContext* context, M_BaseO
 		if (i > 0) std::cout << sep;
 		M_BaseObject* value = space->str(values[i]);
 		std::cout << value->to_string(space);
-		context->gc_track_object(value);
+		context->delete_local_ref(value);
 	}
 
 	std::cout << end;
 
-	context->gc_track_object(args);
-	context->gc_track_object(kwargs);
+	context->delete_local_ref(args);
+	context->delete_local_ref(kwargs);
 
 	return nullptr;
 }

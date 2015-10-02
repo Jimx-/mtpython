@@ -35,8 +35,8 @@ public:
 	void leave(mtpython::interpreter::PyFrame* frame);
 	mtpython::interpreter::PyFrame* top_frame() { return frame_stack.top(); }
 
-	void gc_track_object(mtpython::objects::M_BaseObject* obj) { }
-	void gc_untrack_object(mtpython::objects::M_BaseObject* obj) { }
+	void add_local_ref(mtpython::objects::M_BaseObject* obj) { }
+	void delete_local_ref(mtpython::objects::M_BaseObject* obj) { }
 
 	void acquire_import_lock() { }
 	void release_import_lock() { }

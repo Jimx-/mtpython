@@ -68,7 +68,7 @@ M_BaseObject* Module::__repr__(mtpython::vm::ThreadContext* context, M_BaseObjec
 	} else {
 		M_BaseObject* attr = space->wrap_str("__file__");
 		M_BaseObject* wrapped_file = space->getattr(self, attr);
-		context->gc_track_object(attr);
+		context->delete_local_ref(attr);
 		std::string filename = space->unwrap_str(wrapped_file);
 		str += " from '" + filename + "'>";
 	}
