@@ -9,7 +9,7 @@
 #include "interpreter/error.h"
 #include "interpreter/pyframe.h"
 #include "interpreter/module.h"
-#include "file_helper.h"
+#include "utils/file_helper.h"
 
 using namespace mtpython::modules;
 using namespace mtpython::objects;

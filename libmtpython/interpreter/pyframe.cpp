@@ -316,8 +316,8 @@ const std::string& PyFrame::get_localname(int index)
 		M_BaseObject* obj1 = pop_value_untrack(); \
 		M_BaseObject* result = space->name(obj1, obj2); \
 		push_value(result);	\
-		context->gc_track_object(obj1);	\
-		context->gc_track_object(obj2);	\
+		context->delete_local_ref(obj1);	\
+		context->delete_local_ref(obj2);	\
 	}
 
 #define DEF_BINARY_OPER_ALIAS(name, opname) \
@@ -327,8 +327,8 @@ const std::string& PyFrame::get_localname(int index)
 		M_BaseObject* obj1 = pop_value_untrack(); \
 		M_BaseObject* result = space->opname(obj1, obj2); \
 		push_value(result);	\
-		context->gc_track_object(obj1);	\
-		context->gc_track_object(obj2);	\
+		context->delete_local_ref(obj1);	\
+		context->delete_local_ref(obj2);	\
 	}
 
 DEF_BINARY_OPER(add)
@@ -582,7 +582,7 @@ int PyFrame::break_loop(int arg, int next_pc)
 		M_BaseObject* obj = pop_value_untrack(); \
 		M_BaseObject* result = space->name(obj); \
 		push_value(result);	\
-		context->gc_track_object(obj);	\
+		context->delete_local_ref(obj);	\
 	}
 
 DEF_UNARY_OPER(positive, pos)

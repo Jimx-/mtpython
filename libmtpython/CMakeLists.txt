@@ -1,5 +1,4 @@
 SET(LIBMTPYTHON_SRCLIST
-		file_helper.cpp
 		parse/token.cpp
 		parse/diagnostics.cpp
 		parse/scanner.cpp
@@ -8,6 +7,7 @@ SET(LIBMTPYTHON_SRCLIST
 		parse/code_builder.cpp
 		parse/codegen.cpp
 		tree/nodes.cpp
+		utils/file_helper.cpp
 		utils/source_buffer.cpp
 		objects/obj_space.cpp
 		objects/base_object.cpp

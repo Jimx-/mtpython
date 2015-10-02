@@ -5,7 +5,7 @@
 #include "objects/obj_space.h"
 #include "interpreter/module.h"
 #include "cpython_version.h"
-#include "file_helper.h"
+#include "utils/file_helper.h"
 
 using namespace mtpython::vm;
 using namespace mtpython::interpreter;
