@@ -47,6 +47,8 @@ void ObjSpace::make_builtins()
 
 	init_builtin_exceptions();
 
+	builtin_names.push_back(wrap_str("posix"));
+
 	setitem(sys_mod->get_dict(this), wrap_str("builtin_module_names"), new_tuple(builtin_names));
 }
 

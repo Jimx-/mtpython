@@ -36,7 +36,8 @@ public:
 	static M_BaseObject* __repr__(vm::ThreadContext* context, M_BaseObject* self);
 	static M_BaseObject* __getitem__(mtpython::vm::ThreadContext* context, M_BaseObject* obj, M_BaseObject* key);
 	static M_BaseObject* __setitem__(mtpython::vm::ThreadContext* context, M_BaseObject* obj, M_BaseObject* key, M_BaseObject* value);
-	
+	static M_BaseObject* __contains__(vm::ThreadContext* context, M_BaseObject* self, M_BaseObject* obj);
+
 	static interpreter::Typedef* _dict_typedef();
 	virtual interpreter::Typedef* get_typedef();
 };

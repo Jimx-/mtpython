@@ -14,6 +14,7 @@ static mtpython::interpreter::Typedef dict_typedef("dict", {
 	{ "__repr__", new InterpFunctionWrapper("__repr__", M_StdDictObject::__repr__) },
 	{ "__getitem__", new InterpFunctionWrapper("__getitem__", M_StdDictObject::__getitem__) },
 	{ "__setitem__", new InterpFunctionWrapper("__setitem__", M_StdDictObject::__setitem__) },
+	{ "__contains__", new InterpFunctionWrapper("__contains__", M_StdDictObject::__contains__) },
 });
 
 M_BaseObject* M_StdDictObject::getitem(M_BaseObject* key)
@@ -91,3 +92,15 @@ mtpython::interpreter::Typedef* M_StdDictObject::get_typedef()
 {
 	return &dict_typedef;
 }
+
+M_BaseObject* M_StdDictObject::__contains__(mtpython::vm::ThreadContext* context, M_BaseObject* self, M_BaseObject* obj)
+{
+	M_StdDictObject* as_dict = static_cast<M_StdDictObject*>(self);
+
+	as_dict->lock();
+	M_BaseObject* result = context->get_space()->new_bool(as_dict->dict.find(obj) != as_dict->dict.end());
+	as_dict->unlock();
+
+	return result;
+}
+

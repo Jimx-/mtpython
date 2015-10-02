@@ -129,7 +129,7 @@ int PyFrame::handle_interp_error(InterpError& exc)
 {
 	FrameBlock* block = unwind_stack(WhyCode::WHY_EXCEPTION);
 
-	/* for debug propose */
+	/* for debug purpose */
 	std::string info = space->unwrap_str(exc.get_value());
 
 	if (!block) {	/* no handler */

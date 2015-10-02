@@ -16,6 +16,7 @@ static mtpython::interpreter::Typedef tuple_typedef("tuple", {
 	{ "__iter__", new InterpFunctionWrapper("__iter__", M_StdTupleObject::__iter__) },
 	{ "__len__", new InterpFunctionWrapper("__len__", M_StdTupleObject::__len__) },
 	{ "__getitem__", new InterpFunctionWrapper("__getitem__", M_StdTupleObject::__getitem__) },
+	{ "__contains__", new InterpFunctionWrapper("__contains__", M_StdTupleObject::__contains__) },
 });
 
 mtpython::interpreter::Typedef* M_StdTupleObject::_tuple_typedef()
@@ -88,4 +89,18 @@ M_BaseObject* M_StdTupleObject::__getitem__(mtpython::vm::ThreadContext* context
 	context->delete_local_ref(key);
 
 	return item;
+}
+
+M_BaseObject* M_StdTupleObject::__contains__(mtpython::vm::ThreadContext* context, M_BaseObject* self,
+											 M_BaseObject* obj)
+{
+	ObjSpace* space = context->get_space();
+	M_StdTupleObject* as_tuple = static_cast<M_StdTupleObject*>(self);
+	for (auto item : as_tuple->items) {
+		if (space->i_eq(item, obj)) {
+			return space->wrap_True();
+		}
+	}
+
+	return space->wrap_False();
 }

@@ -232,6 +232,8 @@ std::string mtpython::parse::cmpop2str(CmpOper op)
 		return "<=";
 	case OP_GTREQ:
 		return ">=";
+	case OP_IN:
+		return "in";
 	}
 
 	return "INVALID CMPOP";
