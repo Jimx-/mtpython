@@ -1,0 +1,138 @@
+#include "modules/_io/iomodule.h"
+#include "interpreter/gateway.h"
+#include "interpreter/pycode.h"
+#include "interpreter/compiler.h"
+#include "interpreter/error.h"
+#include "interpreter/pyframe.h"
+#include "interpreter/typedef.h"
+#include "interpreter/descriptor.h"
+
+#include "modules/_io/iobase.h"
+#include "modules/_io/textio.h"
+#include "modules/_io/fileio.h"
+#include "modules/_io/bufferedio.h"
+
+using namespace mtpython::modules;
+using namespace mtpython::objects;
+using namespace mtpython::interpreter;
+
+static Typedef _IOBase_typedef("_io._IOBase", {
+});
+
+static Typedef _RawIOBase_typedef("_io._RawIOBase", { &_IOBase_typedef }, {
+});
+
+static Typedef FileIO_typedef("_io.FileIO", { &_RawIOBase_typedef }, {
+	{ "__new__", new InterpFunctionWrapper("__new__", M_FileIO::__new__) },
+	{ "__init__", new InterpFunctionWrapper("__init__", M_FileIO::__init__) },
+});
+Typedef* M_FileIO::get_typedef() { return &FileIO_typedef; }
+
+static Typedef _BufferedIOBase_typedef("_io._BufferedIOBase", { &_IOBase_typedef }, {
+});
+Typedef* M_BufferedIOBase::get_typedef() { return &_BufferedIOBase_typedef; }
+
+static Typedef BufferedReader_typedef("_io.BufferedReader", { &_BufferedIOBase_typedef }, {
+	{ "__new__", new InterpFunctionWrapper("__new__", M_BufferedReader::__new__) },
+	{ "__init__", new InterpFunctionWrapper("__init__", M_BufferedReader::__init__) },
+	{ "name", new GetSetDescriptor(M_BufferedReader::name_get) },
+});
+Typedef* M_BufferedReader::get_typedef() { return &BufferedReader_typedef; }
+
+static Typedef _TextIOBase_typedef("_io._TextIOBase", { &_IOBase_typedef }, {
+});
+
+static Typedef TextIOWrapper_typedef("_io.TextIOWrapper", { &_TextIOBase_typedef }, {
+	{ "__new__", new InterpFunctionWrapper("__new__", M_TextIOWrapper::__new__) },
+	{ "__init__", new InterpFunctionWrapper("__init__", M_TextIOWrapper::__init__) },
+	{ "__repr__", new InterpFunctionWrapper("__repr__", M_TextIOWrapper::__repr__) },
+	{ "name", new GetSetDescriptor(M_TextIOWrapper::name_get) },
+});
+Typedef* M_TextIOWrapper::get_typedef() { return &TextIOWrapper_typedef; }
+
+static M_BaseObject* io_open(mtpython::vm::ThreadContext* context, M_BaseObject* file, M_BaseObject* args, M_BaseObject* kwargs)
+{
+	ObjSpace* space = context->get_space();
+	
+	std::vector<M_BaseObject*> scope;
+	Arguments::parse_tuple_and_keywords(space, {"mode", "buffering", "encoding", "errors", "newline", "closefd"}, args, kwargs, scope, 
+		{space->wrap_str("r"), space->wrap_int(-1), space->wrap_None(), space->wrap_None(), space->wrap_None(), space->new_bool(true)});
+	M_BaseObject* wrapped_mode = scope[0];
+	std::string mode = space->unwrap_str(wrapped_mode);
+	M_BaseObject* wrapped_buffering = scope[1];
+	int buffering = space->unwrap_int(wrapped_buffering, false);
+	M_BaseObject* wrapped_encoding = scope[2];
+	M_BaseObject* wrapped_errors = scope[3];
+	M_BaseObject* wrapped_newline = scope[4];
+	M_BaseObject* wrapped_closefd = scope[5];
+	bool closefd = space->is_true(wrapped_closefd);
+
+	bool updating = false, appending = false, reading = false, writing = false;
+	for (char c : mode) {
+		switch (c) {
+		case 'r':
+			reading = true;
+			break;
+		case 'w':
+			writing = true;
+			break;
+		case 'a':
+			appending = true;
+			break;
+		case '+':
+			updating = true;
+			break;
+		default:
+			throw InterpError::format(space, space->ValueError_type(), "invalid mode: %s", mode.c_str());			
+		}
+	}
+	
+	M_BaseObject* raw = space->call_function(context, space->get_typeobject(&FileIO_typedef), {file, wrapped_mode, wrapped_closefd});
+	
+	bool line_buffering = false;
+	if (buffering < 0) buffering = DEFAULT_BUFFER_SIZE;
+
+	M_BaseObject* buffer_cls;
+	if (updating) {
+
+	} else if (writing || appending) {
+
+	} else {
+		buffer_cls = space->get_typeobject(&BufferedReader_typedef);
+	}
+
+	M_BaseObject* buffer = space->call_function(context, buffer_cls, {raw, space->wrap_int(buffering)});
+
+	M_BaseObject* wrapper = space->call_function(context, space->get_typeobject(&TextIOWrapper_typedef), { buffer,
+		wrapped_encoding, wrapped_errors, wrapped_newline, space->new_bool(line_buffering) });
+	space->setattr(wrapper, space->wrap_str("mode"), wrapped_mode);
+
+	context->delete_local_ref(file);
+	context->delete_local_ref(wrapped_mode);
+	context->delete_local_ref(wrapped_buffering);
+	context->delete_local_ref(wrapped_encoding);
+	context->delete_local_ref(wrapped_errors);
+	context->delete_local_ref(wrapped_newline);
+	context->delete_local_ref(wrapped_closefd);
+	context->delete_local_ref(args);
+	context->delete_local_ref(kwargs);
+
+	return wrapper;
+}
+
+IOModule::IOModule(ObjSpace* space, M_BaseObject* name) : BuiltinModule(space, name)
+{
+    add_def("DEFAULT_BUFFER_SIZE", space->wrap_int(DEFAULT_BUFFER_SIZE));
+
+    add_def("_IOBase", space->get_typeobject(&_IOBase_typedef));
+    add_def("_RawIOBase", space->get_typeobject(&_RawIOBase_typedef));
+    add_def("_TextIOBase", space->get_typeobject(&_TextIOBase_typedef));
+    add_def("_BufferedIOBase", space->get_typeobject(&_BufferedIOBase_typedef));
+
+	add_def("BufferedReader", space->get_typeobject(&BufferedReader_typedef));
+
+    add_def("FileIO", space->get_typeobject(&FileIO_typedef));
+    add_def("TextIOWrapper", space->get_typeobject(&TextIOWrapper_typedef));
+    
+    add_def("open", new InterpFunctionWrapper("open", io_open, Signature({"file"}, "args", "kwargs", {})));
+}

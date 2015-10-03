@@ -346,5 +346,6 @@ BuiltinsModule::BuiltinsModule(ObjSpace* space, M_BaseObject* name) : BuiltinMod
 	add_def("compile", new InterpFunctionWrapper("compile", builtin_compile, Signature({"source", "filename", "mode", "flags", "dont_inherit", "optimize"})));
 	add_def("globals", new InterpFunctionWrapper("globals", builtin_globals));
 	add_def("len", new InterpFunctionWrapper("len", builtin_len));
+	add_def("open", space->getattr_str(space->get__io(), "open"));
 	add_def("print", new InterpFunctionWrapper("print", builtin_print, Signature("args", "kwargs")));
 }

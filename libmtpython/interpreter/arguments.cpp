@@ -86,7 +86,7 @@ void Arguments::parse(const std::string& fname, M_BaseObject* first, Signature& 
 	M_BaseObject* wrapped_kwargs = nullptr;
 	if (sig.has_kwarg()) {
 		wrapped_kwargs = space->new_dict();
-		scope[argcount + sig.has_vararg() ? 1 : 0] = wrapped_kwargs;
+		scope[argcount + (sig.has_vararg() ? 1 : 0)] = wrapped_kwargs;
 	}
 
 	/* match keywords */
@@ -133,5 +133,30 @@ void Arguments::parse(const std::string& fname, M_BaseObject* first, Signature& 
 				if (index >= 0) scope[i] = keyword_values[index];
 			}
 		}
+	}
+}
+
+void Arguments::parse_tuple_and_keywords(ObjSpace* space, const std::vector<std::string>& format, M_BaseObject* args, M_BaseObject* kwargs, 
+		std::vector<M_BaseObject*>& scope, const std::vector<M_BaseObject*>& defaults)
+{
+	std::size_t i = 0;
+	std::size_t default_idx = 0;
+	scope.resize(format.size(), space->wrap_None());
+	
+	std::vector<M_BaseObject*> arg_list;
+	if (args) {
+		space->unwrap_tuple(args, arg_list);
+	}
+
+	for (auto& arg : format) {
+		M_BaseObject* value = space->finditem_str(kwargs, arg);
+		if (!value && arg_list.size() > i) {
+			value = arg_list[i];
+		}
+		if (!value && defaults.size() > i) {
+			value = defaults[i];
+		}
+		scope[i] = value;
+		i++;
 	}
 }

@@ -32,6 +32,11 @@ SET(LIBMTPYTHON_SRCLIST
 		interpreter/pyframe.cpp
 		interpreter/module.cpp
 		interpreter/descriptor.cpp
+		modules/_io/iomodule.cpp
+		modules/_io/iobase.cpp
+		modules/_io/bufferedio.cpp
+		modules/_io/fileio.cpp
+		modules/_io/textio.cpp
 		modules/builtins/bltinmodule.cpp
 		modules/sys/sysmodule.cpp
 		vm/initpath.cpp

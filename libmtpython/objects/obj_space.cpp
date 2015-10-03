@@ -3,6 +3,7 @@
 #include "interpreter/function.h"
 #include "interpreter/error.h"
 
+#include "modules/_io/iomodule.h"
 #include "modules/builtins/bltinmodule.h"
 #include "modules/sys/sysmodule.h"
 
@@ -32,6 +33,13 @@ ThreadContext* ObjSpace::current_thread()
 void ObjSpace::make_builtins()
 {
 	std::vector<M_BaseObject*> builtin_names;
+
+	M_BaseObject* _io_name = wrap_str("_io");
+	mtpython::modules::IOModule* io_mod = new mtpython::modules::IOModule(this, _io_name);
+	io_mod->install();
+	builtin_names.push_back(wrap_str("_io"));
+	_io = io_mod;
+	
 	M_BaseObject* sys_name = wrap_str("sys");
 	mtpython::modules::SysModule* sys_mod = new mtpython::modules::SysModule(this, sys_name);
 	sys_mod->install();
@@ -54,6 +62,7 @@ void ObjSpace::make_builtins()
 
 void ObjSpace::setup_builtin_modules()
 {
+	get_builtin_module("_io");
 	get_builtin_module("sys");
 	get_builtin_module("builtins");
 }
@@ -253,6 +262,16 @@ M_BaseObject* ObjSpace::new_interned_str(const std::string& x)
 	return wrapped;
 }
 
+M_BaseObject* ObjSpace::get_and_call_args(ThreadContext* context, M_BaseObject* descr, M_BaseObject* obj, Arguments& args)
+{
+	Function* as_func = dynamic_cast<Function*>(descr);
+	if (as_func) {
+		return as_func->call_obj_args(context, obj, args);
+	}
+
+	return nullptr;
+}
+
 M_BaseObject* ObjSpace::call_args(ThreadContext* context, M_BaseObject* func, Arguments& args)
 {
 	Function* as_func = dynamic_cast<Function*>(func);
@@ -264,8 +283,10 @@ M_BaseObject* ObjSpace::call_args(ThreadContext* context, M_BaseObject* func, Ar
 	if (as_method) {
 		return as_method->call_args(context, args);
 	}
+	M_BaseObject* descr = lookup(func, "__call__");
+	if (!descr) throw InterpError::format(this, TypeError_type(), "'%s' object is not callable", get_type_name(func).c_str());
 
-	return nullptr;
+	return get_and_call_args(context, descr, func, args);
 }
 
 M_BaseObject* ObjSpace::call_obj_args(ThreadContext* context, M_BaseObject* func, M_BaseObject* obj, Arguments& args)
@@ -383,11 +404,42 @@ M_BaseObject* ObjSpace::getattr(M_BaseObject* obj, M_BaseObject* name)
 	return get_and_call_function(current_thread(), descr, {obj, name});
 }
 
+M_BaseObject* ObjSpace::getattr_str(M_BaseObject* obj, const std::string& name)
+{
+	M_BaseObject* wrapped_name = wrap_str(name);
+	M_BaseObject* value = getattr(obj, wrapped_name);
+	SAFE_DELETE(wrapped_name);
+
+	return value;
+}
+
+M_BaseObject* ObjSpace::findattr(M_BaseObject* obj, M_BaseObject* name)
+{
+	M_BaseObject* value;
+	try {
+		value = getattr(obj, name);
+	} catch (InterpError& exc) {
+		if (exc.match(this, type_AttributeError)) return nullptr;
+		throw exc;
+	}
+
+	return value;
+}
+
+M_BaseObject* ObjSpace::findattr_str(M_BaseObject* obj, const std::string& name)
+{
+	M_BaseObject* wrapped_name = wrap_str(name);
+	M_BaseObject* value = findattr(obj, wrapped_name);
+	SAFE_DELETE(wrapped_name);
+
+	return value;
+}
+
 M_BaseObject* ObjSpace::setattr(M_BaseObject* obj, M_BaseObject* name, M_BaseObject* value)
 {
 	M_BaseObject* descr = lookup(obj, "__setattr__");
 	if (!descr) throw InterpError::format(this, TypeError_type(), "'%s' object is readonly", get_type_name(obj).c_str());
-	return get_and_call_function(current_thread(), descr, {obj, name});
+	return get_and_call_function(current_thread(), descr, {obj, name, value});
 }
 
 M_BaseObject* ObjSpace::delattr(M_BaseObject* obj, M_BaseObject* name)

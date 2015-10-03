@@ -34,6 +34,8 @@ public:
 
 	static M_BaseObject* __repr__(vm::ThreadContext* context, M_BaseObject* self);
 	static M_BaseObject* __mro__get(vm::ThreadContext* context, M_BaseObject* self);
+
+	static M_BaseObject* __call__(vm::ThreadContext* context, M_BaseObject* type, M_BaseObject* args, M_BaseObject* kwargs);
 };
 
 class StdTypedefCache : public TypedefCache {

@@ -8,8 +8,8 @@ int main(int argc, char * argv[])
 {
 	mtpython::objects::StdObjSpace space;
 	mtpython::vm::PyVM vm(&space, argv[0]);
-
-	std::string path("/home/jimx/a.py");
+	
+	std::string path("D:\\a.py");
 	vm.run_file(path);
 
 	return 0;

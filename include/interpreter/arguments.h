@@ -35,6 +35,13 @@ public:
 	}
 
 	void parse(const std::string& fname, objects::M_BaseObject* first, Signature& sig, std::vector<objects::M_BaseObject*>& scope, std::vector<objects::M_BaseObject*>& defaults);
+
+	static void parse_tuple_and_keywords(objects::ObjSpace* space, const std::vector<std::string>& format, objects::M_BaseObject* args, objects::M_BaseObject* kwargs, std::vector<objects::M_BaseObject*>& scope)
+	{
+		parse_tuple_and_keywords(space, format, args, kwargs, scope, {});
+	}
+
+	static void parse_tuple_and_keywords(objects::ObjSpace* space, const std::vector<std::string>& format, objects::M_BaseObject* args, objects::M_BaseObject* kwargs, std::vector<objects::M_BaseObject*>& scope, const std::vector<objects::M_BaseObject*>& defaults);
 };
 
 }

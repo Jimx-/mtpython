@@ -4,12 +4,13 @@
 #include "objects/std/object_object.h"
 #include "interpreter/gateway.h"
 #include "interpreter/descriptor.h"
-
+#include "interpreter/error.h"
 
 using namespace mtpython::objects;
 using namespace mtpython::interpreter;
 
 static mtpython::interpreter::Typedef type_typedef("type", {
+	{ "__call__", new InterpFunctionWrapper("__call__", M_StdTypeObject::__call__, Signature({"type"}, "args", "kwargs", {})) },
 	{ "__repr__", new InterpFunctionWrapper("__repr__", M_StdTypeObject::__repr__) },
 	{ "__mro__", new GetSetDescriptor(M_StdTypeObject::__mro__get) },
 });
@@ -134,6 +135,26 @@ M_BaseObject* StdTypedefCache::build(mtpython::interpreter::Typedef* key)
 	M_StdTypeObject* wrapped_type = new M_StdTypeObject(space, key->get_name(), wrapped_bases, wrapped_dict);
 
 	return wrapped_type;
+}
+
+M_BaseObject* M_StdTypeObject::__call__(mtpython::vm::ThreadContext* context, M_BaseObject* type, M_BaseObject* args, M_BaseObject* kwargs)
+{
+	ObjSpace* space = context->get_space();
+	M_StdTypeObject* type_obj = static_cast<M_StdTypeObject*>(type);
+
+	M_BaseObject* new_func = type_obj->lookup("__new__");
+	if (!new_func) {
+		throw InterpError::format(space, space->TypeError_type(), "cannot create '%s' instances", type_obj->name.c_str());
+	}
+	M_BaseObject* obj = space->call_function(context, new_func, {type, args, kwargs});
+
+	type_obj = static_cast<M_StdTypeObject*>(space->type(obj));
+	M_BaseObject* init_func = type_obj->lookup("__init__");
+	if (init_func) {
+		space->call_function(context, init_func, {obj, args, kwargs});
+	}
+
+	return obj;
 }
 
 M_BaseObject* M_StdTypeObject::__repr__(mtpython::vm::ThreadContext* context, M_BaseObject* self)

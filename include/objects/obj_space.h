@@ -48,6 +48,7 @@ protected:
 
 	std::unordered_map<std::string, M_BaseObject*> interned_str;
 
+	M_BaseObject* _io;
 	M_BaseObject* builtin;
 	M_BaseObject* sys;
 	std::unordered_map<std::string, M_BaseObject*> builtin_modules;
@@ -64,6 +65,7 @@ public:
 
 	void set_vm(mtpython::vm::PyVM* vm) { this->vm = vm; }
 
+	M_BaseObject* get__io() { return _io; }
 	M_BaseObject* get_builtin() { return builtin; }
 	M_BaseObject* get_sys() { return sys; }
 	void set_builtin_module(std::string& name, M_BaseObject* mod) { builtin_modules[name] = mod; }
@@ -128,6 +130,7 @@ public:
 
 	M_BaseObject* get(M_BaseObject* descr, M_BaseObject* obj, M_BaseObject* type=nullptr);
 
+	M_BaseObject* get_and_call_args(vm::ThreadContext* context, M_BaseObject* descr, M_BaseObject* obj, interpreter::Arguments& args);
 	M_BaseObject* get_and_call_function(vm::ThreadContext* context, M_BaseObject* descr, const std::initializer_list<M_BaseObject*> args);
 	M_BaseObject* call_args(vm::ThreadContext* context, M_BaseObject* func, interpreter::Arguments& args);
 	M_BaseObject* call_obj_args(vm::ThreadContext* context, M_BaseObject* func, M_BaseObject* obj, interpreter::Arguments& args);
@@ -142,6 +145,9 @@ public:
 	M_BaseObject* delitem(M_BaseObject* obj, M_BaseObject* key);
 
 	M_BaseObject* getattr(M_BaseObject* obj, M_BaseObject* name);
+	M_BaseObject* getattr_str(M_BaseObject* obj, const std::string& name);
+	M_BaseObject* findattr(M_BaseObject* obj, M_BaseObject* name);
+	M_BaseObject* findattr_str(M_BaseObject* obj, const std::string& name);
 	M_BaseObject* setattr(M_BaseObject* obj, M_BaseObject* name, M_BaseObject* value);
 	M_BaseObject* delattr(M_BaseObject* obj, M_BaseObject* name);
 	
