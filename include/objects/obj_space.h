@@ -122,13 +122,14 @@ public:
 	virtual M_BaseObject* new_list(std::vector<M_BaseObject*>& items) { throw NotImplementedException("Abstract"); }
 	virtual M_BaseObject* new_dict() { throw NotImplementedException("Abstract"); }
 
-	virtual int unwrap_int(M_BaseObject* obj, bool allow_conversion=true) { return obj->to_int(this, allow_conversion); }
+	virtual int unwrap_int(M_BaseObject* obj, bool allow_conversion = true);
 	virtual std::string unwrap_str(M_BaseObject* obj) { return obj->to_string(this); }
 	virtual void unwrap_tuple(M_BaseObject* obj, std::vector<M_BaseObject*>& list) { }
 
 	M_BaseObject* id(M_BaseObject* obj) { return obj->unique_id(this); }
 
 	M_BaseObject* get(M_BaseObject* descr, M_BaseObject* obj, M_BaseObject* type=nullptr);
+	M_BaseObject* set(M_BaseObject* descr, M_BaseObject* obj, M_BaseObject* value);
 
 	M_BaseObject* get_and_call_args(vm::ThreadContext* context, M_BaseObject* descr, M_BaseObject* obj, interpreter::Arguments& args);
 	M_BaseObject* get_and_call_function(vm::ThreadContext* context, M_BaseObject* descr, const std::initializer_list<M_BaseObject*> args);
@@ -149,6 +150,7 @@ public:
 	M_BaseObject* findattr(M_BaseObject* obj, M_BaseObject* name);
 	M_BaseObject* findattr_str(M_BaseObject* obj, const std::string& name);
 	M_BaseObject* setattr(M_BaseObject* obj, M_BaseObject* name, M_BaseObject* value);
+	M_BaseObject* setattr_str(M_BaseObject* obj, const std::string& name, M_BaseObject* value);
 	M_BaseObject* delattr(M_BaseObject* obj, M_BaseObject* name);
 	
 	M_BaseObject* hash(M_BaseObject* obj);

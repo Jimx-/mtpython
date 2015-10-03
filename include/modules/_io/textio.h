@@ -26,6 +26,7 @@ public:
 	static objects::M_BaseObject* __repr__(vm::ThreadContext* context, objects::M_BaseObject* self);
 
 	static objects::M_BaseObject* name_get(vm::ThreadContext* context, objects::M_BaseObject* self);
+	static objects::M_BaseObject* buffer_get(vm::ThreadContext* context, objects::M_BaseObject* self);
 };
 
 

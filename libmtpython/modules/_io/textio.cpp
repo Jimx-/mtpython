@@ -69,3 +69,9 @@ M_BaseObject* M_TextIOWrapper::name_get(mtpython::vm::ThreadContext* context, M_
 	M_TextIOWrapper* as_tio = static_cast<M_TextIOWrapper*>(self);
 	return context->get_space()->getattr_str(as_tio->buffer, "name");
 }
+
+M_BaseObject* M_TextIOWrapper::buffer_get(mtpython::vm::ThreadContext* context, M_BaseObject* self)
+{
+	M_TextIOWrapper* as_tio = static_cast<M_TextIOWrapper*>(self);
+	return as_tio->buffer;
+}

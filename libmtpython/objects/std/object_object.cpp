@@ -65,6 +65,15 @@ M_BaseObject* M_StdObjectObject::__setattr__(mtpython::vm::ThreadContext* contex
 {
 	ObjSpace* space = context->get_space();
 	const std::string& name = space->unwrap_str(attr);
+
+	M_BaseObject* descr = space->lookup(obj, name);
+	if (descr) {
+		if (space->lookup(descr, "__set__")) {
+			space->set(descr, obj, value);
+			return nullptr;
+		}
+	}
+
 	if (obj->set_dict_value(space, name, value)) return nullptr;
 
 	throw InterpError::format(space, space->AttributeError_type(), "'%s' object has no attribute '%s'", space->get_type_name(obj).c_str(), name.c_str());

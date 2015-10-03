@@ -25,6 +25,7 @@ static Typedef _RawIOBase_typedef("_io._RawIOBase", { &_IOBase_typedef }, {
 static Typedef FileIO_typedef("_io.FileIO", { &_RawIOBase_typedef }, {
 	{ "__new__", new InterpFunctionWrapper("__new__", M_FileIO::__new__) },
 	{ "__init__", new InterpFunctionWrapper("__init__", M_FileIO::__init__) },
+	{ "name", new GetSetDescriptor(M_FileIO::name_get, M_FileIO::name_set) },
 });
 Typedef* M_FileIO::get_typedef() { return &FileIO_typedef; }
 
@@ -39,6 +40,13 @@ static Typedef BufferedReader_typedef("_io.BufferedReader", { &_BufferedIOBase_t
 });
 Typedef* M_BufferedReader::get_typedef() { return &BufferedReader_typedef; }
 
+static Typedef BufferedWriter_typedef("_io.BufferedWriter", { &_BufferedIOBase_typedef }, {
+	{ "__new__", new InterpFunctionWrapper("__new__", M_BufferedWriter::__new__) },
+	{ "__init__", new InterpFunctionWrapper("__init__", M_BufferedWriter::__init__) },
+	{ "name", new GetSetDescriptor(M_BufferedWriter::name_get) },
+});
+Typedef* M_BufferedWriter::get_typedef() { return &BufferedWriter_typedef; }
+
 static Typedef _TextIOBase_typedef("_io._TextIOBase", { &_IOBase_typedef }, {
 });
 
@@ -47,6 +55,7 @@ static Typedef TextIOWrapper_typedef("_io.TextIOWrapper", { &_TextIOBase_typedef
 	{ "__init__", new InterpFunctionWrapper("__init__", M_TextIOWrapper::__init__) },
 	{ "__repr__", new InterpFunctionWrapper("__repr__", M_TextIOWrapper::__repr__) },
 	{ "name", new GetSetDescriptor(M_TextIOWrapper::name_get) },
+	{ "buffer", new GetSetDescriptor(M_TextIOWrapper::buffer_get) },
 });
 Typedef* M_TextIOWrapper::get_typedef() { return &TextIOWrapper_typedef; }
 
@@ -67,7 +76,7 @@ static M_BaseObject* io_open(mtpython::vm::ThreadContext* context, M_BaseObject*
 	M_BaseObject* wrapped_closefd = scope[5];
 	bool closefd = space->is_true(wrapped_closefd);
 
-	bool updating = false, appending = false, reading = false, writing = false;
+	bool updating = false, appending = false, reading = false, writing = false, binary = false;
 	for (char c : mode) {
 		switch (c) {
 		case 'r':
@@ -82,6 +91,9 @@ static M_BaseObject* io_open(mtpython::vm::ThreadContext* context, M_BaseObject*
 		case '+':
 			updating = true;
 			break;
+		case 'b':
+			binary = true;
+			break;	
 		default:
 			throw InterpError::format(space, space->ValueError_type(), "invalid mode: %s", mode.c_str());			
 		}
@@ -96,17 +108,22 @@ static M_BaseObject* io_open(mtpython::vm::ThreadContext* context, M_BaseObject*
 	if (updating) {
 
 	} else if (writing || appending) {
-
+		buffer_cls = space->get_typeobject(&BufferedWriter_typedef);
 	} else {
 		buffer_cls = space->get_typeobject(&BufferedReader_typedef);
 	}
 
 	M_BaseObject* buffer = space->call_function(context, buffer_cls, {raw, space->wrap_int(buffering)});
 
-	M_BaseObject* wrapper = space->call_function(context, space->get_typeobject(&TextIOWrapper_typedef), { buffer,
-		wrapped_encoding, wrapped_errors, wrapped_newline, space->new_bool(line_buffering) });
-	space->setattr(wrapper, space->wrap_str("mode"), wrapped_mode);
-
+	M_BaseObject* wrapper;
+	if (binary) {
+		wrapper = buffer;
+	} else {
+		wrapper = space->call_function(context, space->get_typeobject(&TextIOWrapper_typedef), { buffer,
+			wrapped_encoding, wrapped_errors, wrapped_newline, space->new_bool(line_buffering) });
+		space->setattr(wrapper, space->wrap_str("mode"), wrapped_mode);
+	}
+	
 	context->delete_local_ref(file);
 	context->delete_local_ref(wrapped_mode);
 	context->delete_local_ref(wrapped_buffering);

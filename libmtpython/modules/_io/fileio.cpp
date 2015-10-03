@@ -54,11 +54,12 @@ M_BaseObject* M_FileIO::__init__(mtpython::vm::ThreadContext* context, M_BaseObj
 {
 	ObjSpace* space = context->get_space();
 	M_FileIO* as_fio = static_cast<M_FileIO*>(self);
+	as_fio->name = nullptr;
 	
 	std::vector<M_BaseObject*> scope;
 	Arguments::parse_tuple_and_keywords(space, {"name", "mode", "closefd"}, args, kwargs, scope, {space->wrap_str("r"), space->new_bool(true)});
 	M_BaseObject* wrapped_name = scope[0];
-	std::string name = space->unwrap_str(wrapped_name);
+	std::string name;
 	M_BaseObject* wrapped_mode = scope[1];
 	std::string mode = space->unwrap_str(wrapped_mode);
 	M_BaseObject* wrapped_closefd = scope[2];
@@ -66,11 +67,12 @@ M_BaseObject* M_FileIO::__init__(mtpython::vm::ThreadContext* context, M_BaseObj
 
 	int fd = -1;
 	try {
-		fd = std::stoi(name, nullptr);
+		fd = space->unwrap_int(wrapped_name);
 		if (fd < 0) {
 			throw InterpError(space->ValueError_type(), space->wrap_str("negative file descriptor"));
 		}
-	} catch (const std::invalid_argument&) {
+	} catch (const InterpError&) {
+		name = space->unwrap_str(wrapped_name);
 	}
 
 	int flags = decode_mode(mode);
@@ -107,4 +109,16 @@ M_BaseObject* M_FileIO::__init__(mtpython::vm::ThreadContext* context, M_BaseObj
 	context->delete_local_ref(wrapped_closefd);
 
 	return nullptr;
+}
+
+M_BaseObject* M_FileIO::name_get(mtpython::vm::ThreadContext* context, M_BaseObject* self)
+{
+	M_FileIO* as_fio = static_cast<M_FileIO*>(self);
+	return as_fio->name;
+}
+
+void M_FileIO::name_set(mtpython::vm::ThreadContext* context, M_BaseObject* obj, M_BaseObject* value)
+{
+	M_FileIO* as_fio = static_cast<M_FileIO*>(obj);
+	as_fio->name = value;
 }

@@ -41,7 +41,7 @@ void ObjSpace::make_builtins()
 	_io = io_mod;
 	
 	M_BaseObject* sys_name = wrap_str("sys");
-	mtpython::modules::SysModule* sys_mod = new mtpython::modules::SysModule(this, sys_name);
+	mtpython::modules::SysModule* sys_mod = new mtpython::modules::SysModule(current_thread(), sys_name);
 	sys_mod->install();
 	builtin_names.push_back(wrap_str("sys"));
 	sys = sys_mod;
@@ -204,6 +204,18 @@ DEF_CMP_OPER(ge, __ge__, __ge__)
 DEF_CMP_OPER(ne, __ne__, __ne__)
 DEF_CMP_OPER(contains, __contains__, __contains__)
 
+int ObjSpace::unwrap_int(M_BaseObject* obj, bool allow_conversion)
+{
+	int result;
+	try {
+		result = obj->to_int(this, allow_conversion);
+	} catch (const NotImplementedException&) {
+		throw InterpError::format(this, TypeError_type(), "'%s' object cannot be converted to interpreter-level integer", get_type_name(obj).c_str());
+	}
+
+	return result;
+}
+
 M_BaseObject* ObjSpace::not_(M_BaseObject* obj)
 {
 	return new_bool(!is_true(obj));
@@ -306,6 +318,15 @@ M_BaseObject* ObjSpace::get(M_BaseObject* descr, M_BaseObject* obj, M_BaseObject
 
 	if (!type) type = this->type(obj);
 	return get_and_call_function(current_thread(), getter, {descr, obj, type});
+}
+
+M_BaseObject* ObjSpace::set(M_BaseObject* descr, M_BaseObject* obj, M_BaseObject* value)
+{
+	M_BaseObject* setter = lookup(descr, "__set__");
+	if (!setter) {
+		throw InterpError::format(this, TypeError_type(), "'%s' object is not a descriptor with set", get_type_name(descr).c_str());
+	}
+	return get_and_call_function(current_thread(), setter, {descr, obj, value});
 }
 
 M_BaseObject* ObjSpace::get_and_call_function(ThreadContext* context, M_BaseObject* descr, const std::initializer_list<M_BaseObject*> args)
@@ -440,6 +461,15 @@ M_BaseObject* ObjSpace::setattr(M_BaseObject* obj, M_BaseObject* name, M_BaseObj
 	M_BaseObject* descr = lookup(obj, "__setattr__");
 	if (!descr) throw InterpError::format(this, TypeError_type(), "'%s' object is readonly", get_type_name(obj).c_str());
 	return get_and_call_function(current_thread(), descr, {obj, name, value});
+}
+
+M_BaseObject* ObjSpace::setattr_str(M_BaseObject* obj, const std::string& name, M_BaseObject* value)
+{
+	M_BaseObject* wrapped_name = wrap_str(name);
+	M_BaseObject* result = setattr(obj, wrapped_name, value);
+	SAFE_DELETE(wrapped_name);
+
+	return result;
 }
 
 M_BaseObject* ObjSpace::delattr(M_BaseObject* obj, M_BaseObject* name)

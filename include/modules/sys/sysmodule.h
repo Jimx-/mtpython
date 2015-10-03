@@ -9,7 +9,8 @@ namespace mtpython {
 
 		class SysModule : public mtpython::interpreter::BuiltinModule {
 		public:
-			SysModule(mtpython::objects::ObjSpace* space, mtpython::objects::M_BaseObject* name);
+			SysModule(mtpython::vm::ThreadContext* context, mtpython::objects::M_BaseObject* name);
+			void initstdio(mtpython::vm::ThreadContext* context, bool unbuffered = false);
 		};
 
 	}
