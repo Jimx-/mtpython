@@ -26,6 +26,8 @@ unsigned char BaseCodeGenerator::_binop(BinaryOper op)
 		return BINARY_SUBTRACT;
 	case OP_MUL:
 		return BINARY_MULTIPLY;
+	case OP_AND:
+		return BINARY_AND;
 	}
 
 	return NOP;
@@ -514,6 +516,22 @@ ASTNode* BaseCodeGenerator::visit_string(StringNode* node)
 {
 	set_lineno(node->get_line());
 	load_const(node->get_value());
+
+	return node;
+}
+
+ASTNode* BaseCodeGenerator::visit_set(SetNode* node)
+{
+	set_lineno(node->get_line());
+
+	std::vector<ASTNode*>& elements = node->get_elements();
+	std::size_t eltcount = elements.size();
+
+	for (auto elt : elements) {
+		elt->visit(this);
+	}
+
+	emit_op_arg(BUILD_TUPLE, eltcount);
 
 	return node;
 }

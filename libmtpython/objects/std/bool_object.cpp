@@ -14,6 +14,7 @@ static mtpython::interpreter::Typedef bool_typedef("bool", {
 	{ "__bool__", new InterpFunctionWrapper("__bool__", M_StdBoolObject::__bool__) },
 	{ "__repr__", new InterpFunctionWrapper("__repr__", M_StdBoolObject::__repr__) },
 	{ "__str__", new InterpFunctionWrapper("__str__", M_StdBoolObject::__str__) },
+	{ "__and__", new InterpFunctionWrapper("__and__", M_StdBoolObject::__and__) },
 });
 
 M_StdBoolObject::M_StdBoolObject(bool x) : M_StdIntObject(x ? 1 : 0)
@@ -57,4 +58,22 @@ mtpython::interpreter::Typedef* M_StdBoolObject::get_typedef()
 M_BaseObject* M_StdBoolObject::__bool__(mtpython::vm::ThreadContext* context, M_BaseObject* self)
 {
 	return self;
+}
+
+M_BaseObject* M_StdBoolObject::__and__(mtpython::vm::ThreadContext* context, M_BaseObject* self, M_BaseObject* other)
+{
+	ObjSpace* space = context->get_space();
+
+	M_StdBoolObject* self_as_bool = static_cast<M_StdBoolObject*>(self);
+	M_StdBoolObject* other_as_bool = dynamic_cast<M_StdBoolObject*>(other);
+	if (!other_as_bool) {
+		return M_StdIntObject::__and__(context, self, other);
+	}
+
+	bool x = self_as_bool->intval != 0;
+	bool y = other_as_bool->intval != 0;
+
+	bool z = x && y;
+
+	return space->new_bool(z);
 }

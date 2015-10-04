@@ -35,8 +35,8 @@ int ExceptBlock::handle(PyFrame* frame, StackUnwinder* unwinder)
 	ExceptionUnwinder* as_exc = dynamic_cast<ExceptionUnwinder*>(unwinder);
 	cleanup(frame);
 
-	FrameBlock* finally_block = new FinallyBlock(0, frame->value_stack_level());
-	frame->push_block(finally_block);
+	FrameBlock* except_handler_block = new ExceptHandlerBlock(0, frame->value_stack_level());
+	frame->push_block(except_handler_block);
 
 	frame->push_value(frame->get_space()->wrap(as_exc));
 	const InterpError& error = as_exc->get_error();
@@ -271,6 +271,8 @@ int PyFrame::dispatch_bytecode(ThreadContext* context, std::vector<unsigned char
 			import_from(arg, next_pc);
 		else if (opcode == IMPORT_STAR)
 			import_star(arg, next_pc);
+		else if (opcode == BINARY_AND)
+			binary_and(arg, next_pc);
 	}
 }
 
@@ -348,6 +350,7 @@ const std::string& PyFrame::get_localname(int index)
 DEF_BINARY_OPER(add)
 DEF_BINARY_OPER(sub)
 DEF_BINARY_OPER(mul)
+DEF_BINARY_OPER(and)
 DEF_BINARY_OPER_ALIAS(subscr, getitem)
 
 void PyFrame::pop_top(int arg, int next_pc)
@@ -506,6 +509,9 @@ void PyFrame::compare_op(int arg, int next_pc)
 		result = space->contains(v2, v1);
 		break;
 	case 7:
+		break;
+	case 10:
+		result = space->new_bool(space->match_exc(v1, v2));
 		break;
 	}
 

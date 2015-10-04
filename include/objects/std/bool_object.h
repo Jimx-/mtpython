@@ -18,6 +18,7 @@ public:
 	static M_BaseObject* __repr__(mtpython::vm::ThreadContext* context, mtpython::objects::M_BaseObject* self);
 	static M_BaseObject* __str__(mtpython::vm::ThreadContext* context, mtpython::objects::M_BaseObject* self);
 	static M_BaseObject* __bool__(mtpython::vm::ThreadContext* context, mtpython::objects::M_BaseObject* self);
+	static M_BaseObject* __and__(mtpython::vm::ThreadContext* context, mtpython::objects::M_BaseObject* self, mtpython::objects::M_BaseObject* other);
 
 	static interpreter::Typedef* _bool_typedef();
 	virtual interpreter::Typedef* get_typedef();

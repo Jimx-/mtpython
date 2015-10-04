@@ -65,6 +65,7 @@ public:
     mtpython::tree::ASTNode* visit_pass(mtpython::tree::PassNode* node);
     /*ASTNode* visit_raise(RaiseNode* node);*/
     mtpython::tree::ASTNode* visit_return(mtpython::tree::ReturnNode* node);
+    mtpython::tree::ASTNode* visit_set(mtpython::tree::SetNode* node);
     mtpython::tree::ASTNode* visit_subscript(mtpython::tree::SubscriptNode* node);
     mtpython::tree::ASTNode* visit_try(mtpython::tree::TryNode* node);
     mtpython::tree::ASTNode* visit_try_except(mtpython::tree::TryNode* node);

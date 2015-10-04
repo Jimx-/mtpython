@@ -18,6 +18,12 @@ using namespace mtpython::interpreter;
 #define STAT			stat
 #endif
 
+static M_BaseObject* os__exit(mtpython::vm::ThreadContext* context, M_BaseObject* status)
+{
+	std::_Exit(context->get_space()->unwrap_int(status));
+	return nullptr;
+}
+
 static M_BaseObject* os_stat(mtpython::vm::ThreadContext* context, M_BaseObject* path, M_BaseObject* args, M_BaseObject* kwargs)
 {
 	STRUCT_STAT sbuf;
@@ -36,5 +42,6 @@ static M_BaseObject* os_stat(mtpython::vm::ThreadContext* context, M_BaseObject*
 
 PosixModule::PosixModule(ObjSpace* space, M_BaseObject* name) : BuiltinModule(space, name)
 {
+	add_def("_exit", new InterpFunctionWrapper("_exit", os__exit));
 	add_def("stat", new InterpFunctionWrapper("stat", os_stat, Signature({"path"}, "args", "kwargs", {})));
 }

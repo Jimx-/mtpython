@@ -170,6 +170,7 @@ std::size_t ObjSpace::i_hash(M_BaseObject* obj)
 		M_BaseObject* type2 = type(obj2);	\
 		M_BaseObject* left_cls;		\
 		M_BaseObject* left_impl = lookup_type_cls(type1, #lname, left_cls); 	\
+		if (!left_impl) throw InterpError::format(this, TypeError_type(), "unsupported operand type(s) for %s: '%s' and '%s'", #name, get_type_name(obj1).c_str(), get_type_name(obj2).c_str());	\
 		M_BaseObject* result = execute_binop(left_impl, obj1, obj2);	\
 		return result;	\
 	}
@@ -189,6 +190,7 @@ std::size_t ObjSpace::i_hash(M_BaseObject* obj)
 		M_BaseObject* type2 = type(obj2);	\
 		M_BaseObject* left_cls;		\
 		M_BaseObject* left_impl = lookup_type_cls(type1, #lname, left_cls); 	\
+		if (!left_impl) throw InterpError::format(this, TypeError_type(), "unorderable types: %s %s %s", get_type_name(obj1).c_str(), #name, get_type_name(obj2).c_str());	\
 		M_BaseObject* result = execute_binop(left_impl, obj1, obj2);	\
 		return result;	\
 	}
@@ -196,6 +198,7 @@ std::size_t ObjSpace::i_hash(M_BaseObject* obj)
 DEF_BINARY_OPER(add, __add__, __radd__)
 DEF_BINARY_OPER(sub, __sub__, __rsub__)
 DEF_BINARY_OPER(mul, __mul__, __rmul__)
+DEF_BINARY_OPER(and, __and__, __rand__)
 
 DEF_UNARY_OPER(pos, __pos__)
 DEF_UNARY_OPER(neg, __neg__)
@@ -208,6 +211,13 @@ DEF_CMP_OPER(gt, __gt__, __gt__)
 DEF_CMP_OPER(ge, __ge__, __ge__)
 DEF_CMP_OPER(ne, __ne__, __ne__)
 DEF_CMP_OPER(contains, __contains__, __contains__)
+
+bool ObjSpace::match_exc(M_BaseObject* obj1, M_BaseObject* obj2)
+{
+	InterpError* exc = dynamic_cast<InterpError*>(obj1);
+	if (!exc) return false;
+	return exc->match(this, obj2);
+}
 
 int ObjSpace::unwrap_int(M_BaseObject* obj, bool allow_conversion)
 {

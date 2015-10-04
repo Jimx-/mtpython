@@ -171,6 +171,7 @@ static M_BaseObject* load_part(mtpython::vm::ThreadContext* context, M_BaseObjec
 		}
 	}
 
+	throw InterpError::format(space, space->ImportError_type(), "No module named %s", mod_name.c_str());
 	return nullptr;
 }
 

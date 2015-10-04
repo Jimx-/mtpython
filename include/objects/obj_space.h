@@ -174,6 +174,7 @@ public:
 	M_BaseObject* ne(M_BaseObject* obj1, M_BaseObject* obj2);
 	M_BaseObject* eq(M_BaseObject* obj1, M_BaseObject* obj2);
 	M_BaseObject* contains(M_BaseObject* obj1, M_BaseObject* obj2);
+	bool match_exc(M_BaseObject* obj1, M_BaseObject* obj2);
 
 	M_BaseObject* abs(M_BaseObject* obj);
 	M_BaseObject* len(M_BaseObject* obj);
@@ -186,6 +187,7 @@ public:
 	M_BaseObject* add(M_BaseObject* obj1, M_BaseObject* obj2);
 	M_BaseObject* sub(M_BaseObject* obj1, M_BaseObject* obj2);
 	M_BaseObject* mul(M_BaseObject* obj1, M_BaseObject* obj2);
+	M_BaseObject* and(M_BaseObject* obj1, M_BaseObject* obj2);
 };
 
 }

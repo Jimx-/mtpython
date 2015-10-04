@@ -17,6 +17,7 @@ static mtpython::interpreter::Typedef int_typedef("int", {
 	{ "__add__", new InterpFunctionWrapper("__add__", M_StdIntObject::__add__) },
 	{ "__sub__", new InterpFunctionWrapper("__sub__", M_StdIntObject::__sub__) },
 	{ "__mul__", new InterpFunctionWrapper("__mul__", M_StdIntObject::__mul__) },
+	{ "__and__", new InterpFunctionWrapper("__and__", M_StdIntObject::__and__) },
 	{ "__eq__", new InterpFunctionWrapper("__eq__", M_StdIntObject::__eq__) },
 	{ "__ne__", new InterpFunctionWrapper("__ne__", M_StdIntObject::__ne__) },
 	{ "__lt__", new InterpFunctionWrapper("__lt__", M_StdIntObject::__lt__) },
@@ -126,6 +127,22 @@ M_BaseObject* M_StdIntObject::__mul__(mtpython::vm::ThreadContext* context, M_Ba
 	return space->wrap_int(z);
 }
 
+M_BaseObject* M_StdIntObject::__and__(mtpython::vm::ThreadContext* context, M_BaseObject* self, M_BaseObject* other)
+{
+	ObjSpace* space = context->get_space();
+
+	M_StdIntObject* self_as_int = dynamic_cast<M_StdIntObject*>(self);
+	if (!self_as_int) throw InterpError(space->TypeError_type(), space->wrap_str("object is not int"));
+	M_StdIntObject* other_as_int = dynamic_cast<M_StdIntObject*>(other);
+	if (!other_as_int) throw InterpError(space->TypeError_type(), space->wrap_str("object is not int"));
+
+	int x = self_as_int->intval;
+	int y = other_as_int->intval;
+
+	int z = x & y;
+
+	return space->wrap_int(z);
+}
 
 M_BaseObject* M_StdIntObject::__eq__(mtpython::vm::ThreadContext *context, mtpython::objects::M_BaseObject *self,
 									 mtpython::objects::M_BaseObject *other)
