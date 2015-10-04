@@ -192,6 +192,8 @@ protected:
     void binary_getitem(int arg, int next_pc);
     void binary_subscr(int arg, int next_pc);
     void build_list(int arg, int next_pc);
+	void import_from(int arg, int next_pc);
+	void import_star(int arg, int next_pc);
 
     objects::M_BaseObject* end_finally();
 
@@ -214,6 +216,8 @@ public:
 
     objects::ObjSpace* get_space() { return space; };
     objects::M_BaseObject* get_globals() { return globals; }
+	objects::M_BaseObject* get_locals();
+	void set_locals(objects::M_BaseObject* locals);
 
     objects::M_BaseObject* exec();
     objects::M_BaseObject* execute_frame();

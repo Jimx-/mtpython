@@ -267,7 +267,21 @@ int PyFrame::dispatch_bytecode(ThreadContext* context, std::vector<unsigned char
 			binary_subscr(arg, next_pc);
 		else if (opcode == BUILD_LIST)
 			build_list(arg, next_pc);
+		else if (opcode == IMPORT_FROM)
+			import_from(arg, next_pc);
+		else if (opcode == IMPORT_STAR)
+			import_star(arg, next_pc);
 	}
+}
+
+M_BaseObject* PyFrame::get_locals()
+{
+	return locals;
+}
+
+void PyFrame::set_locals(M_BaseObject* locals)
+{
+	this->locals = locals;
 }
 
 FrameBlock* PyFrame::unwind_stack(int why)
@@ -728,4 +742,69 @@ void PyFrame::build_list(int arg, int next_pc)
 	pop_values_untrack(arg, args);
 	M_BaseObject* list = space->new_list(args);
 	push_value(list);
+}
+
+void PyFrame::import_from(int arg, int next_pc)
+{
+	M_BaseObject* w_name = get_name(arg);
+	M_BaseObject* module = peek_value();
+	M_BaseObject* value;
+
+	try {
+		value = space->getattr(module, w_name);
+	} catch (InterpError& exc) {
+		if (!exc.match(space, space->AttributeError_type())) throw exc;
+		throw InterpError::format(space, space->ImportError_type(), "cannot import name '%s'", space->unwrap_str(w_name));
+	}
+
+	push_value(value);
+}
+
+void PyFrame::import_star(int arg, int next_pc)
+{
+	M_BaseObject* module = pop_value_untrack();
+	M_BaseObject* locals = get_locals();
+	M_BaseObject* dict, *all;
+	bool skip_leading_underscores = false;
+
+	try {
+		all = space->getattr_str(module, "__all__");
+	} catch (InterpError& exc) {
+		if (!exc.match(space, space->AttributeError_type())) throw exc;
+		try {
+			dict = space->getattr_str(module, "__dict__");
+		} catch (InterpError& exc) {
+			if (!exc.match(space, space->AttributeError_type())) throw exc;
+
+			InterpError::format(space, space->ImportError_type(), "from-import-* object has no __dict__ and no __all__");
+		}
+
+		M_BaseObject* keys_impl = space->getattr_str(dict, "keys");
+		all = space->call_function(context, keys_impl, {});
+		
+		skip_leading_underscores = true;
+	}
+
+	M_BaseObject* iter = space->iter(all);
+	while (true) {
+		try {
+			M_BaseObject* name = space->next(iter);
+			std::string unwrapped = space->unwrap_str(name);
+			if (skip_leading_underscores && unwrapped[0] == '_') {
+				continue;
+			}
+			M_BaseObject* value = space->getattr(module, name);
+			space->setitem(locals, name, value);
+		}
+		catch (InterpError& e) {
+			if (!e.match(space, space->StopIteration_type())) throw e;
+			break;
+		}
+	}
+
+	set_locals(locals);
+
+	context->delete_local_ref(iter);
+	context->delete_local_ref(all);
+	context->delete_local_ref(module);
 }

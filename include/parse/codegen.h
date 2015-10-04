@@ -55,6 +55,7 @@ public:
     mtpython::tree::ASTNode* visit_if(mtpython::tree::IfNode* node);
     mtpython::tree::ASTNode* visit_ifexp(mtpython::tree::IfExpNode* node);
     mtpython::tree::ASTNode* visit_import(mtpython::tree::ImportNode* node);
+    mtpython::tree::ASTNode* visit_importfrom(mtpython::tree::ImportFromNode* node);
     void import_as(mtpython::tree::AliasNode* node);
     mtpython::tree::ASTNode* visit_keyword(mtpython::tree::KeywordNode* node);
     mtpython::tree::ASTNode* visit_list(mtpython::tree::ListNode* node);

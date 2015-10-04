@@ -15,6 +15,7 @@ static mtpython::interpreter::Typedef dict_typedef("dict", {
 	{ "__getitem__", new InterpFunctionWrapper("__getitem__", M_StdDictObject::__getitem__) },
 	{ "__setitem__", new InterpFunctionWrapper("__setitem__", M_StdDictObject::__setitem__) },
 	{ "__contains__", new InterpFunctionWrapper("__contains__", M_StdDictObject::__contains__) },
+	{ "keys", new InterpFunctionWrapper("keys", M_StdDictObject::keys) },
 });
 
 M_BaseObject* M_StdDictObject::getitem(M_BaseObject* key)
@@ -104,3 +105,16 @@ M_BaseObject* M_StdDictObject::__contains__(mtpython::vm::ThreadContext* context
 	return result;
 }
 
+M_BaseObject* M_StdDictObject::keys(mtpython::vm::ThreadContext* context, M_BaseObject* self)
+{
+	M_StdDictObject* as_dict = static_cast<M_StdDictObject*>(self);
+	std::vector<M_BaseObject*> keys;
+	
+	as_dict->lock();
+	for (const auto& iter : as_dict->dict) {
+		keys.push_back(iter.first);
+	}
+	as_dict->unlock();
+
+	return context->get_space()->new_tuple(keys);
+}

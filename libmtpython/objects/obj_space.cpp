@@ -5,6 +5,7 @@
 
 #include "modules/_io/iomodule.h"
 #include "modules/builtins/bltinmodule.h"
+#include "modules/posix/posixmodule.h"
 #include "modules/sys/sysmodule.h"
 
 #include "macros.h"
@@ -55,6 +56,9 @@ void ObjSpace::make_builtins()
 
 	init_builtin_exceptions();
 
+	M_BaseObject* posix_name = wrap_str("posix");
+	mtpython::modules::PosixModule* posix_mod = new mtpython::modules::PosixModule(this, posix_name);
+	posix_mod->install();
 	builtin_names.push_back(wrap_str("posix"));
 
 	setitem(sys_mod->get_dict(this), wrap_str("builtin_module_names"), new_tuple(builtin_names));
@@ -65,6 +69,7 @@ void ObjSpace::setup_builtin_modules()
 	get_builtin_module("_io");
 	get_builtin_module("sys");
 	get_builtin_module("builtins");
+	get_builtin_module("posix");
 }
 
 void ObjSpace::init_builtin_exceptions()

@@ -139,17 +139,17 @@ static M_BaseObject* io_open(mtpython::vm::ThreadContext* context, M_BaseObject*
 
 IOModule::IOModule(ObjSpace* space, M_BaseObject* name) : BuiltinModule(space, name)
 {
-    add_def("DEFAULT_BUFFER_SIZE", space->wrap_int(DEFAULT_BUFFER_SIZE));
+	add_def("DEFAULT_BUFFER_SIZE", space->wrap_int(DEFAULT_BUFFER_SIZE));
 
-    add_def("_IOBase", space->get_typeobject(&_IOBase_typedef));
-    add_def("_RawIOBase", space->get_typeobject(&_RawIOBase_typedef));
-    add_def("_TextIOBase", space->get_typeobject(&_TextIOBase_typedef));
-    add_def("_BufferedIOBase", space->get_typeobject(&_BufferedIOBase_typedef));
+	add_def("_IOBase", space->get_typeobject(&_IOBase_typedef));
+	add_def("_RawIOBase", space->get_typeobject(&_RawIOBase_typedef));
+	add_def("_TextIOBase", space->get_typeobject(&_TextIOBase_typedef));
+	add_def("_BufferedIOBase", space->get_typeobject(&_BufferedIOBase_typedef));
 
 	add_def("BufferedReader", space->get_typeobject(&BufferedReader_typedef));
 
-    add_def("FileIO", space->get_typeobject(&FileIO_typedef));
-    add_def("TextIOWrapper", space->get_typeobject(&TextIOWrapper_typedef));
-    
-    add_def("open", new InterpFunctionWrapper("open", io_open, Signature({"file"}, "args", "kwargs", {})));
+	add_def("FileIO", space->get_typeobject(&FileIO_typedef));
+	add_def("TextIOWrapper", space->get_typeobject(&TextIOWrapper_typedef));
+	
+	add_def("open", new InterpFunctionWrapper("open", io_open, Signature({"file"}, "args", "kwargs", {})));
 }

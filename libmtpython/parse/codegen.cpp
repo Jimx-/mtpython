@@ -375,6 +375,45 @@ ASTNode* BaseCodeGenerator::visit_import(ImportNode* node)
 	return node;
 }
 
+ASTNode* BaseCodeGenerator::visit_importfrom(ImportFromNode* node)
+{
+	set_lineno(node->get_line());
+	std::vector<AliasNode*>& names = node->get_names();
+	
+	std::string first = names[0]->get_name();
+	bool star_import = (names.size() == 1) && (first == "*");
+
+	load_const(space->wrap_int(node->get_level()));
+
+	std::vector<M_BaseObject*> wrapped_names;
+	wrapped_names.resize(names.size(), nullptr);
+	for (std::size_t i = 0; i < names.size(); i++) {
+		wrapped_names[i] = space->wrap_str(names[i]->get_name());
+	}
+
+	load_const(space->new_tuple(wrapped_names));
+	std::string mod_name = node->get_module();
+
+	emit_op_arg(IMPORT_NAME, add_name(this->names, mod_name));
+	if (star_import) {
+		emit_op(IMPORT_STAR);
+	} else {
+		for (auto& alias : names) {
+			emit_op_arg(IMPORT_FROM, add_name(this->names, alias->get_name()));
+			std::string store_name;
+			if (alias->get_asname() != "") {
+				store_name = alias->get_asname();
+			} else {
+				store_name = alias->get_name();
+			}
+			gen_name(store_name, EC_STORE);
+		}
+		emit_op(POP_TOP);
+	}
+
+	return node;
+}
+
 void BaseCodeGenerator::import_as(AliasNode* node)
 {
 	std::string src_name = node->get_name();
