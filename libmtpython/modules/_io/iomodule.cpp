@@ -1,4 +1,5 @@
 #include "modules/_io/iomodule.h"
+#include "interpreter/arguments.h"
 #include "interpreter/gateway.h"
 #include "interpreter/pycode.h"
 #include "interpreter/compiler.h"
@@ -59,21 +60,25 @@ static Typedef TextIOWrapper_typedef("_io.TextIOWrapper", { &_TextIOBase_typedef
 });
 Typedef* M_TextIOWrapper::get_typedef() { return &TextIOWrapper_typedef; }
 
-static M_BaseObject* io_open(mtpython::vm::ThreadContext* context, M_BaseObject* file, M_BaseObject* args, M_BaseObject* kwargs)
+static M_BaseObject* io_open(mtpython::vm::ThreadContext* context, const Arguments& args)
 {
+	static Signature open_signature({ "file", "mode", "buffering", "encoding", "errors", "newline", "closefd" });
+
 	ObjSpace* space = context->get_space();
 	
 	std::vector<M_BaseObject*> scope;
-	Arguments::parse_tuple_and_keywords(space, {"mode", "buffering", "encoding", "errors", "newline", "closefd"}, args, kwargs, scope, 
-		{space->wrap_str("r"), space->wrap_int(-1), space->wrap_None(), space->wrap_None(), space->wrap_None(), space->new_bool(true)});
-	M_BaseObject* wrapped_mode = scope[0];
+	M_BaseObject* mode_def = space->wrap_str("r");
+	M_BaseObject* buffering_def = space->wrap_int(-1);
+	args.parse("open", nullptr, open_signature, scope, { mode_def, buffering_def, space->wrap_None(), space->wrap_None(), space->wrap_None(), space->new_bool(true) });
+	M_BaseObject* file = scope[0];
+	M_BaseObject* wrapped_mode = scope[1];
 	std::string mode = space->unwrap_str(wrapped_mode);
-	M_BaseObject* wrapped_buffering = scope[1];
+	M_BaseObject* wrapped_buffering = scope[2];
 	int buffering = space->unwrap_int(wrapped_buffering, false);
-	M_BaseObject* wrapped_encoding = scope[2];
-	M_BaseObject* wrapped_errors = scope[3];
-	M_BaseObject* wrapped_newline = scope[4];
-	M_BaseObject* wrapped_closefd = scope[5];
+	M_BaseObject* wrapped_encoding = scope[3];
+	M_BaseObject* wrapped_errors = scope[4];
+	M_BaseObject* wrapped_newline = scope[5];
+	M_BaseObject* wrapped_closefd = scope[6];
 	bool closefd = space->is_true(wrapped_closefd);
 
 	bool updating = false, appending = false, reading = false, writing = false, binary = false;
@@ -99,6 +104,9 @@ static M_BaseObject* io_open(mtpython::vm::ThreadContext* context, M_BaseObject*
 		}
 	}
 	
+	context->add_local_ref(file);
+	context->add_local_ref(wrapped_mode);
+	context->add_local_ref(wrapped_closefd);
 	M_BaseObject* raw = space->call_function(context, space->get_typeobject(&FileIO_typedef), {file, wrapped_mode, wrapped_closefd});
 	
 	bool line_buffering = false;
@@ -119,6 +127,9 @@ static M_BaseObject* io_open(mtpython::vm::ThreadContext* context, M_BaseObject*
 	if (binary) {
 		wrapper = buffer;
 	} else {
+		context->add_local_ref(wrapped_encoding);
+		context->add_local_ref(wrapped_errors);
+		context->add_local_ref(wrapped_newline);
 		wrapper = space->call_function(context, space->get_typeobject(&TextIOWrapper_typedef), { buffer,
 			wrapped_encoding, wrapped_errors, wrapped_newline, space->new_bool(line_buffering) });
 		space->setattr(wrapper, space->wrap_str("mode"), wrapped_mode);
@@ -126,13 +137,13 @@ static M_BaseObject* io_open(mtpython::vm::ThreadContext* context, M_BaseObject*
 	
 	context->delete_local_ref(file);
 	context->delete_local_ref(wrapped_mode);
+	context->delete_local_ref(mode_def);
 	context->delete_local_ref(wrapped_buffering);
+	context->delete_local_ref(buffering_def);
 	context->delete_local_ref(wrapped_encoding);
 	context->delete_local_ref(wrapped_errors);
 	context->delete_local_ref(wrapped_newline);
 	context->delete_local_ref(wrapped_closefd);
-	context->delete_local_ref(args);
-	context->delete_local_ref(kwargs);
 
 	return wrapper;
 }
@@ -151,5 +162,5 @@ IOModule::IOModule(ObjSpace* space, M_BaseObject* name) : BuiltinModule(space, n
 	add_def("FileIO", space->get_typeobject(&FileIO_typedef));
 	add_def("TextIOWrapper", space->get_typeobject(&TextIOWrapper_typedef));
 	
-	add_def("open", new InterpFunctionWrapper("open", io_open, Signature({"file"}, "args", "kwargs", {})));
+	add_def("open", new InterpFunctionWrapper("open", io_open));
 }

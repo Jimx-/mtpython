@@ -1,6 +1,7 @@
 #ifndef _BUFFEREDIO_H_
 #define _BUFFEREDIO_H_
 
+#include "interpreter/arguments.h"
 #include "objects/obj_space.h"
 #include "modules/_io/iobase.h"
 
@@ -29,8 +30,8 @@ public:
 
 	interpreter::Typedef* get_typedef();
 
-	static objects::M_BaseObject* __new__(vm::ThreadContext* context, objects::M_BaseObject* type, objects::M_BaseObject* args, objects::M_BaseObject* kwargs);
-	static objects::M_BaseObject* __init__(vm::ThreadContext* context, objects::M_BaseObject* self, objects::M_BaseObject* args, objects::M_BaseObject* kwargs);
+	static objects::M_BaseObject* __new__(vm::ThreadContext* context, const interpreter::Arguments& args);
+	static objects::M_BaseObject* __init__(vm::ThreadContext* context, const interpreter::Arguments& args);
 };
 
 class M_BufferedWriter : public BufferedBase {
@@ -39,8 +40,8 @@ public:
 
 	interpreter::Typedef* get_typedef();
 
-	static objects::M_BaseObject* __new__(vm::ThreadContext* context, objects::M_BaseObject* type, objects::M_BaseObject* args, objects::M_BaseObject* kwargs);
-	static objects::M_BaseObject* __init__(vm::ThreadContext* context, objects::M_BaseObject* self, objects::M_BaseObject* args, objects::M_BaseObject* kwargs);
+	static objects::M_BaseObject* __new__(vm::ThreadContext* context, const interpreter::Arguments& args);
+	static objects::M_BaseObject* __init__(vm::ThreadContext* context, const interpreter::Arguments& args);
 };
 
 }

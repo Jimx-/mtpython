@@ -27,11 +27,11 @@ static std::string argcount_err_msg(const std::string& name, int nargs, int nkwa
 }
 
 /* TODO: support keyword only argument(PEP 3102) */
-void Arguments::parse(const std::string& fname, M_BaseObject* first, Signature& sig, std::vector<M_BaseObject*>& scope, std::vector<M_BaseObject*>& defaults)
+void Arguments::parse(const std::string& fname, M_BaseObject* first, Signature& sig, std::vector<M_BaseObject*>& scope, const std::vector<M_BaseObject*>& defaults) const
 {
 	int argcount = sig.get_nargs();
 
-	scope.resize(sig.scope_len(), space->wrap_None());
+	scope.resize(sig.scope_len(), nullptr);
 
 	/* place the first object */
 	int front = 0;
@@ -97,7 +97,7 @@ void Arguments::parse(const std::string& fname, M_BaseObject* first, Signature& 
 		/* calculate keyword arg index */
 		int remaining_kwargs = nkwargs;
 		for (int i = 0; i < nkwargs; i++) {
-			std::string& keyword_name = keywords[i];
+			const std::string& keyword_name = keywords[i];
 
 			int index = sig.find_argname(keyword_name);
 
@@ -133,30 +133,15 @@ void Arguments::parse(const std::string& fname, M_BaseObject* first, Signature& 
 				if (index >= 0) scope[i] = keyword_values[index];
 			}
 		}
+
+		/* fill in defaults */
+		std::size_t def_first = argcount - defaults.size();
+		for (std::size_t i = input_argcount; i < (std::size_t)argcount; i++) {
+			if (scope[i]) continue;
+			std::size_t def_num = i - def_first;
+			if (def_num >= 0)
+				scope[i] = defaults[def_num];
+		}
 	}
 }
 
-void Arguments::parse_tuple_and_keywords(ObjSpace* space, const std::vector<std::string>& format, M_BaseObject* args, M_BaseObject* kwargs, 
-		std::vector<M_BaseObject*>& scope, const std::vector<M_BaseObject*>& defaults)
-{
-	std::size_t i = 0;
-	std::size_t default_idx = 0;
-	scope.resize(format.size(), space->wrap_None());
-	
-	std::vector<M_BaseObject*> arg_list;
-	if (args) {
-		space->unwrap_tuple(args, arg_list);
-	}
-
-	for (auto& arg : format) {
-		M_BaseObject* value = space->finditem_str(kwargs, arg);
-		if (!value && arg_list.size() > i) {
-			value = arg_list[i];
-		}
-		if (!value && defaults.size() > i) {
-			value = defaults[i];
-		}
-		scope[i] = value;
-		i++;
-	}
-}

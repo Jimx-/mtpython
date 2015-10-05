@@ -15,7 +15,7 @@ using namespace mtpython::modules;
 using namespace mtpython::objects;
 using namespace mtpython::interpreter;
 
-M_BaseObject* M_FileIO::__new__(mtpython::vm::ThreadContext* context, M_BaseObject* type, M_BaseObject* args, M_BaseObject* kwargs)
+M_BaseObject* M_FileIO::__new__(mtpython::vm::ThreadContext* context, const Arguments& args)
 {
 	ObjSpace* space = context->get_space();
 	M_BaseObject* instance = new M_FileIO(space);
@@ -50,19 +50,23 @@ static int decode_mode(const std::string& mode)
 	return flags;
 }
 
-M_BaseObject* M_FileIO::__init__(mtpython::vm::ThreadContext* context, M_BaseObject* self, M_BaseObject* args, M_BaseObject* kwargs)
+M_BaseObject* M_FileIO::__init__(mtpython::vm::ThreadContext* context, const Arguments& args)
 {
+	static Signature init_signature({ "self", "name", "mode", "closefd" });
+
 	ObjSpace* space = context->get_space();
-	M_FileIO* as_fio = static_cast<M_FileIO*>(self);
-	as_fio->name = nullptr;
 	
 	std::vector<M_BaseObject*> scope;
-	Arguments::parse_tuple_and_keywords(space, {"name", "mode", "closefd"}, args, kwargs, scope, {space->wrap_str("r"), space->new_bool(true)});
-	M_BaseObject* wrapped_name = scope[0];
+	M_BaseObject* mode_def = space->wrap_str("r");
+	args.parse("__init__", nullptr, init_signature, scope, { mode_def, space->new_bool(true) });
+	M_BaseObject* self = scope[0];
+	M_FileIO* as_fio = static_cast<M_FileIO*>(self);
+	as_fio->name = nullptr;
+	M_BaseObject* wrapped_name = scope[1];
 	std::string name;
-	M_BaseObject* wrapped_mode = scope[1];
+	M_BaseObject* wrapped_mode = scope[2];
 	std::string mode = space->unwrap_str(wrapped_mode);
-	M_BaseObject* wrapped_closefd = scope[2];
+	M_BaseObject* wrapped_closefd = scope[3];
 	bool closefd = space->is_true(wrapped_closefd);
 
 	int fd = -1;
@@ -102,11 +106,10 @@ M_BaseObject* M_FileIO::__init__(mtpython::vm::ThreadContext* context, M_BaseObj
 		space->setattr(as_fio, space->wrap_str("name"), wrapped_name);
 	}
 
-	context->delete_local_ref(args);
-	context->delete_local_ref(kwargs);
 	context->delete_local_ref(wrapped_name);
 	context->delete_local_ref(wrapped_mode);
 	context->delete_local_ref(wrapped_closefd);
+	context->delete_local_ref(mode_def);
 
 	return nullptr;
 }

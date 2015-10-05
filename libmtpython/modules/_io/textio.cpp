@@ -10,26 +10,29 @@ using namespace mtpython::modules;
 using namespace mtpython::objects;
 using namespace mtpython::interpreter;
 
-M_BaseObject* M_TextIOWrapper::__new__(mtpython::vm::ThreadContext* context, M_BaseObject* type, M_BaseObject* args, M_BaseObject* kwargs)
+M_BaseObject* M_TextIOWrapper::__new__(mtpython::vm::ThreadContext* context, const Arguments& args)
 {
 	ObjSpace* space = context->get_space();
 	M_BaseObject* instance = new M_TextIOWrapper(space);
 	return space->wrap(instance);
 }
 
-M_BaseObject* M_TextIOWrapper::__init__(mtpython::vm::ThreadContext* context, M_BaseObject* self, M_BaseObject* args, M_BaseObject* kwargs)
+M_BaseObject* M_TextIOWrapper::__init__(mtpython::vm::ThreadContext* context, const Arguments& args)
 {
+	static Signature init_signature({ "self", "buffer", "encoding", "errors", "newline", "line_buffering", "write_through" });
 	ObjSpace* space = context->get_space();
-	M_TextIOWrapper* as_tio = static_cast<M_TextIOWrapper*>(self);
+
 	std::vector<M_BaseObject*> scope;
-	Arguments::parse_tuple_and_keywords(space, {"buffer", "encoding", "errors", "newline", "line_buffering", "write_through"}, args, kwargs, 
-		scope, {space->wrap_None(), space->wrap_None(), space->wrap_None(), space->wrap_None(), space->wrap_None()});
-	M_BaseObject* buffer = scope[0];
-	M_BaseObject* wrapped_encoding = scope[1];
+	args.parse("__init__", nullptr, init_signature, scope, { space->wrap_None(), space->wrap_None(), space->wrap_None(), space->wrap_None(), space->wrap_None() });
+	
+	M_BaseObject* self = scope[0];
+	M_TextIOWrapper* as_tio = static_cast<M_TextIOWrapper*>(self);
+	M_BaseObject* buffer = scope[1];
+	M_BaseObject* wrapped_encoding = scope[2];
 	as_tio->buffer = buffer;
 	as_tio->encoding = wrapped_encoding;
 	
-	return nullptr;
+	return space->wrap_None();
 }
 
 M_BaseObject* M_TextIOWrapper::__repr__(mtpython::vm::ThreadContext* context, M_BaseObject* self)

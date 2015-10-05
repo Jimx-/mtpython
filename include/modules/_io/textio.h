@@ -21,8 +21,8 @@ public:
 
 	interpreter::Typedef* get_typedef();
 
-	static objects::M_BaseObject* __new__(vm::ThreadContext* context, objects::M_BaseObject* type, objects::M_BaseObject* args, objects::M_BaseObject* kwargs);
-	static objects::M_BaseObject* __init__(vm::ThreadContext* context, objects::M_BaseObject* self, objects::M_BaseObject* args, objects::M_BaseObject* kwargs);
+	static objects::M_BaseObject* __new__(vm::ThreadContext* context, const interpreter::Arguments& args);
+	static objects::M_BaseObject* __init__(vm::ThreadContext* context, const interpreter::Arguments& args);
 	static objects::M_BaseObject* __repr__(vm::ThreadContext* context, objects::M_BaseObject* self);
 
 	static objects::M_BaseObject* name_get(vm::ThreadContext* context, objects::M_BaseObject* self);

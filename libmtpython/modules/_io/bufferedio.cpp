@@ -17,19 +17,22 @@ M_BaseObject* BufferedBase::name_get(mtpython::vm::ThreadContext* context, M_Bas
 	return space->getattr_str(bb->raw, "name");
 }
 
-M_BaseObject* M_BufferedReader::__new__(mtpython::vm::ThreadContext* context, M_BaseObject* type, M_BaseObject* args, M_BaseObject* kwargs)
+M_BaseObject* M_BufferedReader::__new__(mtpython::vm::ThreadContext* context, const Arguments& args)
 {
 	ObjSpace* space = context->get_space();
 	M_BaseObject* instance = new M_BufferedReader(space);
 	return space->wrap(instance);
 }
 
-M_BaseObject* M_BufferedReader::__init__(mtpython::vm::ThreadContext* context, M_BaseObject* self, M_BaseObject* args, M_BaseObject* kwargs)
+M_BaseObject* M_BufferedReader::__init__(mtpython::vm::ThreadContext* context, const Arguments& args)
 {
+	static Signature init_signature({ "self", "raw", "buffer_size" });
+
 	ObjSpace* space = context->get_space();
 	std::vector<M_BaseObject*> scope;
-	Arguments::parse_tuple_and_keywords(space, {"raw", "buffer_size"}, args, kwargs, scope, {space->wrap_int(DEFAULT_BUFFER_SIZE)});
-	M_BaseObject* raw = scope[0];
+	args.parse("__init__", nullptr, init_signature, scope, { space->wrap_int(DEFAULT_BUFFER_SIZE) });
+	M_BaseObject* self = scope[0];
+	M_BaseObject* raw = scope[1];
 
 	M_BufferedReader* as_br = static_cast<M_BufferedReader*>(self);
 	as_br->raw = raw;
@@ -38,19 +41,23 @@ M_BaseObject* M_BufferedReader::__init__(mtpython::vm::ThreadContext* context, M
 	return nullptr;
 }
 
-M_BaseObject* M_BufferedWriter::__new__(mtpython::vm::ThreadContext* context, M_BaseObject* type, M_BaseObject* args, M_BaseObject* kwargs)
+M_BaseObject* M_BufferedWriter::__new__(mtpython::vm::ThreadContext* context, const Arguments& args)
 {
 	ObjSpace* space = context->get_space();
 	M_BaseObject* instance = new M_BufferedWriter(space);
 	return space->wrap(instance);
 }
 
-M_BaseObject* M_BufferedWriter::__init__(mtpython::vm::ThreadContext* context, M_BaseObject* self, M_BaseObject* args, M_BaseObject* kwargs)
+M_BaseObject* M_BufferedWriter::__init__(mtpython::vm::ThreadContext* context, const Arguments& args)
 {
+	static Signature init_signature({ "self", "raw", "buffer_size" });
+
 	ObjSpace* space = context->get_space();
 	std::vector<M_BaseObject*> scope;
-	Arguments::parse_tuple_and_keywords(space, {"raw", "buffer_size"}, args, kwargs, scope, {space->wrap_int(DEFAULT_BUFFER_SIZE)});
-	M_BaseObject* raw = scope[0];
+	args.parse("__init__", nullptr, init_signature, scope, { space->wrap_int(DEFAULT_BUFFER_SIZE) });
+
+	M_BaseObject* self = scope[0];
+	M_BaseObject* raw = scope[1];
 
 	M_BufferedWriter* as_bw = static_cast<M_BufferedWriter*>(self);
 	as_bw->raw = raw;

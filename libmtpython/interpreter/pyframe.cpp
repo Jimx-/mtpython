@@ -185,94 +185,139 @@ int PyFrame::dispatch_bytecode(ThreadContext* context, std::vector<unsigned char
 			return next_pc;
 		}
 
-		if (opcode == JUMP_ABSOLUTE)
+		switch (opcode) {
+		case JUMP_ABSOLUTE:
 			return jump_absolute(arg);
-		else if (opcode == POP_TOP)
+		case POP_TOP:
 			pop_top(arg, next_pc);
-		else if (opcode == BINARY_ADD)
+			break;
+		case BINARY_ADD:
 			binary_add(arg, next_pc);
-		else if (opcode == BINARY_SUBTRACT)
+			break;
+		case BINARY_SUBTRACT:
 			binary_sub(arg, next_pc);
-		else if (opcode == BINARY_MULTIPLY)
+			break;
+		case BINARY_MULTIPLY:
 			binary_mul(arg, next_pc);
-		else if (opcode == LOAD_CONST)
+			break;
+		case LOAD_CONST:
 			load_const(arg, next_pc);
-		else if (opcode == LOAD_FAST)
+			break;
+		case LOAD_FAST:
 			load_fast(arg, next_pc);
-		else if (opcode == STORE_FAST)
+			break;
+		case STORE_FAST:
 			store_fast(arg, next_pc);
-		else if (opcode == JUMP_FORWARD)
+			break;
+		case JUMP_FORWARD:
 			next_pc = jump_forward(arg, next_pc);
-		else if (opcode == POP_JUMP_IF_FALSE)
+			break;
+		case POP_JUMP_IF_FALSE:
 			next_pc = pop_jump_if_false(arg, next_pc);
-		else if (opcode == LOAD_GLOBAL)
+			break;
+		case LOAD_GLOBAL:
 			load_global(arg, next_pc);
-		else if (opcode == CALL_FUNCTION)
+			break;
+		case CALL_FUNCTION:
 			call_function(arg, next_pc);
-		else if (opcode == MAKE_FUNCTION)
+			break;
+		case MAKE_FUNCTION:
 			make_function(arg, next_pc);
-		else if (opcode == DUP_TOP)
+			break;
+		case DUP_TOP:
 			dup_top(arg, next_pc);
-		else if (opcode == ROT_THREE)
+			break;
+		case ROT_THREE:
 			rot_three(arg, next_pc);
-		else if (opcode == ROT_TWO)
+			break;
+		case ROT_TWO:
 			rot_two(arg, next_pc);
-		else if (opcode == COMPARE_OP)
+			break;
+		case COMPARE_OP:
 			compare_op(arg, next_pc);
-		else if (opcode == JUMP_IF_FALSE_OR_POP)
+			break;
+		case JUMP_IF_FALSE_OR_POP:
 			next_pc = jump_if_false_or_pop(arg, next_pc);
-		else if (opcode == BUILD_TUPLE)
+			break;
+		case BUILD_TUPLE:
 			build_tuple(arg, next_pc);
-        else if (opcode == SETUP_LOOP)
-            setup_loop(arg, next_pc);
-        else if (opcode == GET_ITER)
-            get_iter(arg, next_pc);
-        else if (opcode == FOR_ITER)
-            next_pc = for_iter(arg, next_pc);
-        else if (opcode == POP_BLOCK)
-            _pop_block(arg, next_pc);
-		else if (opcode == BREAK_LOOP)
+			break;
+		case SETUP_LOOP:
+			setup_loop(arg, next_pc);
+			break;
+		case GET_ITER:
+			get_iter(arg, next_pc);
+			break;
+		case FOR_ITER:
+			next_pc = for_iter(arg, next_pc);
+			break;
+		case POP_BLOCK:
+			_pop_block(arg, next_pc);
+			break;
+		case BREAK_LOOP:
 			next_pc = break_loop(arg, next_pc);
-		else if (opcode == UNARY_POSITIVE)
+			break;
+		case UNARY_POSITIVE:
 			unary_positive(arg, next_pc);
-		else if (opcode == UNARY_NEGATIVE)
+			break;
+		case UNARY_NEGATIVE:
 			unary_negative(arg, next_pc);
-		else if (opcode == UNARY_NOT)
+			break;
+		case UNARY_NOT:
 			unary_not(arg, next_pc);
-		else if (opcode == UNARY_INVERT)
+			break;
+		case UNARY_INVERT:
 			unary_invert(arg, next_pc);
-		else if (opcode == SETUP_FINALLY)
+			break;
+		case SETUP_FINALLY:
 			setup_finally(arg, next_pc);
-		else if (opcode == SETUP_EXCEPT)
+			break;
+		case SETUP_EXCEPT:
 			setup_except(arg, next_pc);
-		else if (opcode == POP_EXCEPT)
+			break;
+		case POP_EXCEPT:
 			pop_except(arg, next_pc);
-		else if (opcode == DELETE_FAST)
+			break;
+		case DELETE_FAST:
 			delete_fast(arg, next_pc);
-		else if (opcode == LOAD_ATTR)
+			break;
+		case LOAD_ATTR:
 			load_attr(arg, next_pc);
-		else if (opcode == STORE_ATTR)
+			break;
+		case STORE_ATTR:
 			store_attr(arg, next_pc);
-		else if (opcode == DELETE_ATTR)
+			break;
+		case DELETE_ATTR:
 			delete_attr(arg, next_pc);
-		else if (opcode == IMPORT_NAME)
+			break;
+		case IMPORT_NAME:
 			import_name(arg, next_pc);
-		else if (opcode == STORE_GLOBAL)
+			break;
+		case STORE_GLOBAL:
 			store_global(arg, next_pc);
-		else if (opcode == LOAD_NAME)
+			break;
+		case LOAD_NAME:
 			load_name(arg, next_pc);
-		else if (opcode == STORE_NAME)
+			break;
+		case STORE_NAME:
 			store_name(arg, next_pc);
-		else if (opcode == BINARY_SUBSCR)
+			break;
+		case BINARY_SUBSCR:
 			binary_subscr(arg, next_pc);
-		else if (opcode == BUILD_LIST)
+			break;
+		case BUILD_LIST:
 			build_list(arg, next_pc);
-		else if (opcode == IMPORT_FROM)
+			break;
+		case IMPORT_FROM:
 			import_from(arg, next_pc);
-		else if (opcode == IMPORT_STAR)
+			break;
+		case IMPORT_STAR:
 			import_star(arg, next_pc);
-		else if (opcode == BINARY_AND)
+			break;
+		case BINARY_AND:
 			binary_and(arg, next_pc);
+			break;
+		}
 	}
 }
 

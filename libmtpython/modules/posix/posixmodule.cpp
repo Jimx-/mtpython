@@ -1,3 +1,5 @@
+#include <algorithm>
+
 #include "modules/posix/posixmodule.h"
 #include "interpreter/gateway.h"
 #include "interpreter/pycode.h"
@@ -17,6 +19,10 @@ using namespace mtpython::interpreter;
 #define STRUCT_STAT		struct stat
 #define STAT			stat
 #endif
+
+static std::vector<std::string> have_functions = {
+	"HAVE_FSTATAT",
+};
 
 static M_BaseObject* os__exit(mtpython::vm::ThreadContext* context, M_BaseObject* status)
 {
@@ -42,6 +48,11 @@ static M_BaseObject* os_stat(mtpython::vm::ThreadContext* context, M_BaseObject*
 
 PosixModule::PosixModule(ObjSpace* space, M_BaseObject* name) : BuiltinModule(space, name)
 {
+	std::vector<M_BaseObject*> _have_functions;
+	std::for_each(have_functions.begin(), have_functions.end(), [&_have_functions, space](const std::string& name) { _have_functions.push_back(space->wrap_str(name)); });
+
+	add_def("_have_functions", space->new_list(_have_functions));
+
 	add_def("_exit", new InterpFunctionWrapper("_exit", os__exit));
 	add_def("stat", new InterpFunctionWrapper("stat", os_stat, Signature({"path"}, "args", "kwargs", {})));
 }

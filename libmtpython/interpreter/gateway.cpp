@@ -21,6 +21,13 @@ M_BaseObject* BuiltinCode::funcrun_obj(ThreadContext* context, M_BaseObject* fun
 	return this->func(context, scope);
 }
 
+M_BaseObject* BuiltinCodeRaw::funcrun_obj(ThreadContext* context, M_BaseObject* func, M_BaseObject* obj, Arguments& args)
+{
+	if (obj) args.prepend(obj);
+
+	return this->func(context, args);
+}
+
 M_BaseObject* BuiltinCode0::funcrun_obj(ThreadContext* context, M_BaseObject* func, M_BaseObject* obj, Arguments& args)
 {
 	ObjSpace* space = context->get_space();
@@ -76,6 +83,11 @@ M_BaseObject* BuiltinCode3::funcrun_obj(ThreadContext* context, M_BaseObject* fu
 InterpFunctionWrapper::InterpFunctionWrapper(const std::string& name, InterpFunction f, const Signature& sig)
 {
 	code = new BuiltinCode(name, f, sig);
+}
+
+InterpFunctionWrapper::InterpFunctionWrapper(const std::string& name, InterpFunctionRaw f)
+{
+	code = new BuiltinCodeRaw(name, f);
 }
 
 InterpFunctionWrapper::InterpFunctionWrapper(const std::string& name, InterpFunction0 f)
