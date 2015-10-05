@@ -127,7 +127,7 @@ M_BaseObject* ObjSpace::hash(M_BaseObject* obj)
 {
 	M_BaseObject* descr = lookup(obj, "__hash__");
 	if (!descr) {
-		//return wrap((unsigned int)obj);
+		return obj->unique_id(this);
 	}
 
 	M_BaseObject* hash_value = get_and_call_function(current_thread(), descr, {obj});
@@ -152,7 +152,7 @@ bool ObjSpace::is_true(M_BaseObject* obj)
 
 bool ObjSpace::i_eq(M_BaseObject* obj1, M_BaseObject* obj2)
 {
-	return i_is(obj1, obj2) && is_true(eq(obj1, obj2));
+	return i_is(obj1, obj2) || is_true(eq(obj1, obj2));
 }
 
 std::size_t ObjSpace::i_hash(M_BaseObject* obj)
@@ -183,14 +183,14 @@ std::size_t ObjSpace::i_hash(M_BaseObject* obj)
 		return get_and_call_function(current_thread(), impl, {obj});	\
 	}
 
-#define DEF_CMP_OPER(name, lname, rname) \
+#define DEF_CMP_OPER(name, lname, rname, symbol) \
 	M_BaseObject* ObjSpace::name(M_BaseObject* obj1, M_BaseObject* obj2) \
 	{	\
 		M_BaseObject* type1 = type(obj1);	\
 		M_BaseObject* type2 = type(obj2);	\
 		M_BaseObject* left_cls;		\
 		M_BaseObject* left_impl = lookup_type_cls(type1, #lname, left_cls); 	\
-		if (!left_impl) throw InterpError::format(this, TypeError_type(), "unorderable types: %s %s %s", get_type_name(obj1).c_str(), #name, get_type_name(obj2).c_str());	\
+		if (!left_impl) throw InterpError::format(this, TypeError_type(), "unorderable types: '%s' %s '%s'", get_type_name(obj1).c_str(), #symbol, get_type_name(obj2).c_str());	\
 		M_BaseObject* result = execute_binop(left_impl, obj1, obj2);	\
 		return result;	\
 	}
@@ -204,13 +204,23 @@ DEF_UNARY_OPER(pos, __pos__)
 DEF_UNARY_OPER(neg, __neg__)
 DEF_UNARY_OPER(invert, __invert__)
 
-DEF_CMP_OPER(eq, __eq__, __eq__)
-DEF_CMP_OPER(lt, __lt__, __lt__)
-DEF_CMP_OPER(le, __le__, __le__)
-DEF_CMP_OPER(gt, __gt__, __gt__)
-DEF_CMP_OPER(ge, __ge__, __ge__)
-DEF_CMP_OPER(ne, __ne__, __ne__)
-DEF_CMP_OPER(contains, __contains__, __contains__)
+M_BaseObject* ObjSpace::eq(M_BaseObject* obj1, M_BaseObject* obj2)
+{
+	M_BaseObject* type1 = type(obj1);
+	M_BaseObject* type2 = type(obj2);
+	M_BaseObject* left_cls;
+	M_BaseObject* left_impl = lookup_type_cls(type1, "__eq__", left_cls);
+	if (!left_impl) return new_bool(i_is(obj1, obj2));
+	M_BaseObject* result = execute_binop(left_impl, obj1, obj2);
+	return result;
+}
+
+DEF_CMP_OPER(lt, __lt__, __lt__, <)
+DEF_CMP_OPER(le, __le__, __le__, <=)
+DEF_CMP_OPER(gt, __gt__, __gt__, >)
+DEF_CMP_OPER(ge, __ge__, __ge__, >=)
+DEF_CMP_OPER(ne, __ne__, __ne__, !=)
+DEF_CMP_OPER(contains, __contains__, __contains__, in)
 
 bool ObjSpace::match_exc(M_BaseObject* obj1, M_BaseObject* obj2)
 {

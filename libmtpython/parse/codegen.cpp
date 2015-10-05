@@ -531,7 +531,7 @@ ASTNode* BaseCodeGenerator::visit_set(SetNode* node)
 		elt->visit(this);
 	}
 
-	emit_op_arg(BUILD_TUPLE, eltcount);
+	emit_op_arg(BUILD_SET, eltcount);
 
 	return node;
 }

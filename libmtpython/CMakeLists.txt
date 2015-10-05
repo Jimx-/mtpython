@@ -22,6 +22,7 @@ SET(LIBMTPYTHON_SRCLIST
 		objects/std/unicode_object.cpp
 		objects/std/tuple_object.cpp
 		objects/std/type_object.cpp
+		objects/std/set_object.cpp
 		objects/std/obj_space_std.cpp
 		interpreter/arguments.cpp
 		interpreter/pycode.cpp

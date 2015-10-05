@@ -23,14 +23,21 @@ M_StdUnicodeObject::M_StdUnicodeObject(const std::string& s)
 	value = s;
 }
 
-mtpython::interpreter::Typedef* M_StdUnicodeObject::_str_typedef()
+Typedef* M_StdUnicodeObject::_str_typedef()
 {
 	return &str_typedef;
 }
 
-mtpython::interpreter::Typedef* M_StdUnicodeObject::get_typedef()
+Typedef* M_StdUnicodeObject::get_typedef()
 {
 	return &str_typedef;
+}
+
+bool M_StdUnicodeObject::i_is(ObjSpace* space, M_BaseObject* other)
+{ 
+	if (!M_STDUNICODEOBJECT(other)) return false;
+
+	return space->id(this) == space->id(other);
 }
 
 M_BaseObject* M_StdUnicodeObject::__repr__(mtpython::vm::ThreadContext* context, M_BaseObject* self)

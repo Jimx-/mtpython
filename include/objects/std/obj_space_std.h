@@ -32,6 +32,7 @@ public:
 	M_BaseObject* dict_type() { return builtin_types["dict"]; }
 	M_BaseObject* int_type() { return builtin_types["int"]; }
 	M_BaseObject* object_type() { return builtin_types["object"]; }
+	M_BaseObject* set_type() { return builtin_types["set"]; }
 	M_BaseObject* str_type() { return builtin_types["str"]; }
 	M_BaseObject* tuple_type() { return builtin_types["tuple"]; }
 	M_BaseObject* list_type() { return builtin_types["list"]; }
@@ -51,6 +52,7 @@ public:
 	M_BaseObject* new_tuple(std::vector<M_BaseObject*>& items);
 	M_BaseObject* new_list(std::vector<M_BaseObject*>& items);
 	M_BaseObject* new_dict();
+	M_BaseObject* new_set();
 
 	void unwrap_tuple(M_BaseObject* obj, std::vector<M_BaseObject*>& list);
 };

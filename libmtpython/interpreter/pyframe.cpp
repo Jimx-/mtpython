@@ -317,6 +317,9 @@ int PyFrame::dispatch_bytecode(ThreadContext* context, std::vector<unsigned char
 		case BINARY_AND:
 			binary_and(arg, next_pc);
 			break;
+		case BUILD_SET:
+			build_set(arg, next_pc);
+			break;	
 		}
 	}
 }
@@ -858,4 +861,16 @@ void PyFrame::import_star(int arg, int next_pc)
 	context->delete_local_ref(iter);
 	context->delete_local_ref(all);
 	context->delete_local_ref(module);
+}
+
+void PyFrame::build_set(int arg, int next_pc)
+{
+	std::vector<M_BaseObject*> args;
+	pop_values_untrack(arg, args);
+	M_BaseObject* set = space->new_set();
+	M_BaseObject* add_impl = space->lookup(set, "add");
+	for (auto& item : args) {
+		space->call_function(context, add_impl, { set, item });
+	}
+	push_value(set);
 }

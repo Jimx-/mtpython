@@ -9,6 +9,7 @@
 #include "objects/std/unicode_object.h"
 #include "objects/std/dict_object.h"
 #include "objects/std/object_object.h"
+#include "objects/std/set_object.h"
 #include "objects/std/tuple_object.h"
 #include "objects/std/frame.h"
 
@@ -27,6 +28,7 @@ StdObjSpace::StdObjSpace() : ObjSpace()
 	builtin_types["dict"] = get_typeobject(M_StdDictObject::_dict_typedef());
 	builtin_types["int"] = get_typeobject(M_StdIntObject::_int_typedef());
 	builtin_types["object"] = get_typeobject(M_StdObjectObject::_object_typedef());
+	builtin_types["set"] = get_typeobject(M_StdSetObject::_set_typedef());
 	builtin_types["str"] = get_typeobject(M_StdUnicodeObject::_str_typedef());
 	builtin_types["tuple"] = get_typeobject(M_StdTupleObject::_tuple_typedef());
 	builtin_types["list"] = get_typeobject(M_StdListObject::_list_typedef());
@@ -89,6 +91,11 @@ M_BaseObject* StdObjSpace::new_list(std::vector<M_BaseObject*>& items)
 M_BaseObject* StdObjSpace::new_dict()
 {
 	return new M_StdDictObject(this);
+}
+
+M_BaseObject* StdObjSpace::new_set()
+{
+	return new M_StdSetObject(this);
 }
 
 void StdObjSpace::unwrap_tuple(M_BaseObject* obj, std::vector<M_BaseObject*>& list)

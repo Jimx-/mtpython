@@ -31,7 +31,7 @@ public:
 	virtual bool set_dict_value(ObjSpace* space,const std::string& attr, M_BaseObject* value);
 	virtual bool del_dict_value(ObjSpace* space, const std::string& attr);
 
-	virtual bool i_is(ObjSpace* space, M_BaseObject* other) { throw NotImplementedException("Abstract"); }
+	virtual bool i_is(ObjSpace* space, M_BaseObject* other);
 
 	virtual int to_int(ObjSpace* space, bool allow_conversion) { throw NotImplementedException("Abstract"); }
 	virtual M_BaseObject* get_repr(ObjSpace* space, const std::string& info);

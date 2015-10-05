@@ -13,6 +13,7 @@ using namespace mtpython::interpreter;
 static mtpython::interpreter::Typedef list_typedef("list", {
 	{ "__repr__", new InterpFunctionWrapper("__repr__", M_StdListObject::__repr__) },
 	{ "__len__", new InterpFunctionWrapper("__len__", M_StdListObject::__len__) },
+	{ "__contains__", new InterpFunctionWrapper("__contains__", M_StdListObject::__contains__) },
 
 	{ "append", new InterpFunctionWrapper("append", M_StdListObject::append) },
 	{ "extend", new InterpFunctionWrapper("extend", M_StdListObject::append) },
@@ -53,6 +54,20 @@ M_BaseObject* M_StdListObject::__repr__(mtpython::vm::ThreadContext* context, M_
 	str += "]";
 
 	return space->wrap_str(str);
+}
+
+M_BaseObject* M_StdListObject::__contains__(mtpython::vm::ThreadContext* context, M_BaseObject* self,
+											 M_BaseObject* obj)
+{
+	ObjSpace* space = context->get_space();
+	M_StdListObject* as_list = static_cast<M_StdListObject*>(self);
+	for (auto item : as_list->items) {
+		if (space->i_eq(item, obj)) {
+			return space->wrap_True();
+		}
+	}
+
+	return space->wrap_False();
 }
 
 M_BaseObject* M_StdListObject::append(mtpython::vm::ThreadContext* context, M_BaseObject* self, M_BaseObject* item)

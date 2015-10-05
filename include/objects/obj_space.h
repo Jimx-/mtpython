@@ -86,6 +86,7 @@ public:
 	virtual M_BaseObject* dict_type() { throw NotImplementedException("Abstract"); }
 	virtual M_BaseObject* int_type() { throw NotImplementedException("Abstract"); }
 	virtual M_BaseObject* object_type() { throw NotImplementedException("Abstract"); }
+	virtual M_BaseObject* set_type() { throw NotImplementedException("Abstract"); }
 	virtual M_BaseObject* str_type() { throw NotImplementedException("Abstract"); }
 	virtual M_BaseObject* tuple_type() { throw NotImplementedException("Abstract"); }
 	virtual M_BaseObject* list_type() { throw NotImplementedException("Abstract"); }
@@ -121,6 +122,7 @@ public:
 	virtual M_BaseObject* new_tuple(std::vector<M_BaseObject*>& items) { throw NotImplementedException("Abstract"); }
 	virtual M_BaseObject* new_list(std::vector<M_BaseObject*>& items) { throw NotImplementedException("Abstract"); }
 	virtual M_BaseObject* new_dict() { throw NotImplementedException("Abstract"); }
+	virtual M_BaseObject* new_set() { throw NotImplementedException("Abstract"); }
 
 	virtual int unwrap_int(M_BaseObject* obj, bool allow_conversion = true);
 	virtual std::string unwrap_str(M_BaseObject* obj) { return obj->to_string(this); }

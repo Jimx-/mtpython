@@ -61,6 +61,11 @@ bool M_BaseObject::del_dict_value(ObjSpace* space, const std::string& attr)
 	return false;
 }
 
+bool mtpython::objects::M_BaseObject::i_is(ObjSpace * space, M_BaseObject * other)
+{
+	return space->id(this) == space->id(other);
+}
+
 M_BaseObject* M_BaseObject::get_repr(ObjSpace* space, const std::string& info)
 {
 	M_BaseObject* id = space->id(this);
