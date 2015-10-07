@@ -225,6 +225,10 @@ ASTNode* Parser::stmt()
 	case TOK_FROM:
 		node = import_from_stmt();
 		break;
+	case TOK_AT:
+		compound_stmt = true;
+		node = decorated();
+		break;
 	case TOK_LAMBDA:
 	case TOK_IDENT:
 	case TOK_INTLITERAL:
@@ -1086,7 +1090,7 @@ ASTNode* Parser::yield_expr()
 }
 
 /* funcdef: 'def' NAME parameters ['->' test] ':' suite */
-ASTNode* Parser::function_def()
+ASTNode* Parser::function_def(ASTNode* decorators)
 {
 	FunctionDefNode* node = new FunctionDefNode(s.get_line());
 	match(TOK_DEF);
@@ -1103,7 +1107,7 @@ ASTNode* Parser::function_def()
 	return node;
 }
 
-ASTNode* Parser::class_def()
+ASTNode* Parser::class_def(ASTNode* decorators)
 {
 	ClassDefNode* node = new ClassDefNode(s.get_line());
 	match(TOK_CLASS);
@@ -1537,6 +1541,59 @@ ASTNode* Parser::name()
 	return node;
 }
 
+ASTNode* Parser::decorator()
+{
+	ASTNode* node;
+
+	match(TOK_AT);
+
+	NameNode* callable = new NameNode(s.get_line());
+	callable->set_name(dotted_name());
+
+	if (cur_tok == TOK_LPAREN) {
+		node = call(callable);
+	} else {
+		CallNode* call_node = new CallNode(s.get_line());
+		call_node->set_func(callable);
+		node = call_node;
+	}
+
+	match(TOK_NEWLINE);
+
+	return node;
+}
+
+ASTNode* Parser::decorated()
+{
+	ASTNode* node;
+
+	if (cur_tok == TOK_AT) {
+		node = decorator();
+
+		ASTNode* tn = node;
+		while (cur_tok == TOK_AT) {
+			ASTNode* n = decorator();
+
+			if (n != nullptr) {
+				if (tn == nullptr)
+					node = tn = n;
+				else {
+					tn->set_sibling(n);
+					tn = n;
+				}
+			}
+		}
+	}
+
+	if (cur_tok == TOK_CLASS) {
+		node = class_def(node);
+	} else if (cur_tok == TOK_DEF) {
+		node = function_def(node);
+	}
+
+	return node;
+}
+
 /* Parse the source, return a mod tree */
 ASTNode* Parser::parse()
 {
@@ -1547,3 +1604,4 @@ ASTNode* Parser::parse()
 		diag.warning(s.get_line(), s.get_col(), "last token should be \"EOF\"");
 	return syntax_tree;
 }
+

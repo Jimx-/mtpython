@@ -620,6 +620,11 @@ Token Scanner::get_token()
 		return TOK_TILDE;
 	}
 
+	else if (last_char == '@') {
+		last_char = read_char();
+		return TOK_AT;
+	}
+
 	if (last_char == -1 || buf->eof()) {
 		/* pop all indentation */
 		while (indentation.size() > 1) {

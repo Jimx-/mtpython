@@ -155,6 +155,20 @@ std::string mtpython::parse::tok2str(Token tok)
 		return "[";
 	case TOK_RSQUARE:
 		return "]";
+	case TOK_IS:
+		return "IS";
+	case TOK_IS_NOT:
+		return "IS NOT";
+	case TOK_NOT_IN:
+		return "NOT IN";
+	case TOK_AS:
+		return "AS";
+	case TOK_ELLIPSIS:
+		return "...";
+	case TOK_WITH:
+		return "WITH";
+	case TOK_AT:
+		return "@";
 	}
 	return "UNKNOWN TOKEN";
 }
