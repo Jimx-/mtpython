@@ -68,10 +68,14 @@ M_BaseObject* ThreadContext::pop_local_frame(M_BaseObject* result)
 {
 	assert(local_frame_stack.size() > 1);
 
-	LocalFrame* outer_frame = local_frame_stack[local_frame_stack.size() - 2];
-	outer_frame->new_local_ref(result);
+	if (result) {
+		LocalFrame* outer_frame = local_frame_stack[local_frame_stack.size() - 2];
+		outer_frame->new_local_ref(result);
+	}
 
+	LocalFrame* top = local_frame_stack.back();
 	local_frame_stack.pop_back();
+	SAFE_DELETE(top);
 	top_local_frame = local_frame_stack.back();
 
 	return result;

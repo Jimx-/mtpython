@@ -374,22 +374,15 @@ const std::string& PyFrame::get_localname(int index)
 }
 
 #define DEF_BINARY_OPER(name) \
-	void PyFrame::binary_##name(int arg, int next_pc) \
-	{ \
-		M_BaseObject* obj2 = pop_value_untrack(); \
-		M_BaseObject* obj1 = pop_value_untrack(); \
-		M_BaseObject* result = space->name(obj1, obj2); \
-		push_value(result);	\
-		context->delete_local_ref(obj1);	\
-		context->delete_local_ref(obj2);	\
-	}
+	DEF_BINARY_OPER_ALIAS(name, name)
 
 #define DEF_BINARY_OPER_ALIAS(name, opname) \
 	void PyFrame::binary_##name(int arg, int next_pc) \
 	{ \
 		M_BaseObject* obj2 = pop_value_untrack(); \
 		M_BaseObject* obj1 = pop_value_untrack(); \
-		M_BaseObject* result = space->opname(obj1, obj2); \
+		context->push_local_frame();	\
+		M_BaseObject* result = context->pop_local_frame(space->opname(obj1, obj2)); \
 		push_value(result);	\
 		context->delete_local_ref(obj1);	\
 		context->delete_local_ref(obj2);	\
@@ -432,11 +425,13 @@ void PyFrame::load_global(int arg, int next_pc)
 	M_BaseObject* name = get_name(arg);
 	std::string unwrapped_name = space->unwrap_str(name);
 
+	context->push_local_frame();
 	M_BaseObject* value = space->finditem_str(globals, unwrapped_name);
 	if (!value) {
 		value = space->get_builtin()->get_dict_value(space, unwrapped_name);
 		if (!value) throw InterpError::format(space, space->NameError_type(), "global name '%s' not found", unwrapped_name.c_str());
 	}
+	value = context->pop_local_frame(value);
 
 	push_value(value);
 }
@@ -533,6 +528,7 @@ void PyFrame::compare_op(int arg, int next_pc)
 	M_BaseObject* v2 = pop_value_untrack();
 	M_BaseObject* v1 = pop_value_untrack();
 
+	context->push_local_frame();
 	M_BaseObject* result;
 	switch (arg) {
 	case 0:
@@ -562,6 +558,7 @@ void PyFrame::compare_op(int arg, int next_pc)
 		result = space->new_bool(space->match_exc(v1, v2));
 		break;
 	}
+	result = context->pop_local_frame(result);
 
 	push_value(result);
 	context->delete_local_ref(v1);
@@ -578,7 +575,6 @@ int PyFrame::jump_if_false_or_pop(int arg, int next_pc)
 		pop_value();
 		result = next_pc;
 	}
-
 
 	return result;
 }
@@ -608,7 +604,8 @@ void PyFrame::setup_loop(int arg, int next_pc)
 void PyFrame::get_iter(int arg, int next_pc)
 {
     M_BaseObject* iterable = pop_value_untrack();
-    M_BaseObject* iterator = space->iter(iterable);
+    context->push_local_frame();
+	M_BaseObject* iterator = context->pop_local_frame(space->iter(iterable));
     push_value(iterator);
     context->delete_local_ref(iterable);
 }
@@ -618,7 +615,8 @@ int PyFrame::for_iter(int arg, int next_pc)
     M_BaseObject* iterator = peek_value();
     M_BaseObject* next_obj = nullptr;
     try {
-        next_obj = space->next(iterator);
+		context->push_local_frame();
+        next_obj = context->pop_local_frame(space->next(iterator));
         push_value(next_obj);
     } catch (InterpError& e) {
         if (!e.match(space, space->StopIteration_type())) {
@@ -648,7 +646,8 @@ int PyFrame::break_loop(int arg, int next_pc)
 	void PyFrame::unary_##opname(int arg, int next_pc) \
 	{ \
 		M_BaseObject* obj = pop_value_untrack(); \
-		M_BaseObject* result = space->name(obj); \
+		context->push_local_frame(); \
+		M_BaseObject* result = context->pop_local_frame(space->name(obj)); \
 		push_value(result);	\
 		context->delete_local_ref(obj);	\
 	}
@@ -704,7 +703,8 @@ void PyFrame::load_attr(int arg, int next_pc)
 {
 	M_BaseObject* obj = pop_value_untrack();
 	M_BaseObject* attr = get_name(arg);
-	M_BaseObject* value = space->getattr(obj, attr);
+	context->push_local_frame();
+	M_BaseObject* value = context->pop_local_frame(space->getattr(obj, attr));
 	push_value(value);
 	context->delete_local_ref(obj);
 }
@@ -712,8 +712,10 @@ void PyFrame::store_attr(int arg, int next_pc)
 {
 	M_BaseObject* obj = pop_value_untrack();
 	M_BaseObject* attr = get_name(arg);
+	context->push_local_frame();
 	M_BaseObject* value = pop_value_untrack();
 	space->setattr(obj, attr, value);
+	context->pop_local_frame(nullptr);
 	context->delete_local_ref(obj);
 	context->delete_local_ref(value);
 }
@@ -722,7 +724,9 @@ void PyFrame::delete_attr(int arg, int next_pc)
 {
 	M_BaseObject* obj = pop_value_untrack();
 	M_BaseObject* attr = get_name(arg);
+	context->push_local_frame();
 	space->delattr(obj, attr);
+	context->pop_local_frame(nullptr);
 	context->delete_local_ref(obj);
 }
 
@@ -732,6 +736,7 @@ void PyFrame::import_name(int arg, int next_pc)
 	M_BaseObject* from_list = pop_value_untrack();
 	M_BaseObject* level = pop_value_untrack();
 
+	context->push_local_frame();
 	M_BaseObject* import_func = space->get_builtin()->get_dict_value(space, "__import__");
 	if (!import_func) {
 		throw InterpError(space->ImportError_type(), space->wrap_str(context, "__import__ not found"));
@@ -741,7 +746,7 @@ void PyFrame::import_name(int arg, int next_pc)
 	if (!wrapped_locals) wrapped_locals = space->wrap_None();
 
 	M_BaseObject* wrapped_globals = globals;
-	M_BaseObject* obj = space->call_function(context, import_func, {mod_name, wrapped_globals, wrapped_locals, from_list, level});
+	M_BaseObject* obj = context->pop_local_frame(space->call_function(context, import_func, {mod_name, wrapped_globals, wrapped_locals, from_list, level}));
 
 	push_value(obj);
 	context->delete_local_ref(mod_name);
@@ -754,7 +759,9 @@ void PyFrame::store_global(int arg, int next_pc)
 	M_BaseObject* w_name = get_name(arg);
 	std::string name = space->unwrap_str(w_name);
 	M_BaseObject* value = pop_value_untrack();
+	context->push_local_frame();
 	space->setitem_str(globals, name, value);
+	context->pop_local_frame(nullptr);
 	context->delete_local_ref(value);
 }
 
@@ -763,6 +770,8 @@ void PyFrame::load_name(int arg, int next_pc)
 	M_BaseObject* w_name = get_name(arg);
 	std::string name = space->unwrap_str(w_name);
 	M_BaseObject* value = nullptr;
+
+	context->push_local_frame();
 
 	if (locals != globals) {
 		value = space->finditem_str(locals, name);
@@ -778,6 +787,7 @@ void PyFrame::load_name(int arg, int next_pc)
 		if (!value) throw InterpError::format(space, space->NameError_type(), "name '%s' not found", name.c_str());
 	}
 
+	value = context->pop_local_frame(value);
 	push_value(value);
 }
 
@@ -786,7 +796,9 @@ void PyFrame::store_name(int arg, int next_pc)
 	M_BaseObject* w_name = get_name(arg);
 	std::string name = space->unwrap_str(w_name);
 	M_BaseObject* value = pop_value_untrack();
+	context->push_local_frame();
 	space->setitem_str(locals, name, value);
+	context->pop_local_frame(nullptr);
 	context->delete_local_ref(value);
 }
 
@@ -804,13 +816,14 @@ void PyFrame::import_from(int arg, int next_pc)
 	M_BaseObject* module = peek_value();
 	M_BaseObject* value;
 
+	context->push_local_frame();
 	try {
 		value = space->getattr(module, w_name);
 	} catch (InterpError& exc) {
 		if (!exc.match(space, space->AttributeError_type())) throw exc;
 		throw InterpError::format(space, space->ImportError_type(), "cannot import name '%s'", space->unwrap_str(w_name).c_str());
 	}
-
+	value = context->pop_local_frame(value);
 	push_value(value);
 }
 
@@ -820,6 +833,8 @@ void PyFrame::import_star(int arg, int next_pc)
 	M_BaseObject* locals = get_locals();
 	M_BaseObject* dict, *all;
 	bool skip_leading_underscores = false;
+
+	context->push_local_frame();
 
 	try {
 		all = space->getattr_str(module, "__all__");
@@ -858,6 +873,8 @@ void PyFrame::import_star(int arg, int next_pc)
 
 	set_locals(locals);
 
+	context->pop_local_frame(nullptr);
+
 	context->delete_local_ref(iter);
 	context->delete_local_ref(all);
 	context->delete_local_ref(module);
@@ -868,9 +885,11 @@ void PyFrame::build_set(int arg, int next_pc)
 	std::vector<M_BaseObject*> args;
 	pop_values_untrack(arg, args);
 	M_BaseObject* set = space->new_set(context);
+	context->push_local_frame();
 	M_BaseObject* add_impl = space->lookup(set, "add");
 	for (auto& item : args) {
 		space->call_function(context, add_impl, { set, item });
 	}
+	context->pop_local_frame(nullptr);
 	push_value(set);
 }
