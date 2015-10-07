@@ -12,9 +12,10 @@ namespace interpreter {
 
 class BaseCompiler {
 protected:
+	mtpython::vm::ThreadContext* context;
 	mtpython::objects::ObjSpace* space;
 public:
-	BaseCompiler(vm::ThreadContext* context) : space(context->get_space()) { }
+	BaseCompiler(vm::ThreadContext* context) : space(context->get_space()) { this->context = context; }
 
 	virtual Code* compile(const std::string& source, const std::string& filename, const std::string& mode, int flags) { return nullptr; }
 };

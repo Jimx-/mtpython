@@ -101,6 +101,7 @@ private:
 	void patch_jump(std::vector<CodeBlock*>& blocks);
 
 protected:
+	mtpython::vm::ThreadContext* context;
 	mtpython::objects::ObjSpace* space;
 	CompileInfo* compile_info;
 
@@ -128,7 +129,7 @@ protected:
 
 	void load_const(mtpython::objects::M_BaseObject* obj);
 public:
-	CodeBuilder(const std::string& name, mtpython::objects::ObjSpace* space, Scope* scope, int first_lineno, CompileInfo* info);
+	CodeBuilder(const std::string& name, mtpython::vm::ThreadContext* context, Scope* scope, int first_lineno, CompileInfo* info);
 
 	void set_argcount(int argcount) { this->argcount = argcount; }
 

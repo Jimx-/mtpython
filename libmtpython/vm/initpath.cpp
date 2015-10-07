@@ -146,6 +146,7 @@ static bool find_stdlib(const std::string& executable, std::vector<std::string>&
 
 void PyVM::init_bootstrap_path(const std::string& executable)
 {
+    ThreadContext* thread = space->current_thread();
     std::string exec_name = executable;
     std::string exec_path = find_executable(exec_name);
     std::vector<std::string> stdlib_paths;
@@ -157,13 +158,13 @@ void PyVM::init_bootstrap_path(const std::string& executable)
 
     std::vector<M_BaseObject*> wrapped_paths;
     for (auto& path : stdlib_paths)
-        wrapped_paths.push_back(space->wrap_str(path));
+        wrapped_paths.push_back(space->wrap_str(thread, path));
 
     BuiltinModule* sys_mod = static_cast<BuiltinModule*>(space->get_sys());
     M_BaseObject* dict = sys_mod->get_dict(space);
-    space->setitem_str(dict, "path", space->new_list(wrapped_paths));
+    space->setitem_str(dict, "path", space->new_list(thread, wrapped_paths));
 
-    space->setitem_str(dict, "executable", space->wrap_str(executable));
-    space->setitem_str(dict, "prefix", space->wrap_str(prefix));
-    space->setitem_str(dict, "exec_prefix", space->wrap_str(prefix));
+    space->setitem_str(dict, "executable", space->wrap_str(thread, executable));
+    space->setitem_str(dict, "prefix", space->wrap_str(thread, prefix));
+    space->setitem_str(dict, "exec_prefix", space->wrap_str(thread, prefix));
 }

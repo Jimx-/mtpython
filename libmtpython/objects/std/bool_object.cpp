@@ -26,7 +26,7 @@ M_BaseObject* M_StdBoolObject::__repr__(mtpython::vm::ThreadContext* context, mt
 	M_StdBoolObject* as_bool = M_STDBOOLOBJECT(self);
 	assert(as_bool);
 
-	return context->get_space()->wrap_str((as_bool->intval == 1) ? "True" : "False");
+	return context->get_space()->wrap_str(context, (as_bool->intval == 1) ? "True" : "False");
 }
 
 M_BaseObject* M_StdBoolObject::__str__(mtpython::vm::ThreadContext* context, mtpython::objects::M_BaseObject* self)
@@ -34,7 +34,7 @@ M_BaseObject* M_StdBoolObject::__str__(mtpython::vm::ThreadContext* context, mtp
 	M_StdBoolObject* as_bool = M_STDBOOLOBJECT(self);
 	assert(as_bool);
 
-	return context->get_space()->wrap_str((as_bool->intval == 1) ? "True" : "False");
+	return context->get_space()->wrap_str(context, (as_bool->intval == 1) ? "True" : "False");
 }
 
 bool M_StdBoolObject::i_is(ObjSpace* space, M_BaseObject* other)

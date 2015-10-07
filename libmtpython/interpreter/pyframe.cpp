@@ -38,7 +38,7 @@ int ExceptBlock::handle(PyFrame* frame, StackUnwinder* unwinder)
 	FrameBlock* except_handler_block = new ExceptHandlerBlock(0, frame->value_stack_level());
 	frame->push_block(except_handler_block);
 
-	frame->push_value(frame->get_space()->wrap(as_exc));
+	frame->push_value(frame->get_space()->wrap(frame->get_context(), as_exc));
 	const InterpError& error = as_exc->get_error();
 	frame->push_value(error.get_value());
 	frame->push_value(error.get_type());
@@ -52,7 +52,7 @@ int FinallyBlock::handle(PyFrame* frame, StackUnwinder* unwinder)
 	ExceptionUnwinder* as_exc = dynamic_cast<ExceptionUnwinder*>(unwinder);
 	if (as_exc) {
 		ObjSpace* space = frame->get_space();
-		frame->push_value(space->wrap(as_exc));
+		frame->push_value(space->wrap(frame->get_context(), as_exc));
 	}
 
 	return handler;
@@ -315,7 +315,7 @@ int PyFrame::dispatch_bytecode(ThreadContext* context, std::vector<unsigned char
 			import_star(arg, next_pc);
 			break;
 		case BINARY_AND:
-			binary_and(arg, next_pc);
+			binary__and(arg, next_pc);
 			break;
 		case BUILD_SET:
 			build_set(arg, next_pc);
@@ -398,7 +398,7 @@ const std::string& PyFrame::get_localname(int index)
 DEF_BINARY_OPER(add)
 DEF_BINARY_OPER(sub)
 DEF_BINARY_OPER(mul)
-DEF_BINARY_OPER(and)
+DEF_BINARY_OPER(_and)
 DEF_BINARY_OPER_ALIAS(subscr, getitem)
 
 void PyFrame::pop_top(int arg, int next_pc)
@@ -485,10 +485,10 @@ void PyFrame::make_function(int arg, int next_pc)
 	M_BaseObject* code_obj = pop_value_untrack();
 
 	PyCode* code = dynamic_cast<PyCode*>(code_obj);
-	if (!code) throw InterpError(space->TypeError_type(), space->wrap_str("expected code object"));
+	if (!code) throw InterpError(space->TypeError_type(), space->wrap_str(context, "expected code object"));
 
 	M_BaseObject* func = new Function(space, code, globals);
-	push_value(space->wrap(func));
+	push_value(space->wrap(context, func));
 }
 
 int PyFrame::jump_absolute(int arg)
@@ -595,7 +595,7 @@ void PyFrame::build_tuple(int arg, int next_pc)
 {
 	std::vector<M_BaseObject*> args;
 	pop_values_untrack(arg, args);
-	M_BaseObject* tup = space->new_tuple(args);
+	M_BaseObject* tup = space->new_tuple(context, args);
 	push_value(tup);
 }
 
@@ -734,7 +734,7 @@ void PyFrame::import_name(int arg, int next_pc)
 
 	M_BaseObject* import_func = space->get_builtin()->get_dict_value(space, "__import__");
 	if (!import_func) {
-		throw InterpError(space->ImportError_type(), space->wrap_str("__import__ not found"));
+		throw InterpError(space->ImportError_type(), space->wrap_str(context, "__import__ not found"));
 	}
 
 	M_BaseObject* wrapped_locals = locals;
@@ -794,7 +794,7 @@ void PyFrame::build_list(int arg, int next_pc)
 {
 	std::vector<M_BaseObject*> args;
 	pop_values_untrack(arg, args);
-	M_BaseObject* list = space->new_list(args);
+	M_BaseObject* list = space->new_list(context, args);
 	push_value(list);
 }
 
@@ -808,7 +808,7 @@ void PyFrame::import_from(int arg, int next_pc)
 		value = space->getattr(module, w_name);
 	} catch (InterpError& exc) {
 		if (!exc.match(space, space->AttributeError_type())) throw exc;
-		throw InterpError::format(space, space->ImportError_type(), "cannot import name '%s'", space->unwrap_str(w_name));
+		throw InterpError::format(space, space->ImportError_type(), "cannot import name '%s'", space->unwrap_str(w_name).c_str());
 	}
 
 	push_value(value);
@@ -830,7 +830,7 @@ void PyFrame::import_star(int arg, int next_pc)
 		} catch (InterpError& exc) {
 			if (!exc.match(space, space->AttributeError_type())) throw exc;
 
-			InterpError::format(space, space->ImportError_type(), "from-import-* object has no __dict__ and no __all__");
+			throw InterpError(space->ImportError_type(), space->wrap_str(context, "from-import-* object has no __dict__ and no __all__"));
 		}
 
 		M_BaseObject* keys_impl = space->getattr_str(dict, "keys");
@@ -867,7 +867,7 @@ void PyFrame::build_set(int arg, int next_pc)
 {
 	std::vector<M_BaseObject*> args;
 	pop_values_untrack(arg, args);
-	M_BaseObject* set = space->new_set();
+	M_BaseObject* set = space->new_set(context);
 	M_BaseObject* add_impl = space->lookup(set, "add");
 	for (auto& item : args) {
 		space->call_function(context, add_impl, { set, item });

@@ -63,39 +63,39 @@ M_BaseObject* StdObjSpace::lookup_type_cls(M_BaseObject* obj, const std::string&
 	return value;
 }
 
-M_BaseObject* StdObjSpace::wrap_int(int x)
+M_BaseObject* StdObjSpace::wrap_int(ThreadContext* context, int x)
 {
-	return new M_StdIntObject(x);
+	return context->new_object(new M_StdIntObject(x));
 }
 
-M_BaseObject* StdObjSpace::wrap_int(const std::string& x)
+M_BaseObject* StdObjSpace::wrap_int(vm::ThreadContext* context, const std::string& x)
 {
-	return new M_StdIntObject(x);
+	return context->new_object(new M_StdIntObject(x));
 }
 
-M_BaseObject* StdObjSpace::wrap_str(const std::string& x)
+M_BaseObject* StdObjSpace::wrap_str(vm::ThreadContext* context, const std::string& x)
 {
-	return new M_StdUnicodeObject(x);
+	return context->new_object(new M_StdUnicodeObject(x));
 }
 
-M_BaseObject* StdObjSpace::new_tuple(std::vector<M_BaseObject*>& items)
+M_BaseObject* StdObjSpace::new_tuple(vm::ThreadContext* context, std::vector<M_BaseObject*>& items)
 {
-	return new M_StdTupleObject(items);
+	return context->new_object(new M_StdTupleObject(items));
 }
 
-M_BaseObject* StdObjSpace::new_list(std::vector<M_BaseObject*>& items)
+M_BaseObject* StdObjSpace::new_list(vm::ThreadContext* context, std::vector<M_BaseObject*>& items)
 {
-	return new M_StdListObject(items);
+	return context->new_object(new M_StdListObject(items));
 }
 
-M_BaseObject* StdObjSpace::new_dict()
+M_BaseObject* StdObjSpace::new_dict(vm::ThreadContext* context)
 {
-	return new M_StdDictObject(this);
+	return context->new_object(new M_StdDictObject(this));
 }
 
-M_BaseObject* StdObjSpace::new_set()
+M_BaseObject* StdObjSpace::new_set(vm::ThreadContext* context)
 {
-	return new M_StdSetObject(this);
+	return context->new_object(new M_StdSetObject(this));
 }
 
 void StdObjSpace::unwrap_tuple(M_BaseObject* obj, std::vector<M_BaseObject*>& list)

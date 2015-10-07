@@ -129,7 +129,7 @@ M_BaseObject* StdTypedefCache::build(mtpython::interpreter::Typedef* key)
 
 	std::unordered_map<std::string, M_BaseObject*> wrapped_dict;
 	for (auto it = dict.begin(); it != dict.end(); it++) {
-		wrapped_dict[it->first] = space->wrap(it->second);
+		wrapped_dict[it->first] = space->wrap(space->current_thread(), it->second);
 	}
 
 	M_StdTypeObject* wrapped_type = new M_StdTypeObject(space, key->get_name(), wrapped_bases, wrapped_dict);
@@ -169,11 +169,11 @@ M_BaseObject* M_StdTypeObject::__repr__(mtpython::vm::ThreadContext* context, M_
 	str += as_type->name;
 	str += "'>";
 
-	return context->get_space()->wrap_str(str);
+	return context->get_space()->wrap_str(context, str);
 }
 
 M_BaseObject* M_StdTypeObject::__mro__get(mtpython::vm::ThreadContext* context, M_BaseObject* self)
 {
 	M_StdTypeObject* as_type = static_cast<M_StdTypeObject*>(self);
-	return context->get_space()->new_tuple(as_type->mro);
+	return context->get_space()->new_tuple(context, as_type->mro);
 }

@@ -35,7 +35,7 @@ M_BaseObject* M_StdListObject::__len__(mtpython::vm::ThreadContext* context, M_B
 	M_StdListObject* as_list = M_STDLISTOBJECT(self);
 	assert(as_list);
 
-	return space->wrap_int(as_list->items.size());
+	return space->wrap_int(context, as_list->items.size());
 }
 
 M_BaseObject* M_StdListObject::__repr__(mtpython::vm::ThreadContext* context, M_BaseObject* self)
@@ -49,11 +49,10 @@ M_BaseObject* M_StdListObject::__repr__(mtpython::vm::ThreadContext* context, M_
 		if (i > 0) str += ", ";
 		M_BaseObject* repr_item = space->repr(as_list->items[i]);
 		str += space->unwrap_str(repr_item);
-		context->delete_local_ref(repr_item);
 	}
 	str += "]";
 
-	return space->wrap_str(str);
+	return space->wrap_str(context, str);
 }
 
 M_BaseObject* M_StdListObject::__contains__(mtpython::vm::ThreadContext* context, M_BaseObject* self,

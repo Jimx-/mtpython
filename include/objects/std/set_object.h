@@ -23,7 +23,7 @@ public:
 	static M_BaseObject* __contains__(vm::ThreadContext* context, M_BaseObject* self, M_BaseObject* obj);
 	static M_BaseObject* __le__(vm::ThreadContext* context, M_BaseObject* self, M_BaseObject* other);
 	
-	static M_BaseObject* M_StdSetObject::add(vm::ThreadContext* context, M_BaseObject* self, M_BaseObject* item);
+	static M_BaseObject* add(vm::ThreadContext* context, M_BaseObject* self, M_BaseObject* item);
 
 	static interpreter::Typedef* _set_typedef();
 	interpreter::Typedef* get_typedef();

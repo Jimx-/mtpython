@@ -44,7 +44,7 @@ M_BaseObject* M_StdTupleObject::__len__(mtpython::vm::ThreadContext* context, M_
 	M_StdTupleObject* as_tuple = M_STDTUPLEOBJECT(self);
 	assert(as_tuple);
 
-	return space->wrap_int(as_tuple->items.size());
+	return space->wrap_int(context, as_tuple->items.size());
 }
 
 M_BaseObject* M_StdTupleObject::__repr__(mtpython::vm::ThreadContext* context, M_BaseObject* self)
@@ -58,11 +58,10 @@ M_BaseObject* M_StdTupleObject::__repr__(mtpython::vm::ThreadContext* context, M
 		if (i > 0) str += ", ";
 		M_BaseObject* repr_item = space->repr(as_tuple->items[i]);
 		str += space->unwrap_str(repr_item);
-		SAFE_DELETE(repr_item);
 	}
 	str += ")";
 
-	return space->wrap_str(str);
+	return space->wrap_str(context, str);
 }
 
 M_BaseObject* M_StdTupleObject::__getitem__(mtpython::vm::ThreadContext* context, M_BaseObject* obj, M_BaseObject* key)
@@ -78,15 +77,12 @@ M_BaseObject* M_StdTupleObject::__getitem__(mtpython::vm::ThreadContext* context
 	M_BaseObject* item = nullptr;
 	M_StdTupleObject* as_tuple = static_cast<M_StdTupleObject*>(obj);
 	if (index < 0) {
-		if (index < -(int)(as_tuple->items.size())) throw InterpError(space->IndexError_type(), space->wrap_str("tuple index out of range"));
+		if (index < -(int)(as_tuple->items.size())) throw InterpError(space->IndexError_type(), space->wrap_str(context, "tuple index out of range"));
 		item = as_tuple->items[as_tuple->items.size() + index];
 	} else {
-		if (index >= (int)as_tuple->items.size()) throw InterpError(space->IndexError_type(), space->wrap_str("tuple index out of range"));
+		if (index >= (int)as_tuple->items.size()) throw InterpError(space->IndexError_type(), space->wrap_str(context, "tuple index out of range"));
 		item = as_tuple->items[index];
 	}
-
-	context->delete_local_ref(obj);
-	context->delete_local_ref(key);
 
 	return item;
 }

@@ -12,5 +12,5 @@ using namespace mtpython::interpreter;
 
 M_IOBase::M_IOBase(ObjSpace* space)
 {
-	dict = space->new_dict();
+	dict = space->new_dict(space->current_thread());
 }

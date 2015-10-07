@@ -1,7 +1,10 @@
 #include <stdexcept>
 #include <string>
 #include <fcntl.h>
+
+#ifdef _WIN32_
 #include <io.h>
+#endif
 
 #include "modules/_io/iomodule.h"
 #include "modules/_io/fileio.h"
@@ -19,7 +22,7 @@ M_BaseObject* M_FileIO::__new__(mtpython::vm::ThreadContext* context, const Argu
 {
 	ObjSpace* space = context->get_space();
 	M_BaseObject* instance = new M_FileIO(space);
-	return space->wrap(instance);
+	return space->wrap(context, instance);
 }
 
 static int decode_mode(const std::string& mode)
@@ -57,8 +60,7 @@ M_BaseObject* M_FileIO::__init__(mtpython::vm::ThreadContext* context, const Arg
 	ObjSpace* space = context->get_space();
 	
 	std::vector<M_BaseObject*> scope;
-	M_BaseObject* mode_def = space->wrap_str("r");
-	args.parse("__init__", nullptr, init_signature, scope, { mode_def, space->new_bool(true) });
+	args.parse("__init__", nullptr, init_signature, scope, { space->wrap_str(context, "r"), space->new_bool(true) });
 	M_BaseObject* self = scope[0];
 	M_FileIO* as_fio = static_cast<M_FileIO*>(self);
 	as_fio->name = nullptr;
@@ -73,7 +75,7 @@ M_BaseObject* M_FileIO::__init__(mtpython::vm::ThreadContext* context, const Arg
 	try {
 		fd = space->unwrap_int(wrapped_name);
 		if (fd < 0) {
-			throw InterpError(space->ValueError_type(), space->wrap_str("negative file descriptor"));
+			throw InterpError(space->ValueError_type(), space->wrap_str(context, "negative file descriptor"));
 		}
 	} catch (const InterpError&) {
 		name = space->unwrap_str(wrapped_name);
@@ -103,13 +105,8 @@ M_BaseObject* M_FileIO::__init__(mtpython::vm::ThreadContext* context, const Arg
 		}
 
 		as_fio->fd = fd;
-		space->setattr(as_fio, space->wrap_str("name"), wrapped_name);
+		space->setattr(as_fio, space->wrap_str(context, "name"), wrapped_name);
 	}
-
-	context->delete_local_ref(wrapped_name);
-	context->delete_local_ref(wrapped_mode);
-	context->delete_local_ref(wrapped_closefd);
-	context->delete_local_ref(mode_def);
 
 	return nullptr;
 }

@@ -45,7 +45,7 @@ M_BaseObject* M_StdUnicodeObject::__repr__(mtpython::vm::ThreadContext* context,
 	M_StdUnicodeObject* as_str = M_STDUNICODEOBJECT(self);
 	assert(as_str);
 
-	return context->get_space()->wrap_str("'" + as_str->value + "'");
+	return context->get_space()->wrap_str(context, "'" + as_str->value + "'");
 }
 
 M_BaseObject* M_StdUnicodeObject::__str__(mtpython::vm::ThreadContext* context, M_BaseObject* self)
@@ -59,7 +59,7 @@ M_BaseObject* M_StdUnicodeObject::__hash__(mtpython::vm::ThreadContext* context,
 	std::hash<std::string> hash_fn;
 	std::size_t hash = hash_fn(as_str->value);
 
-	return context->get_space()->wrap_int(hash);
+	return context->get_space()->wrap_int(context, hash);
 }
 
 M_BaseObject* M_StdUnicodeObject::__eq__(mtpython::vm::ThreadContext* context, mtpython::objects::M_BaseObject* self, mtpython::objects::M_BaseObject* other)

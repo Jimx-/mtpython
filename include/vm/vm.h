@@ -2,6 +2,8 @@
 #define _VM_VM_H_
 
 #include <stack>
+#include <vector>
+#include <unordered_set>
 
 #include "objects/obj_space.h"
 
@@ -17,26 +19,42 @@ namespace vm {
 
 class PyVM;
 
+class LocalFrame {
+private:
+	std::unordered_set<objects::M_BaseObject*> local_refs;
+public:
+
+	void new_local_ref(objects::M_BaseObject* obj);
+	void delete_local_ref(objects::M_BaseObject* obj);
+};
+
 class ThreadContext {
 private:
 	PyVM* vm;
-	mtpython::objects::ObjSpace* space;
-	mtpython::interpreter::BaseCompiler* compiler;
+	objects::ObjSpace* space;
+	interpreter::BaseCompiler* compiler;
 
-	std::stack<mtpython::interpreter::PyFrame*> frame_stack;
+	std::stack<interpreter::PyFrame*> frame_stack;
+	std::vector<LocalFrame*> local_frame_stack;
+	LocalFrame* top_local_frame;
 public:
-	ThreadContext(PyVM* vm, mtpython::objects::ObjSpace* space);
+	ThreadContext(PyVM* vm, objects::ObjSpace* space);
 	~ThreadContext();
 
-	mtpython::interpreter::BaseCompiler* get_compiler() { return compiler; }
-	mtpython::objects::ObjSpace* get_space() { return space; }
+	interpreter::BaseCompiler* get_compiler() { return compiler; }
+	objects::ObjSpace* get_space() { return space; }
 
-	void enter(mtpython::interpreter::PyFrame* frame);
-	void leave(mtpython::interpreter::PyFrame* frame);
-	mtpython::interpreter::PyFrame* top_frame() { return frame_stack.top(); }
+	void enter(interpreter::PyFrame* frame);
+	void leave(interpreter::PyFrame* frame);
+	interpreter::PyFrame* top_frame() { return frame_stack.top(); }
 
-	void add_local_ref(mtpython::objects::M_BaseObject* obj) { }
-	void delete_local_ref(mtpython::objects::M_BaseObject* obj) { }
+	void push_local_frame();
+	objects::M_BaseObject* pop_local_frame(objects::M_BaseObject* result);
+
+	objects::M_BaseObject* new_object(objects::M_BaseObject* obj);
+
+	void new_local_ref(objects::M_BaseObject* obj);
+	void delete_local_ref(objects::M_BaseObject* obj);
 
 	void acquire_import_lock() { }
 	void release_import_lock() { }

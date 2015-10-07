@@ -67,9 +67,7 @@ static M_BaseObject* io_open(mtpython::vm::ThreadContext* context, const Argumen
 	ObjSpace* space = context->get_space();
 	
 	std::vector<M_BaseObject*> scope;
-	M_BaseObject* mode_def = space->wrap_str("r");
-	M_BaseObject* buffering_def = space->wrap_int(-1);
-	args.parse("open", nullptr, open_signature, scope, { mode_def, buffering_def, space->wrap_None(), space->wrap_None(), space->wrap_None(), space->new_bool(true) });
+	args.parse("open", nullptr, open_signature, scope, { space->wrap_str(context, "r"), space->wrap_int(context, -1), space->wrap_None(), space->wrap_None(), space->wrap_None(), space->new_bool(true) });
 	M_BaseObject* file = scope[0];
 	M_BaseObject* wrapped_mode = scope[1];
 	std::string mode = space->unwrap_str(wrapped_mode);
@@ -103,10 +101,7 @@ static M_BaseObject* io_open(mtpython::vm::ThreadContext* context, const Argumen
 			throw InterpError::format(space, space->ValueError_type(), "invalid mode: %s", mode.c_str());			
 		}
 	}
-	
-	context->add_local_ref(file);
-	context->add_local_ref(wrapped_mode);
-	context->add_local_ref(wrapped_closefd);
+
 	M_BaseObject* raw = space->call_function(context, space->get_typeobject(&FileIO_typedef), {file, wrapped_mode, wrapped_closefd});
 	
 	bool line_buffering = false;
@@ -121,36 +116,23 @@ static M_BaseObject* io_open(mtpython::vm::ThreadContext* context, const Argumen
 		buffer_cls = space->get_typeobject(&BufferedReader_typedef);
 	}
 
-	M_BaseObject* buffer = space->call_function(context, buffer_cls, {raw, space->wrap_int(buffering)});
+	M_BaseObject* buffer = space->call_function(context, buffer_cls, {raw, space->wrap_int(context, buffering)});
 
 	M_BaseObject* wrapper;
 	if (binary) {
 		wrapper = buffer;
 	} else {
-		context->add_local_ref(wrapped_encoding);
-		context->add_local_ref(wrapped_errors);
-		context->add_local_ref(wrapped_newline);
 		wrapper = space->call_function(context, space->get_typeobject(&TextIOWrapper_typedef), { buffer,
 			wrapped_encoding, wrapped_errors, wrapped_newline, space->new_bool(line_buffering) });
-		space->setattr(wrapper, space->wrap_str("mode"), wrapped_mode);
+		space->setattr(wrapper, space->wrap_str(context, "mode"), wrapped_mode);
 	}
-	
-	context->delete_local_ref(file);
-	context->delete_local_ref(wrapped_mode);
-	context->delete_local_ref(mode_def);
-	context->delete_local_ref(wrapped_buffering);
-	context->delete_local_ref(buffering_def);
-	context->delete_local_ref(wrapped_encoding);
-	context->delete_local_ref(wrapped_errors);
-	context->delete_local_ref(wrapped_newline);
-	context->delete_local_ref(wrapped_closefd);
 
 	return wrapper;
 }
 
 IOModule::IOModule(ObjSpace* space, M_BaseObject* name) : BuiltinModule(space, name)
 {
-	add_def("DEFAULT_BUFFER_SIZE", space->wrap_int(DEFAULT_BUFFER_SIZE));
+	add_def("DEFAULT_BUFFER_SIZE", space->wrap_int(space->current_thread(), DEFAULT_BUFFER_SIZE));
 
 	add_def("_IOBase", space->get_typeobject(&_IOBase_typedef));
 	add_def("_RawIOBase", space->get_typeobject(&_RawIOBase_typedef));

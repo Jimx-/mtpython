@@ -69,23 +69,23 @@ void Arguments::parse(const std::string& fname, M_BaseObject* first, Signature& 
 				if (sig.get_varargname() == "*") {	
 					/* if the next unfilled slot is a vararg slot, and it does
            				not have a name, then it is an error. */
-					throw InterpError(space->TypeError_type(), space->wrap_str(argcount_err_msg(fname, nargs, nkwargs, sig)));
+					throw InterpError(space->TypeError_type(), space->wrap_str(space->current_thread(), argcount_err_msg(fname, nargs, nkwargs, sig)));
 				}
 				starargs.insert(starargs.end(), args.begin() + left, args.end());
 			}
 			else 
 				starargs.clear();
 		}
-		M_BaseObject* wrapped_starargs = space->new_tuple(starargs);
+		M_BaseObject* wrapped_starargs = space->new_tuple(space->current_thread(), starargs);
 		scope[argcount] = wrapped_starargs;
 	} else if (args_avail > argcount) {	/* error */
-		throw InterpError(space->TypeError_type(), space->wrap_str(argcount_err_msg(fname, nargs, nkwargs, sig)));
+		throw InterpError(space->TypeError_type(), space->wrap_str(space->current_thread(), argcount_err_msg(fname, nargs, nkwargs, sig)));
 	}
 
 	/* create kwarg dict */
 	M_BaseObject* wrapped_kwargs = nullptr;
 	if (sig.has_kwarg()) {
-		wrapped_kwargs = space->new_dict();
+		wrapped_kwargs = space->new_dict(space->current_thread());
 		scope[argcount + (sig.has_vararg() ? 1 : 0)] = wrapped_kwargs;
 	}
 

@@ -88,12 +88,11 @@ static ModuleSpec* find_module(mtpython::vm::ThreadContext* context, const std::
 static void exec_code_module(mtpython::vm::ThreadContext* context, M_BaseObject* module, Code* code, const std::string& filename, bool set_path=true)
 {
 	ObjSpace* space = context->get_space();
-	M_BaseObject* dict_name = space->wrap_str("__dict__");
+	M_BaseObject* dict_name = space->wrap_str(context, "__dict__");
 	M_BaseObject* dict = space->getattr(module, dict_name);
-	context->delete_local_ref(dict_name);
 
 	if (set_path) {
-		space->setitem(dict, space->wrap_str("__file__"), space->wrap_str(filename));
+		space->setitem(dict, space->wrap_str(context, "__file__"), space->wrap_str(context, filename));
 	}
 
 	code->exec_code(context, dict, dict);
@@ -119,7 +118,7 @@ static M_BaseObject* load_module(mtpython::vm::ThreadContext* context, M_BaseObj
 		} catch (InterpError& exc) {
 			if (!exc.match(space, space->KeyError_type())) throw exc;
 		}
-		if (!module) module = space->wrap(new Module(space, w_modulename));
+		if (!module) module = space->wrap(context, new Module(space, w_modulename));
 
 		std::string filename = spec->get_filename();
 		std::ifstream file;
@@ -132,7 +131,7 @@ static M_BaseObject* load_module(mtpython::vm::ThreadContext* context, M_BaseObj
 		file.close();
 
 		space->setitem(space->get_sys()->get(space, "modules"), w_modulename, module);
-		space->setattr(module, space->wrap_str("__file__"), space->wrap_str(filename));
+		space->setattr(module, space->wrap_str(context, "__file__"), space->wrap_str(context, filename));
 		module = load_source_module(context, w_modulename, module, filename, source);
 
 		return module;
@@ -145,7 +144,7 @@ static M_BaseObject* load_part(mtpython::vm::ThreadContext* context, M_BaseObjec
 {
 	ObjSpace* space = context->get_space();
 	std::string mod_name = prefix + part;
-	M_BaseObject* w_mod_name = space->wrap_str(mod_name);
+	M_BaseObject* w_mod_name = space->wrap_str(context, mod_name);
 	M_BaseObject* mod = check_sys_modules(space, mod_name);
 
 	if (mod && !space->i_is(mod, space->wrap_None())) {
@@ -164,7 +163,7 @@ static M_BaseObject* load_part(mtpython::vm::ThreadContext* context, M_BaseObjec
 			}
 
 			if (parent) {
-				space->setattr(parent, space->wrap_str(part), mod);
+				space->setattr(parent, space->wrap_str(context, part), mod);
 			}
 
 			return mod;
@@ -237,8 +236,7 @@ static M_BaseObject* builtin_abs(mtpython::vm::ThreadContext* context, M_BaseObj
 	ObjSpace* space = context->get_space();
 	M_BaseObject* result = space->abs(obj);
 
-	if (!result) throw InterpError(space->TypeError_type(), space->wrap("bad operand type for abs()"));
-	context->delete_local_ref(obj);
+	if (!result) throw InterpError(space->TypeError_type(), space->wrap(context, "bad operand type for abs()"));
 
 	return result;
 }
@@ -254,12 +252,7 @@ static M_BaseObject* builtin_compile(mtpython::vm::ThreadContext* context, const
 
 	M_BaseObject* code = context->get_compiler()->compile(source, filename, mode, flags);
 
-	context->delete_local_ref(args[0]);
-	context->delete_local_ref(args[1]);
-	context->delete_local_ref(args[2]);
-	context->delete_local_ref(args[3]);
-
-	return space->wrap(code);
+	return space->wrap(context, code);
 }
 
 static M_BaseObject* builtin_globals(mtpython::vm::ThreadContext* context)
@@ -272,8 +265,7 @@ static M_BaseObject* builtin_len(mtpython::vm::ThreadContext* context, M_BaseObj
 	ObjSpace* space = context->get_space();
 	M_BaseObject* result = space->len(obj);
 
-	if (!result) throw InterpError(space->TypeError_type(), space->wrap("object has no len()"));
-	context->delete_local_ref(obj);
+	if (!result) throw InterpError(space->TypeError_type(), space->wrap(context, "object has no len()"));
 
 	return result;
 }
@@ -296,13 +288,9 @@ static M_BaseObject* builtin_print(mtpython::vm::ThreadContext* context, M_BaseO
 		if (i > 0) std::cout << sep;
 		M_BaseObject* value = space->str(values[i]);
 		std::cout << value->to_string(space);
-		context->delete_local_ref(value);
 	}
 
 	std::cout << end;
-
-	context->delete_local_ref(args);
-	context->delete_local_ref(kwargs);
 
 	return nullptr;
 }

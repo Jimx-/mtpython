@@ -36,7 +36,7 @@ M_BaseObject* Function::__get__(mtpython::vm::ThreadContext* context, M_BaseObje
 	if (!obj) return self;
 
 	Function* as_func = dynamic_cast<Function*>(self);
-	return space->wrap(new Method(space, as_func, obj));
+	return space->wrap(context, new Method(space, as_func, obj));
 }
 
 M_BaseObject* Method::call_args(mtpython::vm::ThreadContext* context, Arguments& args)

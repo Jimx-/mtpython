@@ -53,8 +53,6 @@ protected:
 	M_BaseObject* sys;
 	std::unordered_map<std::string, M_BaseObject*> builtin_modules;
 
-	vm::ThreadContext* current_thread();
-
 	void make_builtins();
 	void setup_builtin_modules();
 	M_BaseObject* get_builtin_module(const std::string& name);
@@ -64,6 +62,7 @@ public:
 	~ObjSpace();
 
 	void set_vm(mtpython::vm::PyVM* vm) { this->vm = vm; }
+	vm::ThreadContext* current_thread();
 
 	M_BaseObject* get__io() { return _io; }
 	M_BaseObject* get_builtin() { return builtin; }
@@ -104,14 +103,14 @@ public:
 	M_BaseObject* IndexError_type() { return type_IndexError; }
 	bool match_exception(M_BaseObject* type1, M_BaseObject* type2) { return (type1 == type2); }
 
-	virtual M_BaseObject* wrap(int x) { return wrap_int(x); }
-	virtual M_BaseObject* wrap(const std::string& x) { return wrap_str(x); }
-	virtual M_BaseObject* wrap(M_BaseObject* obj) { return obj; }
+	virtual M_BaseObject* wrap(vm::ThreadContext* context, int x) { return wrap_int(context, x); }
+	virtual M_BaseObject* wrap(vm::ThreadContext* context, const std::string& x) { return wrap_str(context, x); }
+	virtual M_BaseObject* wrap(vm::ThreadContext* context, M_BaseObject* obj) { return obj; }
 
-	virtual M_BaseObject* wrap_int(int x) { throw NotImplementedException("Abstract"); }
-	virtual M_BaseObject* wrap_int(const std::string& x) { throw NotImplementedException("Abstract"); }
+	virtual M_BaseObject* wrap_int(vm::ThreadContext* context, int x) { throw NotImplementedException("Abstract"); }
+	virtual M_BaseObject* wrap_int(vm::ThreadContext* context, const std::string& x) { throw NotImplementedException("Abstract"); }
 
-	virtual M_BaseObject* wrap_str(const std::string& x) { throw NotImplementedException("Abstract"); }
+	virtual M_BaseObject* wrap_str(vm::ThreadContext* context, const std::string& x) { throw NotImplementedException("Abstract"); }
 
 	virtual M_BaseObject* wrap_None() { throw NotImplementedException("Abstract"); }
 	virtual M_BaseObject* wrap_True() { throw NotImplementedException("Abstract"); }
@@ -119,10 +118,10 @@ public:
 
 	virtual M_BaseObject* new_bool(bool x) { if (x) return wrap_True(); else return wrap_False(); }
 	virtual M_BaseObject* new_interned_str(const std::string& x);
-	virtual M_BaseObject* new_tuple(std::vector<M_BaseObject*>& items) { throw NotImplementedException("Abstract"); }
-	virtual M_BaseObject* new_list(std::vector<M_BaseObject*>& items) { throw NotImplementedException("Abstract"); }
-	virtual M_BaseObject* new_dict() { throw NotImplementedException("Abstract"); }
-	virtual M_BaseObject* new_set() { throw NotImplementedException("Abstract"); }
+	virtual M_BaseObject* new_tuple(vm::ThreadContext* context, std::vector<M_BaseObject*>& items) { throw NotImplementedException("Abstract"); }
+	virtual M_BaseObject* new_list(vm::ThreadContext* context, std::vector<M_BaseObject*>& items) { throw NotImplementedException("Abstract"); }
+	virtual M_BaseObject* new_dict(vm::ThreadContext* context) { throw NotImplementedException("Abstract"); }
+	virtual M_BaseObject* new_set(vm::ThreadContext* context) { throw NotImplementedException("Abstract"); }
 
 	virtual int unwrap_int(M_BaseObject* obj, bool allow_conversion = true);
 	virtual std::string unwrap_str(M_BaseObject* obj) { return obj->to_string(this); }
@@ -189,7 +188,7 @@ public:
 	M_BaseObject* add(M_BaseObject* obj1, M_BaseObject* obj2);
 	M_BaseObject* sub(M_BaseObject* obj1, M_BaseObject* obj2);
 	M_BaseObject* mul(M_BaseObject* obj1, M_BaseObject* obj2);
-	M_BaseObject* and(M_BaseObject* obj1, M_BaseObject* obj2);
+	M_BaseObject* _and(M_BaseObject* obj1, M_BaseObject* obj2);
 };
 
 }

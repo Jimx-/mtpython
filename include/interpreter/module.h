@@ -20,7 +20,7 @@ protected:
 
 	void add_def(const std::string& name, objects::M_BaseObject* value)
 	{
-		space->setitem(dict, space->new_interned_str(name), space->wrap(value));
+		space->setitem(dict, space->new_interned_str(name), space->wrap(space->current_thread(), value));
 	}
 public:
 	Module(objects::ObjSpace* space, objects::M_BaseObject* name, objects::M_BaseObject* dict=nullptr);

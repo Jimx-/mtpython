@@ -19,7 +19,7 @@ M_BaseObject* M_StdTupleIterObject::__next__(ThreadContext* context, M_BaseObjec
 {
     ObjSpace*space = context->get_space();
     M_StdTupleIterObject* as_iter = dynamic_cast<M_StdTupleIterObject*>(self);
-    if (!as_iter) throw InterpError(space->TypeError_type(), space->wrap_str("object is not tuple iterator"));
+    if (!as_iter) throw InterpError(space->TypeError_type(), space->wrap_str(context, "object is not tuple iterator"));
 
     if (as_iter->index == as_iter->items.size()) {
         throw InterpError(space->StopIteration_type(), space->wrap_None());

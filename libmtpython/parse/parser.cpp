@@ -1,15 +1,17 @@
 /* LL(1) Python parse */
 #include <iostream>
 
+#include "vm/vm.h"
 #include "parse/parser.h"
 
 using namespace mtpython::parse;
 using namespace mtpython::tree;
 using namespace mtpython::objects;
 
-Parser::Parser(mtpython::objects::ObjSpace* space, const std::string &source, CompileInfo* info, int flags) : sb(source, info->get_type()), diag(info, &sb), s(&sb, &diag)
+Parser::Parser(mtpython::vm::ThreadContext* context, const std::string& source, CompileInfo* info, int flags) : sb(source, info->get_type()), diag(info, &sb), s(&sb, &diag)
 {
-	this->space = space;
+	this->context = context;
+	this->space = context->get_space();
 	init_res_words(s);
 
 	if (flags & PyCF_SOURCE_IS_UTF8) {
@@ -908,7 +910,7 @@ ASTNode* Parser::atom()
 
 M_BaseObject* Parser::parsestrplus()
 {
-	M_BaseObject* str = space->wrap_str(s.get_last_string());
+	M_BaseObject* str = space->wrap_str(context, s.get_last_string());
 	match(TOK_STRINGLITERAL);
 
 	while (cur_tok == TOK_STRINGLITERAL) {
@@ -1055,7 +1057,7 @@ ASTNode* Parser::parse_number()
 	NumberNode* node = new NumberNode(s.get_line());
 
 	if (cur_tok == TOK_INTLITERAL) {
-		node->set_value(space->wrap_int(s.get_last_strnum()));
+		node->set_value(space->wrap_int(context, s.get_last_strnum()));
 		match(TOK_INTLITERAL);
 	}
 

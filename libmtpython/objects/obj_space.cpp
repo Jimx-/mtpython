@@ -35,33 +35,33 @@ void ObjSpace::make_builtins()
 {
 	std::vector<M_BaseObject*> builtin_names;
 
-	M_BaseObject* _io_name = wrap_str("_io");
+	M_BaseObject* _io_name = wrap_str(current_thread(), "_io");
 	mtpython::modules::IOModule* io_mod = new mtpython::modules::IOModule(this, _io_name);
 	io_mod->install();
-	builtin_names.push_back(wrap_str("_io"));
+	builtin_names.push_back(wrap_str(current_thread(), "_io"));
 	_io = io_mod;
 	
-	M_BaseObject* sys_name = wrap_str("sys");
+	M_BaseObject* sys_name = wrap_str(current_thread(), "sys");
 	mtpython::modules::SysModule* sys_mod = new mtpython::modules::SysModule(current_thread(), sys_name);
 	sys_mod->install();
-	builtin_names.push_back(wrap_str("sys"));
+	builtin_names.push_back(wrap_str(current_thread(), "sys"));
 	sys = sys_mod;
 
-	M_BaseObject* builtins_name = wrap_str("builtins");
+	M_BaseObject* builtins_name = wrap_str(current_thread(), "builtins");
 	mtpython::modules::BuiltinsModule* builtins_mod = new mtpython::modules::BuiltinsModule(this, builtins_name);
 	builtins_mod->install();
-	builtin_names.push_back(wrap_str("builtins"));
+	builtin_names.push_back(wrap_str(current_thread(), "builtins"));
 	builtin = builtins_mod;
-	setitem(builtins_mod->get_dict(this), wrap("__builtins__"), wrap(builtins_mod));
+	setitem(builtins_mod->get_dict(this), wrap(current_thread(), "__builtins__"), wrap(current_thread(), builtins_mod));
 
 	init_builtin_exceptions();
 
-	M_BaseObject* posix_name = wrap_str("posix");
+	M_BaseObject* posix_name = wrap_str(current_thread(), "posix");
 	mtpython::modules::PosixModule* posix_mod = new mtpython::modules::PosixModule(this, posix_name);
 	posix_mod->install();
-	builtin_names.push_back(wrap_str("posix"));
+	builtin_names.push_back(wrap_str(current_thread(), "posix"));
 
-	setitem(sys_mod->get_dict(this), wrap_str("builtin_module_names"), new_tuple(builtin_names));
+	setitem(sys_mod->get_dict(this), wrap_str(current_thread(), "builtin_module_names"), new_tuple(current_thread(), builtin_names));
 }
 
 void ObjSpace::setup_builtin_modules()
@@ -89,7 +89,7 @@ void ObjSpace::init_builtin_exceptions()
 
 M_BaseObject* ObjSpace::get_builtin_module(const std::string& name)
 {
-	M_BaseObject* wrapped_name = wrap_str(name);
+	M_BaseObject* wrapped_name = wrap_str(current_thread(), name);
 	M_BaseObject* sys_modules = sys->get(this, "modules");
 
 	auto got = builtin_modules.find(name);
@@ -198,7 +198,7 @@ std::size_t ObjSpace::i_hash(M_BaseObject* obj)
 DEF_BINARY_OPER(add, __add__, __radd__)
 DEF_BINARY_OPER(sub, __sub__, __rsub__)
 DEF_BINARY_OPER(mul, __mul__, __rmul__)
-DEF_BINARY_OPER(and, __and__, __rand__)
+DEF_BINARY_OPER(_and, __and__, __rand__)
 
 DEF_UNARY_OPER(pos, __pos__)
 DEF_UNARY_OPER(neg, __neg__)
@@ -274,7 +274,7 @@ M_BaseObject* ObjSpace::iter(M_BaseObject* obj)
 
     M_BaseObject* iterator = get_and_call_function(current_thread(), descr, {obj});
     M_BaseObject* next = lookup(iterator, "__next__");
-    if (!next) throw InterpError(TypeError_type(), wrap_str("iter() returned non-iterator"));
+    if (!next) throw InterpError(TypeError_type(), wrap_str(current_thread(), "iter() returned non-iterator"));
 
     return iterator;
 }
@@ -293,7 +293,7 @@ M_BaseObject* ObjSpace::new_interned_str(const std::string& x)
 	auto got = interned_str.find(x);
 	if (got != interned_str.end()) return got->second;
 
-	M_BaseObject* wrapped = wrap(x);
+	M_BaseObject* wrapped = wrap(current_thread(), x);
 	interned_str[x] = wrapped;
 
 	return wrapped;
@@ -373,7 +373,7 @@ M_BaseObject* ObjSpace::call_function(ThreadContext* context, M_BaseObject* func
 
 M_BaseObject* ObjSpace::getitem_str(M_BaseObject* obj, const std::string& key)
 {
-	M_BaseObject* wrapped_key = wrap_str(key);
+	M_BaseObject* wrapped_key = wrap_str(current_thread(), key);
 	M_BaseObject* value = getitem(obj, wrapped_key);
 	SAFE_DELETE(wrapped_key);
 
@@ -391,9 +391,8 @@ M_BaseObject* ObjSpace::getitem(M_BaseObject* obj, M_BaseObject* key)
 
 M_BaseObject* ObjSpace::finditem_str(M_BaseObject* obj, const std::string& key)
 {
-	M_BaseObject* wrapped_key = wrap_str(key);
+	M_BaseObject* wrapped_key = wrap_str(current_thread(), key);
 	M_BaseObject* value = finditem(obj, wrapped_key);
-	SAFE_DELETE(wrapped_key);
 
 	return value;
 }
@@ -413,7 +412,7 @@ M_BaseObject* ObjSpace::finditem(M_BaseObject* obj, M_BaseObject* key)
 
 void ObjSpace::setitem_str(M_BaseObject* obj, const std::string& key, M_BaseObject* value)
 {
-	M_BaseObject* wrapped_key = wrap_str(key);
+	M_BaseObject* wrapped_key = wrap_str(current_thread(), key);
 	setitem(obj, wrapped_key, value);
 }
 
@@ -452,9 +451,8 @@ M_BaseObject* ObjSpace::getattr(M_BaseObject* obj, M_BaseObject* name)
 
 M_BaseObject* ObjSpace::getattr_str(M_BaseObject* obj, const std::string& name)
 {
-	M_BaseObject* wrapped_name = wrap_str(name);
+	M_BaseObject* wrapped_name = wrap_str(current_thread(), name);
 	M_BaseObject* value = getattr(obj, wrapped_name);
-	SAFE_DELETE(wrapped_name);
 
 	return value;
 }
@@ -474,7 +472,7 @@ M_BaseObject* ObjSpace::findattr(M_BaseObject* obj, M_BaseObject* name)
 
 M_BaseObject* ObjSpace::findattr_str(M_BaseObject* obj, const std::string& name)
 {
-	M_BaseObject* wrapped_name = wrap_str(name);
+	M_BaseObject* wrapped_name = wrap_str(current_thread(), name);
 	M_BaseObject* value = findattr(obj, wrapped_name);
 	SAFE_DELETE(wrapped_name);
 
@@ -490,9 +488,8 @@ M_BaseObject* ObjSpace::setattr(M_BaseObject* obj, M_BaseObject* name, M_BaseObj
 
 M_BaseObject* ObjSpace::setattr_str(M_BaseObject* obj, const std::string& name, M_BaseObject* value)
 {
-	M_BaseObject* wrapped_name = wrap_str(name);
+	M_BaseObject* wrapped_name = wrap_str(current_thread(), name);
 	M_BaseObject* result = setattr(obj, wrapped_name, value);
-	SAFE_DELETE(wrapped_name);
 
 	return result;
 }

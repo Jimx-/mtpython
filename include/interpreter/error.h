@@ -27,7 +27,7 @@ public:
 		size_t size = snprintf(nullptr, 0, format, args ...) + 1;
 		std::unique_ptr<char[]> buf(new char[size]);
 		snprintf(buf.get(), size, format, args ...);
-		return InterpError(type, space->wrap_str(std::string(buf.get(), buf.get() + size - 1)));
+		return InterpError(type, space->wrap_str(space->current_thread(), std::string(buf.get(), buf.get() + size - 1)));
 	}
 
 	bool match(objects::ObjSpace* space, objects::M_BaseObject* match_type)

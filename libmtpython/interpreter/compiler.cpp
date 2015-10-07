@@ -21,12 +21,12 @@ Code* PyCompiler::compile(const std::string& source, const std::string& filename
 
 	CompileInfo info(filename, type, flags);
 
-	Parser parser(space, source, &info, flags);
+	Parser parser(context, source, &info, flags);
 
 	mtpython::tree::ASTNode* module = parser.parse();
 	//module->print(0);
 	SymtableVisitor symtab(space, module);
-	ModuleCodeGenerator codegen(space, module, &symtab, &info);
+	ModuleCodeGenerator codegen(context, module, &symtab, &info);
 	mtpython::interpreter::PyCode* code = codegen.build();
 
 	SAFE_DELETE(module);

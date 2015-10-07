@@ -20,7 +20,7 @@ PyVM::PyVM(ObjSpace* space, const std::string& executable) : main_thread(this, s
 Module* PyVM::init_main_module(ThreadContext* context)
 {
 	ObjSpace* space = context->get_space();
-	M_BaseObject* main_name = space->wrap_str("__main__");
+	M_BaseObject* main_name = space->wrap_str(context, "__main__");
 
 	Module* module = new Module(space, main_name);
 	return module;
@@ -58,9 +58,9 @@ void PyVM::run_eval_string(ThreadContext* context, const std::string &source,
 	Module* main_module = init_main_module(context);
 	M_BaseObject* globals = main_module->get_dict(space);
 
-	space->setitem(globals, space->wrap_str("__builtins__"), space->get_builtin());
+	space->setitem(globals, space->wrap_str(context, "__builtins__"), space->get_builtin());
 	if (filename != "")
-		space->setitem(globals, space->wrap_str("__file__"), space->wrap_str(filename));
+		space->setitem(globals, space->wrap_str(context, "__file__"), space->wrap_str(context, filename));
 
 	compile_code(context, source, filename, mode)->exec_code(context, globals, globals);
 }
@@ -71,19 +71,9 @@ mtpython::interpreter::Code* PyVM::compile_code(ThreadContext* context, const st
 	ObjSpace* space = context->get_space();
 	mtpython::interpreter::Module* mod = dynamic_cast<mtpython::interpreter::Module*>(space->get_builtin());
 
-	M_BaseObject* code_obj = mod->call(context, "compile", {space->wrap(source), space->wrap(filename), space->wrap(mode), space->wrap(0), space->wrap(0), space->wrap(0)});
+	M_BaseObject* code_obj = mod->call(context, "compile", {space->wrap(context, source), space->wrap(context, filename), space->wrap(context, mode), space->wrap(context, 0), space->wrap(context, 0), space->wrap(context, 0)});
 
 	mtpython::interpreter::PyCode* code = dynamic_cast<mtpython::interpreter::PyCode*>(code_obj);
 	return code;
-}
-
-void ThreadContext::enter(mtpython::interpreter::PyFrame* frame)
-{
-	frame_stack.push(frame);
-}
-
-void ThreadContext::leave(mtpython::interpreter::PyFrame* frame)
-{
-	frame_stack.pop();
 }
 

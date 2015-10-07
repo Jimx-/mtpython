@@ -111,7 +111,7 @@ protected:
     mtpython::objects::M_BaseObject* pop_value_untrack()
     {
         mtpython::objects::M_BaseObject* tmp = value_stack.top();
-        context->add_local_ref(tmp);
+        context->new_local_ref(tmp);
         value_stack.pop();
         return tmp;
     }
@@ -122,7 +122,7 @@ protected:
         n--;
         while (n >= 0) {
             mtpython::objects::M_BaseObject* tmp = value_stack.top();
-            context->add_local_ref(tmp);
+            context->new_local_ref(tmp);
             value_stack.pop();
             v[n--] = tmp;
         }
@@ -194,7 +194,7 @@ protected:
     void build_list(int arg, int next_pc);
 	void import_from(int arg, int next_pc);
 	void import_star(int arg, int next_pc);
-    void binary_and(int arg, int next_pc);
+    void binary__and(int arg, int next_pc);
     void build_set(int arg, int next_pc);
 
     objects::M_BaseObject* end_finally();
@@ -216,7 +216,8 @@ public:
         block_stack.push(block);
     }
 
-    objects::ObjSpace* get_space() { return space; };
+    vm::ThreadContext* get_context() { return context; }
+    objects::ObjSpace* get_space() { return space; }
     objects::M_BaseObject* get_globals() { return globals; }
 	objects::M_BaseObject* get_locals();
 	void set_locals(objects::M_BaseObject* locals);

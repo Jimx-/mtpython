@@ -31,7 +31,7 @@ protected:
 
     virtual int get_code_flags() { return 0; }
 public:
-	BaseCodeGenerator(const std::string& name, mtpython::objects::ObjSpace* space, mtpython::tree::ASTNode* module, SymtableVisitor* symtab, int lineno, CompileInfo* info);
+	BaseCodeGenerator(const std::string& name, vm::ThreadContext* context, mtpython::tree::ASTNode* module, SymtableVisitor* symtab, int lineno, CompileInfo* info);
 
     void push_frame_block(FrameType type, CodeBlock* block) { frame_block.push_back(std::make_pair(type, block)); }
     void pop_frame_block() { frame_block.pop_back(); }
@@ -81,7 +81,7 @@ class ModuleCodeGenerator : public BaseCodeGenerator {
 private:
 	void compile(mtpython::tree::ASTNode* node);
 public:
-	ModuleCodeGenerator(mtpython::objects::ObjSpace* space, mtpython::tree::ASTNode* module, SymtableVisitor* symtab, CompileInfo* info);
+	ModuleCodeGenerator(mtpython::vm::ThreadContext* context, mtpython::tree::ASTNode* module, SymtableVisitor* symtab, CompileInfo* info);
 };
 
 class FunctionCodeGenerator : public BaseCodeGenerator {
@@ -89,7 +89,7 @@ private:
     int argcount;
     void compile(mtpython::tree::ASTNode* tree);
 public:
-    FunctionCodeGenerator(const std::string& name, mtpython::objects::ObjSpace* space, mtpython::tree::ASTNode* tree, SymtableVisitor* symtab, int lineno, CompileInfo* info);
+    FunctionCodeGenerator(const std::string& name, mtpython::vm::ThreadContext* context, mtpython::tree::ASTNode* tree, SymtableVisitor* symtab, int lineno, CompileInfo* info);
 };
 
 }

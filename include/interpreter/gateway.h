@@ -130,7 +130,7 @@ public:
 	InterpFunctionWrapper(const std::string& name, InterpFunction3 f, const Signature& sig);
 	~InterpFunctionWrapper() { SAFE_DELETE(code); }
 
-	M_BaseObject* bind_space(objects::ObjSpace* space) { return space->get_gateway_cache(this); }
+	objects::M_BaseObject* bind_space(objects::ObjSpace* space) { return space->get_gateway_cache(this); }
 
 	Code* get_code() { return code; }
 };
@@ -142,7 +142,7 @@ private:
 public:
 	InterpDocstringWrapper(const std::string& doc) : doc(doc) { }
 
-	M_BaseObject* bind_space(objects::ObjSpace* space) { return space->wrap_str(doc); }
+	objects::M_BaseObject* bind_space(objects::ObjSpace* space) { return space->wrap_str(space->current_thread(), doc); }
 };
 
 }

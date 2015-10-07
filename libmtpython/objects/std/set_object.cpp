@@ -32,7 +32,7 @@ M_BaseObject* M_StdSetObject::__new__(mtpython::vm::ThreadContext* context, cons
 {
 	ObjSpace* space = context->get_space();
 	M_BaseObject* instance = new M_StdSetObject(space);
-	return space->wrap(instance);
+	return space->wrap(context, instance);
 }
 
 M_BaseObject* M_StdSetObject::__init__(mtpython::vm::ThreadContext* context, const Arguments& args)
@@ -53,13 +53,12 @@ M_BaseObject* M_StdSetObject::__repr__(mtpython::vm::ThreadContext* context, M_B
 		if (i > 0) str += ", ";
 		M_BaseObject* repr_item = space->repr(item);
 		str += space->unwrap_str(repr_item);
-		context->delete_local_ref(repr_item);
 		i++;
 	}
 	as_set->unlock();
 	str += "}";
 
-	return space->wrap_str(str);
+	return space->wrap_str(context, str);
 }
 
 M_BaseObject* M_StdSetObject::__contains__(mtpython::vm::ThreadContext* context, M_BaseObject* self, M_BaseObject* obj)

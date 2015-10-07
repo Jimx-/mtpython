@@ -56,7 +56,7 @@ M_BaseObject* PyCode::funcrun_obj(ThreadContext* context, M_BaseObject* func, M_
 
 	Function* as_func = dynamic_cast<Function*>(func);
 	if (!as_func)
-		throw InterpError(space->TypeError_type(), space->wrap_str("expected Functon object"));
+		throw InterpError(space->TypeError_type(), space->wrap_str(context, "expected Functon object"));
 	PyFrame* frame = space->create_frame(context, this, as_func->get_globals());
 	if (!frame) return nullptr;
 

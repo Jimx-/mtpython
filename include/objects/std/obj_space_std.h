@@ -38,21 +38,21 @@ public:
 	M_BaseObject* list_type() { return builtin_types["list"]; }
 	M_BaseObject* type_type() { return builtin_types["type"]; }
 
-	M_BaseObject* wrap(M_BaseObject* obj) { return obj->bind_space(this); }
+	M_BaseObject* wrap(vm::ThreadContext* context, M_BaseObject* obj) { return obj->bind_space(this); }
 
-	M_BaseObject* wrap_int(int x);
-	M_BaseObject* wrap_int(const std::string& x);
+	M_BaseObject* wrap_int(vm::ThreadContext* context, int x);
+	M_BaseObject* wrap_int(vm::ThreadContext* context, const std::string& x);
 
-	M_BaseObject* wrap_str(const std::string& x);
+	M_BaseObject* wrap_str(vm::ThreadContext* context, const std::string& x);
 
 	M_BaseObject* wrap_None() { return wrapped_None; }
 	M_BaseObject* wrap_True() { return wrapped_True; }
 	M_BaseObject* wrap_False() { return wrapped_False; }
 
-	M_BaseObject* new_tuple(std::vector<M_BaseObject*>& items);
-	M_BaseObject* new_list(std::vector<M_BaseObject*>& items);
-	M_BaseObject* new_dict();
-	M_BaseObject* new_set();
+	M_BaseObject* new_tuple(vm::ThreadContext* context, std::vector<M_BaseObject*>& items);
+	M_BaseObject* new_list(vm::ThreadContext* context, std::vector<M_BaseObject*>& items);
+	M_BaseObject* new_dict(vm::ThreadContext* context);
+	M_BaseObject* new_set(vm::ThreadContext* context);
 
 	void unwrap_tuple(M_BaseObject* obj, std::vector<M_BaseObject*>& list);
 };

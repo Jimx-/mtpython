@@ -149,10 +149,11 @@ static void vector2map(std::vector<T>& vec, std::unordered_map<T, int>& map)
 	}
 }
 
-CodeBuilder::CodeBuilder(const std::string& name, mtpython::objects::ObjSpace* space, Scope* scope, int first_lineno, CompileInfo* info) : name(name)
+CodeBuilder::CodeBuilder(const std::string& name, mtpython::vm::ThreadContext* context, Scope* scope, int first_lineno, CompileInfo* info) : name(name)
 {
 	this->first_lineno = first_lineno;
-	this->space = space;
+	this->context = context;
+	this->space = context->get_space();
 	compile_info = info;
 	this->first_block = new_block();
 	use_block(this->first_block);

@@ -13,7 +13,7 @@ SysModule::SysModule(mtpython::vm::ThreadContext* context, M_BaseObject* name) :
 {
 	ObjSpace* space = context->get_space();
 	
-    add_def("modules", space->new_dict());
+    add_def("modules", space->new_dict(context));
 	initstdio(context);
 }
 
@@ -28,26 +28,25 @@ static M_BaseObject* create_stdio(mtpython::vm::ThreadContext* context, M_BaseOb
 	M_BaseObject* open_impl = space->getattr_str(io, "open");
 	if (!open_impl) return nullptr;
 
-	M_BaseObject* buf = space->call_function(context, open_impl, { space->wrap_int(fd), space->wrap_str(mode), space->wrap_int(buffering),
+	M_BaseObject* buf = space->call_function(context, open_impl, { space->wrap_int(context, fd), space->wrap_str(context, mode), space->wrap_int(context, buffering),
 		space->wrap_None(), space->wrap_None(), space->new_bool(false) });
 
 	M_BaseObject* raw;
 	if (buffering) {
 		raw = space->getattr_str(buf, "raw");
-		if (!raw) { 
-			context->delete_local_ref(buf);
+		if (!raw) {
 			return nullptr;
-		}	
+		}
 	} else raw = buf;
 
-	M_BaseObject* text = space->wrap_str(name);
-	space->setattr(raw, space->wrap_str("name"), text);
+	M_BaseObject* text = space->wrap_str(context, name);
+	space->setattr(raw, space->wrap_str(context, "name"), text);
 
 	M_BaseObject* newline;
 #ifdef _WIN32_
 	newline = space->wrap_None();
 #else
-	newline = space->wrap_str("\n");
+	newline = space->wrap_str(context, "\n");
 #endif
 
 	bool line_buffering = false;
@@ -55,9 +54,9 @@ static M_BaseObject* create_stdio(mtpython::vm::ThreadContext* context, M_BaseOb
 	M_BaseObject* wrapper_cls = space->getattr_str(io, "TextIOWrapper");
 	if (!wrapper_cls) return nullptr;
 	M_BaseObject* wrapper = space->call_function(context, wrapper_cls, { buf,
-		space->wrap_str(encoding), space->wrap_str(errors), newline, space->new_bool(line_buffering) });
+		space->wrap_str(context, encoding), space->wrap_str(context, errors), newline, space->new_bool(line_buffering) });
 
-	space->setattr(wrapper, space->wrap_str("mode"), space->wrap_str(mode));
+	space->setattr(wrapper, space->wrap_str(context, "mode"), space->wrap_str(context, mode));
 
 	return wrapper;
 }

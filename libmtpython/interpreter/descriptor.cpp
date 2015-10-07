@@ -31,7 +31,7 @@ M_BaseObject* GetSetDescriptor::__set__(mtpython::vm::ThreadContext* context, M_
 	ObjSpace* space = context->get_space();
 	GetSetDescriptor* descr = static_cast<GetSetDescriptor*>(self);
 	if (!descr->setter) {
-		throw InterpError(space->AttributeError_type(), space->wrap_str("readonly attribute"));
+		throw InterpError(space->AttributeError_type(), space->wrap_str(context, "readonly attribute"));
 	}
 
 	descr->setter(context, obj, value);

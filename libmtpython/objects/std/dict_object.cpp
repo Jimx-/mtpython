@@ -55,7 +55,7 @@ M_BaseObject* M_StdDictObject::__repr__(mtpython::vm::ThreadContext* context, M_
 	str += "}";
 	as_dict->unlock();
 
-	return space->wrap_str(str);
+	return space->wrap_str(context, str);
 }
 
 M_BaseObject* M_StdDictObject::__getitem__(mtpython::vm::ThreadContext* context, M_BaseObject* obj, M_BaseObject* key)
@@ -116,5 +116,5 @@ M_BaseObject* M_StdDictObject::keys(mtpython::vm::ThreadContext* context, M_Base
 	}
 	as_dict->unlock();
 
-	return context->get_space()->new_tuple(keys);
+	return context->get_space()->new_tuple(context, keys);
 }

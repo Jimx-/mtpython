@@ -6,6 +6,7 @@
 #include "parse/compile_info.h"
 #include "tree/nodes.h"
 #include "objects/obj_space.h"
+#include "vm/vm.h"
 #include <string>
 
 namespace mtpython {
@@ -13,6 +14,7 @@ namespace mtpython {
 
 		class Parser {
 		protected:
+			mtpython::vm::ThreadContext* context;
 			mtpython::objects::ObjSpace* space;
 
 			mtpython::utils::SourceBuffer sb;
@@ -86,7 +88,7 @@ namespace mtpython {
 			std::string decode_unicode_utf8(const std::string& str);
 			void decode_utf8(const std::string& str, std::size_t& start, std::size_t end);
 		public:
-			Parser(mtpython::objects::ObjSpace* space, const std::string &source, CompileInfo* info, int flags);
+			Parser(vm::ThreadContext* context, const std::string& source, CompileInfo* info, int flags);
 			~Parser();
 
 			void read_token();

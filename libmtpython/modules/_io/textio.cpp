@@ -14,7 +14,7 @@ M_BaseObject* M_TextIOWrapper::__new__(mtpython::vm::ThreadContext* context, con
 {
 	ObjSpace* space = context->get_space();
 	M_BaseObject* instance = new M_TextIOWrapper(space);
-	return space->wrap(instance);
+	return space->wrap(context, instance);
 }
 
 M_BaseObject* M_TextIOWrapper::__init__(mtpython::vm::ThreadContext* context, const Arguments& args)
@@ -58,11 +58,7 @@ M_BaseObject* M_TextIOWrapper::__repr__(mtpython::vm::ThreadContext* context, M_
 
 	str += ">";
 
-	M_BaseObject* result = context->get_space()->wrap_str(str);
-
-	context->delete_local_ref(name_repr);
-	context->delete_local_ref(mode_repr);
-	context->delete_local_ref(encoding_repr);
+	M_BaseObject* result = context->get_space()->wrap_str(context, str);
 
 	return result;
 }
