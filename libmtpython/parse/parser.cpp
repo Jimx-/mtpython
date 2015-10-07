@@ -1110,19 +1110,7 @@ ASTNode* Parser::class_def()
 	match(TOK_IDENT);
 
 	if (cur_tok == TOK_LPAREN) {
-		ASTNode* p;
-		match(TOK_LPAREN);
-		if (cur_tok != TOK_RPAREN) {
-			p = test();
-			if (p) node->push_base(p);
-
-			while (cur_tok == TOK_COMMA) {
-				match(TOK_COMMA);
-				p = test();
-				if (p) node->push_base(p);
-			}
-		}
-		match(TOK_RPAREN);
+		CallNode* call_node = static_cast<CallNode*>(call(nullptr));
 	}
 
 	match(TOK_COLON);

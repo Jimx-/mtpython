@@ -1,6 +1,7 @@
 #include <algorithm>
 
 #include "modules/posix/posixmodule.h"
+#include "interpreter/arguments.h"
 #include "interpreter/gateway.h"
 #include "interpreter/pycode.h"
 #include "interpreter/compiler.h"
@@ -30,6 +31,17 @@ static M_BaseObject* os__exit(mtpython::vm::ThreadContext* context, M_BaseObject
 	return nullptr;
 }
 
+static M_BaseObject* os_listdir(mtpython::vm::ThreadContext* context, const Arguments& args)
+{
+	static Signature listdir_signature({ "path" });
+
+	ObjSpace* space = context->get_space();
+	std::vector<M_BaseObject*> scope;
+	args.parse("listdir", nullptr, listdir_signature, scope, { space->wrap_None() });
+
+	return space->wrap_None();
+}
+
 static M_BaseObject* os_stat(mtpython::vm::ThreadContext* context, M_BaseObject* path, M_BaseObject* args, M_BaseObject* kwargs)
 {
 	STRUCT_STAT sbuf;
@@ -54,5 +66,6 @@ PosixModule::PosixModule(ObjSpace* space, M_BaseObject* name) : BuiltinModule(sp
 	add_def("_have_functions", space->new_list(_have_functions));
 
 	add_def("_exit", new InterpFunctionWrapper("_exit", os__exit));
+	add_def("listdir", new InterpFunctionWrapper("listdir", os_listdir));
 	add_def("stat", new InterpFunctionWrapper("stat", os_stat, Signature({"path"}, "args", "kwargs", {})));
 }

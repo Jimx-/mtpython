@@ -14,13 +14,14 @@ private:
 	std::unordered_set<M_BaseObject*, M_StdObjectHasher, M_StdObjectEq> set;
 public:
 	M_StdSetObject(ObjSpace* space) : set(5, M_StdObjectHasher(space), M_StdObjectEq(space)) { }
+	
+	bool i_issubset(M_StdSetObject* other);
 
 	static objects::M_BaseObject* __new__(vm::ThreadContext* context, const interpreter::Arguments& args);
 	static objects::M_BaseObject* __init__(vm::ThreadContext* context, const interpreter::Arguments& args);
-	/*
 	static M_BaseObject* __repr__(vm::ThreadContext* context, M_BaseObject* self);
 	static M_BaseObject* __contains__(vm::ThreadContext* context, M_BaseObject* self, M_BaseObject* obj);
-	*/
+	static M_BaseObject* __le__(vm::ThreadContext* context, M_BaseObject* self, M_BaseObject* other);
 	
 	static M_BaseObject* M_StdSetObject::add(vm::ThreadContext* context, M_BaseObject* self, M_BaseObject* item);
 
