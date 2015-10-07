@@ -293,13 +293,21 @@ void BaseCodeGenerator::make_closure(mtpython::interpreter::PyCode* code, int ar
 ASTNode* BaseCodeGenerator::visit_functiondef(FunctionDefNode* node)
 {
 	set_lineno(node->get_line());
+	ASTNode* decorators = node->get_decorators();
+	visit_sequence(decorators);
+
 	FunctionCodeGenerator sub_gen(node->get_name(), context, node, symtab, node->get_line(), compile_info);
 	PyCode* code = sub_gen.build();
 
 	int arglength = 0;
 
 	make_closure(code, arglength, get_qualname());
-	
+
+	while (decorators) {
+		emit_op_arg(CALL_FUNCTION, 1);
+		decorators = decorators->get_sibling();
+	}
+
 	gen_name(node->get_name(), ExprContext::EC_STORE);
 	return node;
 }

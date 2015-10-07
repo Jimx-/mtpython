@@ -126,6 +126,7 @@ void Arguments::parse(const std::string& fname, M_BaseObject* first, Signature& 
 		}
 	}
 
+	int missing = 0;
 	if (input_argcount < argcount) {
 		for (std::size_t i = input_argcount; i < (std::size_t)argcount; i++) {
 			if (kwarg_index.size() > 0) {
@@ -138,10 +139,15 @@ void Arguments::parse(const std::string& fname, M_BaseObject* first, Signature& 
 		std::size_t def_first = argcount - defaults.size();
 		for (std::size_t i = input_argcount; i < (std::size_t)argcount; i++) {
 			if (scope[i]) continue;
-			std::size_t def_num = i - def_first;
+			int def_num = i - def_first;
 			if (def_num >= 0)
 				scope[i] = defaults[def_num];
+			else
+				missing++;
 		}
 	}
+
+	if (missing > 0)
+		throw InterpError(space->TypeError_type(), space->wrap_str(space->current_thread(), argcount_err_msg(fname, nargs, nkwargs, sig)));
 }
 

@@ -1103,6 +1103,7 @@ ASTNode* Parser::function_def(ASTNode* decorators)
 	match(TOK_COLON);
 
 	node->set_body(suite());
+	node->set_decorators(decorators);
 
 	return node;
 }
@@ -1553,9 +1554,7 @@ ASTNode* Parser::decorator()
 	if (cur_tok == TOK_LPAREN) {
 		node = call(callable);
 	} else {
-		CallNode* call_node = new CallNode(s.get_line());
-		call_node->set_func(callable);
-		node = call_node;
+		node = callable;
 	}
 
 	match(TOK_NEWLINE);

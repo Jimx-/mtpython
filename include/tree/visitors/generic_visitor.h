@@ -161,6 +161,7 @@ public:
 	{
 		node->get_args()->visit(this);
 		visit_sequence(node->get_body());
+		visit_sequence(node->get_decorators());
 		return node;
 	}
 
