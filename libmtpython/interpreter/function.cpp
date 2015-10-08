@@ -8,8 +8,8 @@ static Typedef Function_typedef("function", {
 	{ "__get__", new InterpFunctionWrapper("__get__", Function::__get__) },
 });
 
-Function::Function(ObjSpace* space, Code* code, M_BaseObject* globals)
-	: space(space), name(code->get_name()), code(code), func_globals(globals)
+Function::Function(ObjSpace* space, Code* code, const std::vector<M_BaseObject*>& defaults, M_BaseObject* globals)
+	: space(space), name(code->get_name()), code(code), func_globals(globals), defaults(defaults)
 {
 
 }

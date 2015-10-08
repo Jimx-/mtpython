@@ -299,7 +299,14 @@ ASTNode* BaseCodeGenerator::visit_functiondef(FunctionDefNode* node)
 	FunctionCodeGenerator sub_gen(node->get_name(), context, node, symtab, node->get_line(), compile_info);
 	PyCode* code = sub_gen.build();
 
+	ArgumentsNode* args = static_cast<ArgumentsNode*>(node->get_args());
+	std::vector<ASTNode*> defaults = args->get_defaults();
+	for (auto& child : defaults) {
+		child->visit(this);
+	}
+
 	int arglength = 0;
+	arglength |= defaults.size();
 
 	make_closure(code, arglength, get_qualname());
 

@@ -17,14 +17,18 @@ private:
 	std::string name;
 	Code* code;
 	objects::M_BaseObject* func_globals;
+	std::vector<objects::M_BaseObject*> defaults;
 public:
-	Function(objects::ObjSpace* space, Code* code, objects::M_BaseObject* globals=nullptr);
+	Function(objects::ObjSpace* space, Code* code, objects::M_BaseObject* globals=nullptr) : Function(space, code, {}, globals) {}
+
+	Function(objects::ObjSpace* space, Code* code, const std::vector<objects::M_BaseObject*>& defaults, objects::M_BaseObject* globals=nullptr);
 	virtual Typedef* get_typedef();
 
 	Code* get_code() { return code; }
 
 	objects::M_BaseObject* get_globals() { return func_globals; }
 	std::string& get_name() { return name; }
+	const std::vector<objects::M_BaseObject*>& get_defaults() { return defaults; }
 
 	objects::M_BaseObject* call_args(vm::ThreadContext* context, Arguments& args);
 	objects::M_BaseObject* call_obj_args(vm::ThreadContext* context, objects::M_BaseObject* obj, Arguments& args);

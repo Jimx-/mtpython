@@ -479,10 +479,15 @@ void PyFrame::make_function(int arg, int next_pc)
 	M_BaseObject* qualname = pop_value_untrack();
 	M_BaseObject* code_obj = pop_value_untrack();
 
+	int nr_defaults = arg & 0xff;
+	std::vector<M_BaseObject*> defaults;
+
+	if (nr_defaults > 0) pop_values_untrack(nr_defaults, defaults);
+
 	PyCode* code = dynamic_cast<PyCode*>(code_obj);
 	if (!code) throw InterpError(space->TypeError_type(), space->wrap_str(context, "expected code object"));
 
-	M_BaseObject* func = new Function(space, code, globals);
+	M_BaseObject* func = new Function(space, code, defaults, globals);
 	push_value(space->wrap(context, func));
 }
 
