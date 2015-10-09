@@ -49,5 +49,7 @@
 #include "tree/nodes/with_node.h"
 #include "tree/nodes/classdef_node.h"
 #include "tree/nodes/lambda_node.h"
+#include "tree/nodes/global_node.h"
+#include "tree/nodes/assert_node.h"
 
 #endif /* _NODES_H_ */

@@ -7,6 +7,7 @@
 #include "modules/builtins/bltinmodule.h"
 #include "modules/posix/posixmodule.h"
 #include "modules/sys/sysmodule.h"
+#include "modules/_weakref/weakrefmodule.h"
 
 #include "macros.h"
 
@@ -61,6 +62,11 @@ void ObjSpace::make_builtins()
 	posix_mod->install();
 	builtin_names.push_back(wrap_str(current_thread(), "posix"));
 
+	M_BaseObject* _weakref_name = wrap_str(current_thread(), "_weakref");
+	mtpython::modules::WeakrefModule* weakref_mod = new mtpython::modules::WeakrefModule(this, _weakref_name);
+	weakref_mod->install();
+	builtin_names.push_back(wrap_str(current_thread(), "_weakref"));
+
 	setitem(sys_mod->get_dict(this), wrap_str(current_thread(), "builtin_module_names"), new_tuple(current_thread(), builtin_names));
 }
 
@@ -70,6 +76,7 @@ void ObjSpace::setup_builtin_modules()
 	get_builtin_module("sys");
 	get_builtin_module("builtins");
 	get_builtin_module("posix");
+	get_builtin_module("_weakref");
 }
 
 void ObjSpace::init_builtin_exceptions()

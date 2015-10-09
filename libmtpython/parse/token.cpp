@@ -105,7 +105,7 @@ std::string mtpython::parse::tok2str(Token tok)
 		return "|";
 	case TOK_TILDE:
 		return "~";
-	case TOK_CARPET:
+	case TOK_CARET:
 		return "^";
 	case TOK_NEQ:
 		return "<>";
@@ -297,7 +297,7 @@ BinaryOper mtpython::parse::tok2binop(Token tok)
 		return OP_BITAND;
 	case TOK_VERTBAR:
 		return OP_BITOR;
-	case TOK_CARPET:
+	case TOK_CARET:
 		return OP_BITXOR;
 	case TOK_LSSLSS:
 		return OP_SHL;

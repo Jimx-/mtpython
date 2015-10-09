@@ -38,6 +38,7 @@ SET(LIBMTPYTHON_SRCLIST
 		modules/_io/bufferedio.cpp
 		modules/_io/fileio.cpp
 		modules/_io/textio.cpp
+		modules/_weakref/weakrefmodule.cpp
 		modules/builtins/bltinmodule.cpp
 		modules/posix/posixmodule.cpp
 		modules/sys/sysmodule.cpp

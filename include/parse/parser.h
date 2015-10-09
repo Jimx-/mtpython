@@ -84,6 +84,8 @@ namespace mtpython {
 			mtpython::tree::ExceptHandlerNode* excepthandler();
 			mtpython::tree::ASTNode* decorator();
 			mtpython::tree::ASTNode* decorated();
+			mtpython::tree::ASTNode* global_stmt();
+			mtpython::tree::ASTNode* assert_stmt();
 
 			objects::M_BaseObject* parsestrplus();
 			objects::M_BaseObject* parsestr();

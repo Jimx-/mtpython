@@ -35,7 +35,12 @@ M_StdIntObject::M_StdIntObject(int x)
 
 M_StdIntObject::M_StdIntObject(const std::string& x)
 {
-	intval = std::stoi(x, nullptr, 0);
+	try {
+		intval = std::stoi(x, nullptr, 0);
+	} catch (std::out_of_range&) {
+		/* TODO: create long object */
+		intval = 0;
+	}
 }
 
 mtpython::interpreter::Typedef* M_StdIntObject::_int_typedef()

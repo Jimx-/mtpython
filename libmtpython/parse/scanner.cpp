@@ -309,15 +309,15 @@ Token Scanner::get_token()
     	}
     }
 
-	char str_prefix = '\0';
+	std::string str_prefix = "";
 	if (isalpha(last_char) || last_char == '_') { // reserved word or id
-		if (last_char == 'r' || last_char == 'u' || last_char == 'b') {
-			str_prefix = last_char;
+		while (last_char == 'r' || last_char == 'u' || last_char == 'b') {
+			str_prefix += last_char;
 			last_char =  read_char();
 			if (last_char == '"' || last_char == '\'') goto scan_str_lit;
 		}
 
-		if (str_prefix) last_word = last_word + str_prefix;
+		if (str_prefix.size() > 0) last_word = last_word + str_prefix;
 
 		while (isalpha(last_char) || isdigit(last_char) || last_char == '_') {
 			last_word = last_word + last_char;
@@ -572,6 +572,13 @@ Token Scanner::get_token()
 			return TOK_STARSTAR;
 		}
 		return TOK_STAR;
+	} else if (last_char == '^') {
+		last_char = read_char();
+		if (last_char == '=') {	/* ^= */
+			last_char = read_char();
+			return TOK_CARETEQ;
+		}
+		return TOK_CARET;
 	} else if (last_char == '(') {
 		last_char = read_char();
 		return TOK_LPAREN;
@@ -594,6 +601,10 @@ Token Scanner::get_token()
 
 	else if (last_char == '&') {
 		last_char = read_char();
+		if (last_char == '=') {	/* &= */
+			last_char = read_char();
+			return TOK_AMPEQ;
+		}
 		return TOK_AMP;
 	}
 

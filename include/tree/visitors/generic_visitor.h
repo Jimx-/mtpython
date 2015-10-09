@@ -36,6 +36,17 @@ public:
 
 		return node;
 	}
+
+	virtual ASTNode* visit_assert(AssertNode* node)
+	{
+		node->get_test()->visit(this);
+		if (ASTNode* msg = node->get_msg()) {
+			msg->visit(this);
+		}
+
+		return node;
+	}
+
 	virtual ASTNode* visit_assign(AssignNode* node) 
 	{
 		std::vector<ASTNode*>& targets = node->get_targets();
@@ -162,6 +173,11 @@ public:
 		node->get_args()->visit(this);
 		visit_sequence(node->get_body());
 		visit_sequence(node->get_decorators());
+		return node;
+	}
+
+	virtual ASTNode* visit_global(GlobalNode* node)
+	{
 		return node;
 	}
 

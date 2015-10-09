@@ -79,6 +79,8 @@ void Parser::init_res_words(Scanner& scn)
 	scn.add_res_word("import", TOK_IMPORT);
 	scn.add_res_word("is", TOK_IS);
 	scn.add_res_word("with", TOK_WITH);
+	scn.add_res_word("global", TOK_GLOBAL);
+	scn.add_res_word("assert", TOK_ASSERT);
 }
 
 /*
@@ -229,6 +231,12 @@ ASTNode* Parser::stmt()
 		compound_stmt = true;
 		node = decorated();
 		break;
+	case TOK_GLOBAL:
+		node = global_stmt();
+		break;
+	case TOK_ASSERT:
+		node = assert_stmt();
+		break;
 	case TOK_LAMBDA:
 	case TOK_IDENT:
 	case TOK_INTLITERAL:
@@ -279,7 +287,8 @@ ASTNode* Parser::expr_stmt()
 
 		asgn->set_value(tgt);
 		expression = asgn;
-	} else if (cur_tok == TOK_PLUSEQ || cur_tok == TOK_MINUSEQ || cur_tok == TOK_STAREQ || cur_tok == TOK_SLASHEQ) {
+	} else if (cur_tok == TOK_PLUSEQ || cur_tok == TOK_MINUSEQ || cur_tok == TOK_STAREQ || cur_tok == TOK_SLASHEQ ||
+		cur_tok == TOK_CARETEQ || cur_tok == TOK_AMPEQ) {
 		if (TupleNode* tuple = dynamic_cast<TupleNode*>(expression)) {
 			delete tuple;
 			diag.error(s.get_line(), s.get_col(), "Illegal expression for augmented assignment");
@@ -581,7 +590,7 @@ ASTNode* Parser::xor_expr()
 {
     ASTNode* node = and_expr();
     BinOpNode* p = nullptr;
-    while (cur_tok == TOK_CARPET) {
+    while (cur_tok == TOK_CARET) {
         p = new BinOpNode(s.get_line());
         if (p != nullptr) {
             p->set_left(node);     
@@ -850,9 +859,12 @@ ASTNode* Parser::atom()
 			node = new DictNode(s.get_line());
 		else {
 			ASTNode* first_elt = test();
-			if (cur_tok == TOK_RBRACE || cur_tok == TOK_COMMA) {	/* set */
+			if (cur_tok == TOK_RBRACE || cur_tok == TOK_COMMA || cur_tok == TOK_FOR) {	/* set */
 				SetNode* set_node = new SetNode(s.get_line());
 				set_node->push_element(first_elt);
+
+				if (cur_tok == TOK_FOR) comp_for();	/* TODO: set comp */
+
 				while (cur_tok == TOK_COMMA) {
 					match(TOK_COMMA);
 					ASTNode* elt = test();
@@ -995,6 +1007,18 @@ ASTNode* Parser::call(ASTNode* callable)
 			kwarg = test();
 		} else {
 			ASTNode* arg = argument();
+
+			if (cur_tok == TOK_FOR) {
+				GeneratorExpNode* genexp = new GeneratorExpNode(s.get_line());
+				genexp->set_elt(arg);
+
+				while (cur_tok == TOK_FOR) {
+					genexp->push_comprehension(comp_for());
+				}
+
+				arg = genexp;
+			}
+
 			KeywordNode* keyword = dynamic_cast<KeywordNode*>(arg);
 			if (keyword) {
 				node->push_keyword(keyword);
@@ -1588,6 +1612,41 @@ ASTNode* Parser::decorated()
 		node = class_def(node);
 	} else if (cur_tok == TOK_DEF) {
 		node = function_def(node);
+	}
+
+	return node;
+}
+
+ASTNode* Parser::global_stmt()
+{
+	GlobalNode* node = new GlobalNode(s.get_line());
+
+	match(TOK_GLOBAL);
+
+	std::string name = s.get_last_word();
+	match(TOK_IDENT);
+	node->push_name(name);
+
+	while (cur_tok == TOK_COMMA) {
+		match(TOK_COMMA);
+		name = s.get_last_word();
+		match(TOK_IDENT);
+		node->push_name(name);
+	}
+
+	return node;
+}
+
+ASTNode* Parser::assert_stmt()
+{
+	AssertNode* node = new AssertNode(s.get_line());
+
+	match(TOK_ASSERT);
+	node->set_test(test());
+
+	if (cur_tok == TOK_COMMA) {
+		match(TOK_COMMA);
+		node->set_msg(test());
 	}
 
 	return node;

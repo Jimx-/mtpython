@@ -16,7 +16,7 @@ typedef enum {
     NT_YIELD, NT_YIELDFROM, NT_RAISE, NT_PASS, NT_KEYWORD, NT_STRING, NT_EXPR, NT_CONST,
     NT_EXCEPTHANDLER, NT_ATTRIBUTE, NT_ALIAS, NT_IMPORT, NT_COMPREHENSION, NT_GENERATOREXP,
     NT_SUBSCRIPT, NT_INDEX, NT_LIST, NT_IMPORTFROM, NT_DICT, NT_SET, NT_STARRED,
-    NT_WITH, NT_WITHITEM, NT_CLASSDEF, NT_LAMBDA, NT_SLICE,
+    NT_WITH, NT_WITHITEM, NT_CLASSDEF, NT_LAMBDA, NT_SLICE, NT_GLOBAL, NT_ASSERT,
 } NodeType;
 
 class ASTVisitor;
@@ -56,6 +56,7 @@ class ModuleNode;
 class AliasNode;
 class AttributeNode;
 class ArgumentsNode;
+class AssertNode;
 class AssignNode;
 class AugAssignNode;
 class BinOpNode;
@@ -73,6 +74,7 @@ class ExprNode;
 class ForNode;
 class FunctionDefNode;
 class GeneratorExpNode;
+class GlobalNode;
 class IfNode;
 class IfExpNode;
 class ImportNode;
@@ -114,6 +116,7 @@ public:
     virtual ASTNode* visit_alias(AliasNode* node) { return nullptr; }
     virtual ASTNode* visit_attribute(AttributeNode* node) { return nullptr; }
     virtual ASTNode* visit_arguments(ArgumentsNode* node) { return nullptr; }
+    virtual ASTNode* visit_assert(AssertNode* node) { return nullptr; }
     virtual ASTNode* visit_assign(AssignNode* node) { return nullptr; }
     virtual ASTNode* visit_augassign(AugAssignNode* node) { return nullptr; }
     virtual ASTNode* visit_binop(BinOpNode* node) { return nullptr; }
@@ -131,6 +134,7 @@ public:
     virtual ASTNode* visit_for(ForNode* node) { return nullptr; }
     virtual ASTNode* visit_functiondef(FunctionDefNode* node) { return nullptr; }
     virtual ASTNode* visit_generatorexp(GeneratorExpNode* node) { return nullptr; }
+    virtual ASTNode* visit_global(GlobalNode* node) { return nullptr; }
     virtual ASTNode* visit_if(IfNode* node) { return nullptr; }
     virtual ASTNode* visit_ifexp(IfExpNode* node) { return nullptr; }
     virtual ASTNode* visit_index(IndexNode* node) { return nullptr; }

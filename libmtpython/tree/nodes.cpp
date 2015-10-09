@@ -262,3 +262,15 @@ NODE_CONSTRUCTOR(SliceNode)
 	lower = nullptr;
 	step = nullptr;
 }
+
+NODE_CONSTRUCTOR(GlobalNode)
+{
+
+}
+
+NODE_CONSTRUCTOR(AssertNode)
+{
+	msg = nullptr;
+	test = nullptr;
+}
+
