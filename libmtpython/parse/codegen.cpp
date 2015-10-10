@@ -116,16 +116,11 @@ ASTNode* BaseCodeGenerator::visit_break(BreakNode* node)
 	return node;
 }
 
-ASTNode* BaseCodeGenerator::visit_call(CallNode* node)
+void BaseCodeGenerator::make_call(int n, const std::vector<ASTNode*>& args, const std::vector<KeywordNode*>& keywords)
 {
-	set_lineno(node->get_line());
-	node->get_func()->visit(this);
-	std::vector<ASTNode*>& func_args = node->get_args();
-	
-	int arg = func_args.size();
-	for (auto func_arg : func_args) func_arg->visit(this);
+	int arg = args.size() + n;
+	for (auto& arg : args) arg->visit(this);
 
-	std::vector<KeywordNode*>& keywords = node->get_keywords();
 	int call_type = 0;
 	if (keywords.size() > 0) {
 		for (auto keyword : keywords) keyword->visit(this);
@@ -136,6 +131,14 @@ ASTNode* BaseCodeGenerator::visit_call(CallNode* node)
 	if (call_type == 0) op = (unsigned char)CALL_FUNCTION;
 
 	emit_op_arg(op, arg);
+}
+
+ASTNode* BaseCodeGenerator::visit_call(CallNode* node)
+{
+	set_lineno(node->get_line());
+	node->get_func()->visit(this);
+
+	make_call(0, node->get_args(), node->get_keywords());
 
 	return node;
 }
@@ -314,6 +317,24 @@ ASTNode* BaseCodeGenerator::visit_functiondef(FunctionDefNode* node)
 		emit_op_arg(CALL_FUNCTION, 1);
 		decorators = decorators->get_sibling();
 	}
+
+	gen_name(node->get_name(), ExprContext::EC_STORE);
+	return node;
+}
+
+ASTNode* BaseCodeGenerator::visit_classdef(ClassDefNode* node)
+{
+	set_lineno(node->get_line());
+
+	ClassCodeGenerator sub_gen(node->get_name(), context, node, symtab, node->get_line(), compile_info);
+	PyCode* code = sub_gen.build();
+
+	emit_op(LOAD_BUILD_CLASS);
+
+	/* __build_class__(func, name, *bases, metaclass=None, **kwds) -> class */
+	make_closure(code, 0, nullptr);
+	load_const(space->wrap_str(context, node->get_name()));
+	make_call(2, node->get_bases(), node->get_keywords());
 
 	gen_name(node->get_name(), ExprContext::EC_STORE);
 	return node;
@@ -798,3 +819,23 @@ void FunctionCodeGenerator::compile(ASTNode* tree)
 	if (body) visit_sequence(body);
 }
 
+ClassCodeGenerator::ClassCodeGenerator(const std::string& name, mtpython::vm::ThreadContext* context, mtpython::tree::ASTNode* tree, SymtableVisitor* symtab, int lineno, CompileInfo* info) : BaseCodeGenerator(name, context, tree, symtab, lineno, info)
+{
+	compile(tree);
+}
+
+void ClassCodeGenerator::compile(ASTNode* tree)
+{
+	ClassDefNode* classdef = dynamic_cast<ClassDefNode*>(tree);
+
+	set_argcount(0);
+
+	gen_name("__name__", ExprContext::EC_LOAD);
+	gen_name("__module__", ExprContext::EC_STORE);
+
+	ASTNode* body = classdef->get_body();
+	if (body) visit_sequence(body);
+
+	load_const(space->wrap_None());
+	emit_op(RETURN_VALUE);
+}

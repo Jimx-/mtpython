@@ -76,7 +76,7 @@ public:
 
 	virtual M_BaseObject* get_typeobject(interpreter::Typedef* def) { return typedef_cache->get(def); }
 	virtual M_BaseObject* type(M_BaseObject* obj) { throw NotImplementedException("Abstract"); }
-	std::string get_type_name(M_BaseObject* obj);
+	virtual std::string get_type_name(M_BaseObject* obj);
 
 	virtual M_BaseObject* lookup(M_BaseObject* obj, const std::string& name) { throw NotImplementedException("Abstract"); }
 	virtual M_BaseObject* lookup_type_cls(M_BaseObject* obj, const std::string& attr, M_BaseObject*& cls) { throw NotImplementedException("Abstract"); }
@@ -101,7 +101,7 @@ public:
 	M_BaseObject* SystemError_type() { return type_SystemError; }
 	M_BaseObject* KeyError_type() { return type_KeyError;  }
 	M_BaseObject* IndexError_type() { return type_IndexError; }
-	bool match_exception(M_BaseObject* type1, M_BaseObject* type2) { return (type1 == type2); }
+	bool match_exception(M_BaseObject* type1, M_BaseObject* type2) { return type1 == type2; }
 
 	virtual M_BaseObject* wrap(vm::ThreadContext* context, int x) { return wrap_int(context, x); }
 	virtual M_BaseObject* wrap(vm::ThreadContext* context, const std::string& x) { return wrap_str(context, x); }
@@ -175,7 +175,6 @@ public:
 	M_BaseObject* ne(M_BaseObject* obj1, M_BaseObject* obj2);
 	M_BaseObject* eq(M_BaseObject* obj1, M_BaseObject* obj2);
 	M_BaseObject* contains(M_BaseObject* obj1, M_BaseObject* obj2);
-	bool match_exc(M_BaseObject* obj1, M_BaseObject* obj2);
 
 	M_BaseObject* abs(M_BaseObject* obj);
 	M_BaseObject* len(M_BaseObject* obj);

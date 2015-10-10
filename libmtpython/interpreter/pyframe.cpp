@@ -319,7 +319,10 @@ int PyFrame::dispatch_bytecode(ThreadContext* context, std::vector<unsigned char
 			break;
 		case BUILD_SET:
 			build_set(arg, next_pc);
-			break;	
+			break;
+		case LOAD_BUILD_CLASS:
+			load_build_class(arg, next_pc);
+			break;
 		}
 	}
 }
@@ -560,7 +563,7 @@ void PyFrame::compare_op(int arg, int next_pc)
 	case 7:
 		break;
 	case 10:
-		result = space->new_bool(space->match_exc(v1, v2));
+		result = space->new_bool(space->match_exception(v1, v2));
 		break;
 	}
 	result = context->pop_local_frame(result);
@@ -897,4 +900,14 @@ void PyFrame::build_set(int arg, int next_pc)
 	}
 	context->pop_local_frame(nullptr);
 	push_value(set);
+}
+
+void PyFrame::load_build_class(int arg, int next_pc)
+{
+	M_BaseObject* value = space->get_builtin()->get_dict_value(space, "__build_class__");
+	if (!value) {
+		throw InterpError(space->ImportError_type(), space->wrap_str(context, "__build_class__ not found"));
+	}
+
+	push_value(value);
 }

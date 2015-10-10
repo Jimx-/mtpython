@@ -63,6 +63,12 @@ M_BaseObject* StdObjSpace::lookup_type_cls(M_BaseObject* obj, const std::string&
 	return value;
 }
 
+std::string StdObjSpace::get_type_name(M_BaseObject* obj)
+{
+	M_StdTypeObject* type_obj = static_cast<M_StdTypeObject*>(type(obj));
+	return type_obj->get_name();
+}
+
 M_BaseObject* StdObjSpace::wrap_int(ThreadContext* context, int x)
 {
 	return context->new_object(new M_StdIntObject(x));

@@ -46,6 +46,7 @@ M_BaseObject* PyCode::exec_code(ThreadContext* context, M_BaseObject* globals, M
 	ObjSpace* space = context->get_space();
 	PyFrame* frame = space->create_frame(context, this, globals);
 	if (!frame) return nullptr;
+	frame->set_locals(locals);
 	
 	return frame->exec();
 }

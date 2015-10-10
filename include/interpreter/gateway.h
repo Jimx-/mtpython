@@ -22,6 +22,7 @@ typedef mtpython::objects::M_BaseObject* (*InterpFunction0)(mtpython::vm::Thread
 typedef mtpython::objects::M_BaseObject* (*InterpFunction1)(mtpython::vm::ThreadContext* context, mtpython::objects::M_BaseObject* arg1);
 typedef mtpython::objects::M_BaseObject* (*InterpFunction2)(mtpython::vm::ThreadContext* context, mtpython::objects::M_BaseObject* arg1, mtpython::objects::M_BaseObject* arg2);
 typedef mtpython::objects::M_BaseObject* (*InterpFunction3)(mtpython::vm::ThreadContext* context, mtpython::objects::M_BaseObject* arg1, mtpython::objects::M_BaseObject* arg2, mtpython::objects::M_BaseObject* arg3);
+typedef mtpython::objects::M_BaseObject* (*InterpFunction4)(mtpython::vm::ThreadContext* context, mtpython::objects::M_BaseObject* arg1, mtpython::objects::M_BaseObject* arg2, mtpython::objects::M_BaseObject* arg3, mtpython::objects::M_BaseObject* arg4);
 
 class BuiltinCode : public Code {
 private:
@@ -115,6 +116,22 @@ public:
 
 };
 
+class BuiltinCode4 : public Code {
+private:
+	InterpFunction4 func;
+	Signature sig;
+public:
+	BuiltinCode4(const std::string& name, InterpFunction4 f) : Code(name), sig({"arg0", "arg1", "arg2", "arg3"}) { func = f; }
+	BuiltinCode4(const std::string& name, InterpFunction4 f, const Signature& sig) : Code(name), sig(sig) { func = f; }
+
+	mtpython::objects::M_BaseObject* funcrun(vm::ThreadContext* context, mtpython::objects::M_BaseObject* func, Arguments& args)
+	{
+		return funcrun_obj(context, func, nullptr, args);
+	}
+	mtpython::objects::M_BaseObject* funcrun_obj(vm::ThreadContext* context, mtpython::objects::M_BaseObject* func, mtpython::objects::M_BaseObject* obj, Arguments& args);
+
+};
+
 class InterpFunctionWrapper : public mtpython::objects::M_BaseObject {
 protected:
 	Code* code;
@@ -128,6 +145,8 @@ public:
 	InterpFunctionWrapper(const std::string& name, InterpFunction2 f, const Signature& sig);
 	InterpFunctionWrapper(const std::string& name, InterpFunction3 f);
 	InterpFunctionWrapper(const std::string& name, InterpFunction3 f, const Signature& sig);
+	InterpFunctionWrapper(const std::string& name, InterpFunction4 f);
+	InterpFunctionWrapper(const std::string& name, InterpFunction4 f, const Signature& sig);
 	~InterpFunctionWrapper() { SAFE_DELETE(code); }
 
 	objects::M_BaseObject* bind_space(objects::ObjSpace* space) { return space->get_gateway_cache(this); }

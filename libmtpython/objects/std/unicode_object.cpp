@@ -37,7 +37,7 @@ bool M_StdUnicodeObject::i_is(ObjSpace* space, M_BaseObject* other)
 { 
 	if (!M_STDUNICODEOBJECT(other)) return false;
 
-	return space->id(this) == space->id(other);
+	return this == other;
 }
 
 M_BaseObject* M_StdUnicodeObject::__repr__(mtpython::vm::ThreadContext* context, M_BaseObject* self)

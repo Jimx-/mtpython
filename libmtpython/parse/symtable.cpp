@@ -121,6 +121,27 @@ ASTNode* SymtableVisitor::visit_alias(AliasNode* node)
 	return node;
 }
 
+ASTNode* SymtableVisitor::visit_classdef(ClassDefNode* node)
+{
+	add_name(node->get_name(), SYM_ASSIGN);
+	std::vector<ASTNode*>& bases = node->get_bases();
+	for (auto& base : bases) {
+		base->visit(this);
+	}
+	std::vector<KeywordNode*>& keywords = node->get_keywords();
+	for (auto& keyword : keywords) {
+		keyword->visit(this);
+	}
+
+	ClassScope* scope = new ClassScope(node);
+	push_scope(scope, node);
+
+	visit_sequence(node->get_body());
+	pop_scope();
+
+	return node;
+}
+
 ASTNode* SymtableVisitor::visit_functiondef(FunctionDefNode* node)
 {
 	add_name(node->get_name(), SYM_ASSIGN);

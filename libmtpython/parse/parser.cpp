@@ -1142,6 +1142,8 @@ ASTNode* Parser::class_def(ASTNode* decorators)
 
 	if (cur_tok == TOK_LPAREN) {
 		CallNode* call_node = static_cast<CallNode*>(call(nullptr));
+		node->set_bases(call_node->get_args());
+		node->set_keywords(call_node->get_keywords());
 	}
 
 	match(TOK_COLON);

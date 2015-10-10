@@ -13,6 +13,7 @@ class ClassDefNode : public ASTNode {
 private:
 	std::string name;
 	std::vector<ASTNode*> bases;
+	std::vector<KeywordNode*> keywords;
 	ASTNode* body;
 public:
 	ClassDefNode(const int line_nr);
@@ -26,6 +27,7 @@ public:
 		}
 
 		for(std::size_t i = 0; i < bases.size(); i++) SAFE_DELETE(bases[i]);
+		for(std::size_t i = 0; i < keywords.size(); i++) SAFE_DELETE(keywords[i]);
 	}
 
 	std::string get_name() { return this->name; }
@@ -33,13 +35,17 @@ public:
 	ASTNode* get_body() { return this->body; }
 	void set_body(ASTNode * body) { this->body = body; }
 	std::vector<ASTNode*>& get_bases() { return bases; }
-	void push_base(ASTNode* base) { bases.push_back(base); }
+	void set_bases(const std::vector<ASTNode*>& bases) { this->bases = bases; }
+	std::vector<KeywordNode*>& get_keywords() { return keywords; }
+	void set_keywords(const std::vector<KeywordNode*>& keywords) { this->keywords = keywords; }
 
 	virtual void print(const int padding) {
 		std::string blank(padding, ' ');
 		std::cout << blank << line << ": ClassDef: "<< std::endl;
 		std::cout << blank << "  " << line << ": Bases: "<< std::endl;
-		for (auto base : bases) base->print(padding + 4);
+		for (auto& base : bases) base->print(padding + 4);
+		std::cout << blank << "  " << line << ": Keywords: "<< std::endl;
+		for (auto& keyword : keywords) keyword->print(padding + 4);
 		std::cout << blank << "  " << line << ": Body: "<< std::endl;
 		ASTNode* stmt = body;
 		while (stmt) {

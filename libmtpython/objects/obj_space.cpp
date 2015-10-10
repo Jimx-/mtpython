@@ -229,13 +229,6 @@ DEF_CMP_OPER(ge, __ge__, __ge__, >=)
 DEF_CMP_OPER(ne, __ne__, __ne__, !=)
 DEF_CMP_OPER(contains, __contains__, __contains__, in)
 
-bool ObjSpace::match_exc(M_BaseObject* obj1, M_BaseObject* obj2)
-{
-	InterpError* exc = dynamic_cast<InterpError*>(obj1);
-	if (!exc) return false;
-	return exc->match(this, obj2);
-}
-
 int ObjSpace::unwrap_int(M_BaseObject* obj, bool allow_conversion)
 {
 	int result;

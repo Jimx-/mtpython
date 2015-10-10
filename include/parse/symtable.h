@@ -57,6 +57,11 @@ public:
 	FunctionScope(const std::string& name, int line, int col) : Scope(name, line, col) { _can_be_optimized = true; }
 };
 
+class ClassScope : public Scope {
+public:
+	ClassScope(mtpython::tree::ClassDefNode* cls) : Scope(cls->get_name(), cls->get_line(), 0) { }
+};
+
 class SymtableVisitor : public mtpython::tree::GenericVisitor {
 private:
 	std::stack<Scope*> stack;
@@ -76,31 +81,32 @@ public:
 	Scope* find_scope(mtpython::tree::ASTNode* node);
 
 	/*virtual ASTNode* visit_module(ModuleNode* node); */
-	virtual mtpython::tree::ASTNode* visit_alias(mtpython::tree::AliasNode* node);
-    virtual mtpython::tree::ASTNode* visit_arguments(mtpython::tree::ArgumentsNode* node);
-    /*virtual ASTNode* visit_assign(AssignNode* node);
-    virtual ASTNode* visit_augassign(AugAssignNode* node);
-    virtual ASTNode* visit_binop(BinOpNode* node);
-    virtual ASTNode* visit_break(BreakNode* node);
-    virtual ASTNode* visit_compare(CompareNode* node);
-    virtual ASTNode* visit_continue(ContinueNode* node);
-    virtual ASTNode* visit_delete(DeleteNode* node); */
-	virtual mtpython::tree::ASTNode* visit_excepthandler(mtpython::tree::ExceptHandlerNode* node);
-    /*virtual ASTNode* visit_for(ForNode* node);*/
-    virtual mtpython::tree::ASTNode* visit_functiondef(mtpython::tree::FunctionDefNode* node);
-    /*virtual ASTNode* visit_if(IfNode* node);
-    virtual ASTNode* visit_ifexp(IfExpNode* node);*/
-	virtual mtpython::tree::ASTNode* visit_lambda(mtpython::tree::LambdaNode* node);
-    virtual mtpython::tree::ASTNode* visit_name(mtpython::tree::NameNode* node);
-    /*virtual ASTNode* visit_number(NumberNode* node);
-    virtual ASTNode* visit_pass(PassNode* node);
-    virtual ASTNode* visit_raise(RaiseNode* node);
-    virtual ASTNode* visit_return(ReturnNode* node);
-    virtual ASTNode* visit_tuple(TupleNode* node);
-    virtual ASTNode* visit_unaryop(UnaryOpNode* node);
-    virtual ASTNode* visit_while(WhileNode* node);
-    virtual ASTNode* visit_yield(YieldNode* node);
-    virtual ASTNode* visit_yieldfrom(YieldFromNode* node);*/
+	mtpython::tree::ASTNode* visit_alias(mtpython::tree::AliasNode* node);
+    mtpython::tree::ASTNode* visit_arguments(mtpython::tree::ArgumentsNode* node);
+    /*ASTNode* visit_assign(AssignNode* node);
+    ASTNode* visit_augassign(AugAssignNode* node);
+    ASTNode* visit_binop(BinOpNode* node);
+    ASTNode* visit_break(BreakNode* node);
+    ASTNode* visit_compare(CompareNode* node);
+    ASTNode* visit_continue(ContinueNode* node);
+    ASTNode* visit_delete(DeleteNode* node); */
+	mtpython::tree::ASTNode* visit_classdef(mtpython::tree::ClassDefNode* node);
+	mtpython::tree::ASTNode* visit_excepthandler(mtpython::tree::ExceptHandlerNode* node);
+    /*ASTNode* visit_for(ForNode* node);*/
+    mtpython::tree::ASTNode* visit_functiondef(mtpython::tree::FunctionDefNode* node);
+    /*ASTNode* visit_if(IfNode* node);
+    ASTNode* visit_ifexp(IfExpNode* node);*/
+	mtpython::tree::ASTNode* visit_lambda(mtpython::tree::LambdaNode* node);
+    mtpython::tree::ASTNode* visit_name(mtpython::tree::NameNode* node);
+    /*ASTNode* visit_number(NumberNode* node);
+    ASTNode* visit_pass(PassNode* node);
+    ASTNode* visit_raise(RaiseNode* node);
+    ASTNode* visit_return(ReturnNode* node);
+    ASTNode* visit_tuple(TupleNode* node);
+    ASTNode* visit_unaryop(UnaryOpNode* node);
+    ASTNode* visit_while(WhileNode* node);
+    ASTNode* visit_yield(YieldNode* node);
+    ASTNode* visit_yieldfrom(YieldFromNode* node);*/
 };
 
 }

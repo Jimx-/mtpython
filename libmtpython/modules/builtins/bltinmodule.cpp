@@ -4,6 +4,7 @@
 #include "modules/builtins/bltinmodule.h"
 #include "objects/bltin_exceptions.h"
 #include "interpreter/gateway.h"
+#include "interpreter/function.h"
 #include "interpreter/pycode.h"
 #include "interpreter/compiler.h"
 #include "interpreter/error.h"
@@ -231,6 +232,38 @@ static M_BaseObject* builtin___import__(mtpython::vm::ThreadContext* context, co
 	return mod;
 }
 
+static M_BaseObject* builtin___build_class__(mtpython::vm::ThreadContext* context, M_BaseObject* func, M_BaseObject* name,
+											 M_BaseObject* bases, M_BaseObject* kwargs)
+{
+	ObjSpace* space = context->get_space();
+	M_BaseObject* metaclass = kwargs->get_dict_value(space, "metaclass");
+	if (!metaclass) {
+		metaclass = space->type_type();
+	}
+
+	M_BaseObject* prep, *ns;
+	try {
+		prep = space->getattr_str(metaclass, "__prepare__");
+
+		ns = space->call_function(context, prep, { name, bases });
+	} catch (InterpError& exc) {
+		if (!exc.match(space, space->AttributeError_type())) throw exc;
+
+		ns = space->new_dict(context);
+	}
+
+	Function* func_obj = dynamic_cast<Function*>(func);
+	if (!func_obj) {
+		throw InterpError(space->TypeError_type(), space->wrap_str(context, "__build_class__: func must be a function"));
+	}
+
+	func_obj->get_code()->exec_code(context, func_obj->get_globals(), ns);
+
+	M_BaseObject* class_obj = space->call_function(context, metaclass, { name, bases, ns });
+
+	return class_obj;
+}
+
 static M_BaseObject* builtin_abs(mtpython::vm::ThreadContext* context, M_BaseObject* obj)
 {
 	ObjSpace* space = context->get_space();
@@ -331,6 +364,7 @@ BuiltinsModule::BuiltinsModule(ObjSpace* space, M_BaseObject* name) : BuiltinMod
 
 	add_def("__doc__", new InterpDocstringWrapper("Built-in functions, exceptions, and other objects.\n\nNoteworthy: None is the `nil' object; Ellipsis represents `...' in slices."));
 	add_def("__import__", new InterpFunctionWrapper("__import__", builtin___import__, Signature({"name", "globals", "locals", "from_list", "level"})));
+	add_def("__build_class__", new InterpFunctionWrapper("__build_class__", builtin___build_class__, Signature({"func", "name"}, "bases", "kwargs", {})));
 
 	add_def("abs", new InterpFunctionWrapper("abs", builtin_abs));
 	add_def("compile", new InterpFunctionWrapper("compile", builtin_compile, Signature({"source", "filename", "mode", "flags", "dont_inherit", "optimize"})));

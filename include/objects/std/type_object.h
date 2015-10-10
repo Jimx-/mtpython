@@ -7,6 +7,7 @@
 
 #include "objects/base_object.h"
 #include "objects/space_cache.h"
+#include "interpreter/arguments.h"
 #include "vm/vm.h"
 
 namespace mtpython {
@@ -19,18 +20,27 @@ private:
 	std::vector<M_BaseObject*> bases;
 	std::unordered_map<std::string, M_BaseObject*> dict;
 	std::vector<M_BaseObject*> mro;
+	bool _has_dict;
 
 	void init_mro();
-public:
-	M_StdTypeObject(ObjSpace* space, std::string& name, std::vector<M_BaseObject*>& bases, std::unordered_map<std::string, M_BaseObject*>& dict);
 
-	virtual interpreter::Typedef* get_typedef();
+	void ready();
+public:
+	M_StdTypeObject(ObjSpace* space, std::string& name, const std::vector<M_BaseObject*>& bases, const std::unordered_map<std::string, M_BaseObject*>& dict);
+
+	std::string get_name() { return name; }
+	bool has_dict() { return _has_dict; }
+	void set_has_dict(bool has_dict) { _has_dict = has_dict; }
+
+	interpreter::Typedef* get_typedef();
 	static interpreter::Typedef* _type_typedef();
 
-	virtual M_BaseObject* get_dict_value(ObjSpace* space, const std::string& attr);
+	M_BaseObject* get_dict_value(ObjSpace* space, const std::string& attr);
 
-	virtual M_BaseObject* lookup(const std::string& name);
-	virtual M_BaseObject* lookup_cls(const std::string& attr, M_BaseObject*& cls);
+	M_BaseObject* lookup(const std::string& name);
+	M_BaseObject* lookup_cls(const std::string& attr, M_BaseObject*& cls);
+
+	static M_BaseObject* __new__(vm::ThreadContext* context, const interpreter::Arguments& args);
 
 	static M_BaseObject* __repr__(vm::ThreadContext* context, M_BaseObject* self);
 	static M_BaseObject* __mro__get(vm::ThreadContext* context, M_BaseObject* self);

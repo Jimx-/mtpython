@@ -27,6 +27,7 @@ protected:
 
 	void gen_name(const std::string& name, mtpython::tree::ExprContext ctx);
 
+    void make_call(int n, const std::vector<mtpython::tree::ASTNode*>& args, const std::vector<mtpython::tree::KeywordNode*>& keywords);
     void make_closure(mtpython::interpreter::PyCode* code, int args, mtpython::objects::M_BaseObject* qualname);
 
     virtual int get_code_flags() { return 0; }
@@ -45,6 +46,7 @@ public:
     mtpython::tree::ASTNode* visit_binop(mtpython::tree::BinOpNode* node);
     mtpython::tree::ASTNode* visit_break(mtpython::tree::BreakNode* node);
     mtpython::tree::ASTNode* visit_call(mtpython::tree::CallNode* node);
+    mtpython::tree::ASTNode* visit_classdef(mtpython::tree::ClassDefNode* node);
     mtpython::tree::ASTNode* visit_compare(mtpython::tree::CompareNode* node);
     mtpython::tree::ASTNode* visit_const(mtpython::tree::ConstNode* node);
     /*ASTNode* visit_continue(ContinueNode* node);
@@ -86,10 +88,16 @@ public:
 
 class FunctionCodeGenerator : public BaseCodeGenerator {
 private:
-    int argcount;
     void compile(mtpython::tree::ASTNode* tree);
 public:
     FunctionCodeGenerator(const std::string& name, mtpython::vm::ThreadContext* context, mtpython::tree::ASTNode* tree, SymtableVisitor* symtab, int lineno, CompileInfo* info);
+};
+
+class ClassCodeGenerator : public BaseCodeGenerator {
+private:
+    void compile(mtpython::tree::ASTNode* tree);
+public:
+    ClassCodeGenerator(const std::string& name, mtpython::vm::ThreadContext* context, mtpython::tree::ASTNode* tree, SymtableVisitor* symtab, int lineno, CompileInfo* info);
 };
 
 }

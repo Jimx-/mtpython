@@ -10,14 +10,16 @@ using namespace mtpython::objects;
 using namespace mtpython::interpreter;
 
 static mtpython::interpreter::Typedef type_typedef("type", {
+	{ "__new__", new InterpFunctionWrapper("__new__", M_StdTypeObject::__new__) },
 	{ "__call__", new InterpFunctionWrapper("__call__", M_StdTypeObject::__call__) },
 	{ "__repr__", new InterpFunctionWrapper("__repr__", M_StdTypeObject::__repr__) },
 	{ "__mro__", new GetSetDescriptor(M_StdTypeObject::__mro__get) },
 });
 
-M_StdTypeObject::M_StdTypeObject(ObjSpace* space, std::string& name, std::vector<M_BaseObject*>& bases, std::unordered_map<std::string, M_BaseObject*>& dict) :
+M_StdTypeObject::M_StdTypeObject(ObjSpace* space, std::string& name, const std::vector<M_BaseObject*>& bases, const std::unordered_map<std::string, M_BaseObject*>& dict) :
 			space(space), name(name), bases(bases), dict(dict)
 {
+	_has_dict = false;
 	init_mro();
 }
 
@@ -135,6 +137,64 @@ M_BaseObject* StdTypedefCache::build(mtpython::interpreter::Typedef* key)
 	M_StdTypeObject* wrapped_type = new M_StdTypeObject(space, key->get_name(), wrapped_bases, wrapped_dict);
 
 	return wrapped_type;
+}
+
+void M_StdTypeObject::ready()
+{
+
+}
+
+M_BaseObject* M_StdTypeObject::__new__(mtpython::vm::ThreadContext* context, const Arguments& args)
+{
+	static Signature new_signature({ "type", "name", "bases", "dict" });
+
+	ObjSpace* space = context->get_space();
+
+	std::vector<M_BaseObject*> scope;
+	args.parse("__new__", nullptr, new_signature, scope, { nullptr, nullptr });
+
+	M_BaseObject* wrapped_type = scope[0];
+	M_BaseObject* wrapped_name = scope[1];
+	M_BaseObject* wrapped_bases = scope[2];
+	M_BaseObject* wrapped_dict = scope[3];
+
+	/* special case: type(x) */
+	if (space->i_is(wrapped_type, space->type_type()) && !wrapped_bases && !wrapped_dict) {
+		return space->type(wrapped_name);
+	}
+
+	if (wrapped_bases && !wrapped_dict) {
+		throw InterpError(space->TypeError_type(), space->wrap_str(context, "type() takes 1 or 3 arguments"));
+	}
+
+	std::vector<M_BaseObject*> bases;
+	if (wrapped_bases) {
+		space->unwrap_tuple(wrapped_bases, bases);
+	}
+	if (bases.size() == 0) bases.push_back(space->object_type());
+
+	std::string name = space->unwrap_str(wrapped_name);
+	M_BaseObject* keys_impl = space->getattr_str(wrapped_dict, "keys");
+	if (!keys_impl) {
+		throw InterpError::format(space, space->TypeError_type(), "type() argument 3 must be dict, not %s", space->get_type_name(wrapped_dict).c_str());
+	}
+	M_BaseObject* wrapped_keys = space->call_function(context, keys_impl, { });
+	std::vector<M_BaseObject*> keys;
+	space->unwrap_tuple(wrapped_keys, keys);
+
+	std::unordered_map<std::string, M_BaseObject*> dict;
+	for (auto& wrapped_key : keys) {
+		std::string key = space->unwrap_str(wrapped_key);
+		dict[key] = space->getitem(wrapped_dict, wrapped_key);
+	}
+
+	/* TODO: handle __slots__ */
+	int add_dict = 1;
+
+	M_StdTypeObject* cls = new M_StdTypeObject(space, name, bases, dict);
+	cls->set_has_dict(add_dict);
+	cls->ready();
+	return space->wrap(context, cls);
 }
 
 M_BaseObject* M_StdTypeObject::__call__(mtpython::vm::ThreadContext* context, const Arguments& args)
