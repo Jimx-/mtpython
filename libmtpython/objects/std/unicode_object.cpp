@@ -16,6 +16,7 @@ static mtpython::interpreter::Typedef str_typedef("str", {
 	{ "__str__", new InterpFunctionWrapper("__str__", M_StdUnicodeObject::__str__) },
 	{ "__hash__", new InterpFunctionWrapper("__hash__", M_StdUnicodeObject::__hash__) },
 	{ "__eq__", new InterpFunctionWrapper("__eq__", M_StdUnicodeObject::__eq__) },
+	{ "__iter__", new InterpFunctionWrapper("__iter__", M_StdUnicodeObject::__iter__) },
 });
 
 M_StdUnicodeObject::M_StdUnicodeObject(const std::string& s)
@@ -38,6 +39,11 @@ bool M_StdUnicodeObject::i_is(ObjSpace* space, M_BaseObject* other)
 	if (!M_STDUNICODEOBJECT(other)) return false;
 
 	return this == other;
+}
+
+M_BaseObject* M_StdUnicodeObject::__iter__(mtpython::vm::ThreadContext* context, M_BaseObject* self)
+{
+	return context->get_space()->new_seqiter(context, self);
 }
 
 M_BaseObject* M_StdUnicodeObject::__repr__(mtpython::vm::ThreadContext* context, M_BaseObject* self)
@@ -76,3 +82,4 @@ void M_StdUnicodeObject::dbg_print()
 {
 	std::cout << value;
 }
+

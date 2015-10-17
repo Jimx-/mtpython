@@ -9,7 +9,7 @@
 #include "interpreter/compiler.h"
 #include "interpreter/error.h"
 #include "interpreter/pyframe.h"
-#include "interpreter/module.h"
+#include "interpreter/typedef.h"
 #include "utils/file_helper.h"
 
 using namespace mtpython::modules;
@@ -293,6 +293,24 @@ static M_BaseObject* builtin_globals(mtpython::vm::ThreadContext* context)
 	return context->top_frame()->get_globals();
 }
 
+static M_BaseObject* builtin_iter(mtpython::vm::ThreadContext* context, const Arguments& args)
+{
+	static Signature iter_signature({ "obj", "sentinel" });
+
+	ObjSpace* space = context->get_space();
+	std::vector<M_BaseObject*> scope;
+	args.parse("iter", nullptr, iter_signature, scope, { space->wrap_None() });
+
+	M_BaseObject* obj = scope[0];
+	M_BaseObject* sentinel = scope[1];
+
+	if (space->i_is(sentinel, space->wrap_None())) {
+		return context->get_space()->iter(obj);
+	}
+
+	return space->wrap_None();
+}
+
 static M_BaseObject* builtin_len(mtpython::vm::ThreadContext* context, M_BaseObject* obj)
 {
 	ObjSpace* space = context->get_space();
@@ -328,6 +346,308 @@ static M_BaseObject* builtin_print(mtpython::vm::ThreadContext* context, M_BaseO
 	return nullptr;
 }
 
+/*
+ * Range
+ */
+class M_RangeIter : public M_BaseObject {
+private:
+	ObjSpace* space;
+	int current;
+	int remaining;
+	int step;
+public:
+	M_RangeIter(ObjSpace* space, int current, int remaining, int step) : space(space), current(current), remaining(remaining), step(step)
+	{
+	}
+
+	Typedef* get_typedef();
+
+	static M_BaseObject* __next__(mtpython::vm::ThreadContext* context, M_BaseObject* self)
+	{
+		ObjSpace* space = context->get_space();
+
+		M_RangeIter* iter = static_cast<M_RangeIter*>(self);
+		if (iter->remaining > 0) {
+			iter->lock();
+			int index = iter->current;
+			iter->current = index + iter->step;
+			iter->remaining--;
+			iter->unlock();
+			return space->wrap_int(context, index);
+		}
+
+		throw InterpError(space->StopIteration_type(), space->wrap_None());
+	}
+};
+
+static Typedef range_iterator_typedef("range_iterator", {
+	{ "__next__", new InterpFunctionWrapper("__next__", M_RangeIter::__next__) },
+});
+
+Typedef* M_RangeIter::get_typedef()
+{
+	return &range_iterator_typedef;
+}
+
+class M_Range : public M_BaseObject {
+private:
+	M_BaseObject* start;
+	M_BaseObject* stop;
+	M_BaseObject* step;
+	M_BaseObject* length;
+public:
+	M_Range(M_BaseObject* start, M_BaseObject* stop, M_BaseObject* step, M_BaseObject* length) : start(start), stop(stop), step(step), length(length) { }
+
+	static M_BaseObject* __new__(mtpython::vm::ThreadContext* context, const Arguments& args)
+	{
+		static Signature new_signature({"type", "start", "stop", "step"});
+
+		ObjSpace* space = context->get_space();
+		M_BaseObject* None = space->wrap_None();
+		std::vector<M_BaseObject*> scope;
+		args.parse("__new__", nullptr, new_signature, scope, { None, None });
+
+		M_BaseObject* start = scope[1];
+		M_BaseObject* stop = scope[2];
+		M_BaseObject* step = scope[3];
+
+		if (space->i_is(stop, None)) {
+			if (!space->i_is(step, None)) {
+				throw InterpError::format(space, space->TypeError_type(), "'%s' object cannot be interpreted as an integer", space->get_type_name(stop).c_str());
+			}
+
+			stop = start;
+			start = space->wrap_int(context, 0);
+		}
+
+		if (space->i_is(step, None)) {
+			step = space->wrap_int(context, 1);
+		}
+
+		if (space->unwrap_int(step) == 0) {
+			throw InterpError(space->ValueError_type(), space->wrap_str(context, "step argument must not be zero"));
+		}
+
+		int i_start = space->unwrap_int(start);
+		int i_stop = space->unwrap_int(stop);
+		int i_step = space->unwrap_int(step);
+		int i_length = 0;
+
+		if (i_step < 0) {
+			i_step = -i_step;
+			int tmp = i_start;
+			i_start = i_stop;
+			i_stop = tmp;
+		}
+
+		if (i_start < i_stop) {
+			int diff = i_stop - i_start - 1;
+			i_length = diff / i_step + 1;
+		}
+
+		M_BaseObject* range = new M_Range(start, stop, step, space->wrap_int(context, i_length));
+
+		return space->wrap(context, range);
+	}
+
+	static M_BaseObject* __iter__(mtpython::vm::ThreadContext* context, M_BaseObject* self)
+	{
+		ObjSpace* space = context->get_space();
+
+		M_Range* range = static_cast<M_Range*>(self);
+		int start = space->unwrap_int(range->start);
+		int stop = space->unwrap_int(range->stop);
+		int length = space->unwrap_int(range->length);
+		int step = space->unwrap_int(range->step);
+
+		M_RangeIter* iter = new M_RangeIter(space, start, length, step);
+
+		return iter;
+	}
+
+	Typedef* get_typedef();
+};
+
+static Typedef Range_typedef("range", {
+	{ "__new__", new InterpFunctionWrapper("__new__", M_Range::__new__) },
+	{ "__iter__", new InterpFunctionWrapper("__iter__", M_Range::__iter__) },
+});
+
+Typedef* M_Range::get_typedef()
+{
+	return &Range_typedef;
+}
+
+/*
+ * Reversed iterator
+ */
+class M_ReversedIterObject : public M_BaseObject {
+private:
+	int remaining;
+	M_BaseObject* obj;
+public:
+	M_ReversedIterObject(mtpython::vm::ThreadContext* context, M_BaseObject* obj) : obj(obj)
+	{
+		ObjSpace* space = context->get_space();
+		remaining = space->unwrap_int(space->len(obj)) - 1;
+		if (space->lookup(obj, "__getitem__")) {
+			throw InterpError(space->TypeError_type(), space->wrap_str(context, "reversed() argument must be a sequence"));
+		}
+	}
+
+	Typedef* get_typedef();
+
+	static M_BaseObject* __next__(mtpython::vm::ThreadContext* context, M_BaseObject* self)
+	{
+		ObjSpace* space = context->get_space();
+
+		M_ReversedIterObject* iter = static_cast<M_ReversedIterObject*>(self);
+		iter->lock();
+
+		if (iter->remaining >= 0) {
+			M_BaseObject* item;
+			try {
+				item = space->getitem(iter->obj, space->wrap_int(context, iter->remaining));
+				iter->remaining--;
+
+				iter->unlock();
+				return item;
+			} catch (InterpError& exc) {
+				iter->unlock();
+				iter->obj = nullptr;
+				if (!exc.match(space, space->IndexError_type())) throw exc;
+				throw InterpError(space->StopIteration_type(), space->wrap_None());
+			}
+		}
+
+		iter->remaining = -1;
+		iter->unlock();
+
+		throw InterpError(space->StopIteration_type(), space->wrap_None());
+	}
+
+	static M_BaseObject* __iter__(mtpython::vm::ThreadContext* context, M_BaseObject* self)
+	{
+		ObjSpace* space = context->get_space();
+		return space->wrap(context, self);
+	}
+
+};
+
+static Typedef reversed_iter_typedef("reverseiterator", {
+	{ "__next__", new InterpFunctionWrapper("__next__", M_ReversedIterObject::__next__) },
+	{ "__iter__", new InterpFunctionWrapper("__iter__", M_ReversedIterObject::__iter__) },
+});
+
+Typedef* M_ReversedIterObject::get_typedef()
+{
+	return &reversed_iter_typedef;
+}
+
+static M_BaseObject* builtin_reversed(mtpython::vm::ThreadContext* context, M_BaseObject* seq)
+{
+	ObjSpace* space = context->get_space();
+
+	M_BaseObject* reversed = space->lookup(seq, "__reversed__");
+	if (reversed) {
+		M_BaseObject* reversed_impl = space->get(reversed, seq);
+		return space->call_function(context, reversed_impl,{});
+	}
+
+	return new M_ReversedIterObject(context, seq);
+}
+
+/*
+ *  Property
+ */
+class Property : public M_BaseObject {
+private:
+	M_BaseObject* fget;
+	M_BaseObject* fset;
+	M_BaseObject* fdel;
+	M_BaseObject* doc;
+public:
+	Property(ObjSpace* space, M_BaseObject* fget = nullptr, M_BaseObject* fset = nullptr, M_BaseObject* fdel = nullptr,
+				M_BaseObject* doc = nullptr)
+	{
+		this->fget = fget ? fget : space->wrap_None();
+		this->fset = fset ? fset : space->wrap_None();
+		this->fdel = fdel ? fdel : space->wrap_None();
+		this->doc = doc ? doc : space->wrap_None();
+	}
+
+	static M_BaseObject* __new__(mtpython::vm::ThreadContext* context, const Arguments& args)
+	{
+		static Signature new_signature({ "type", "getter", "setter", "deleter", "doc" });
+		ObjSpace* space = context->get_space();
+
+		std::vector<M_BaseObject*> scope;
+		args.parse("__new__", nullptr, new_signature, scope, { space->wrap_None(), space->wrap_None(), space->wrap_None(), space->wrap_None() });
+
+		Property* instance = new Property(space, scope[1], scope[2], scope[3], scope[4]);
+		return space->wrap(context, instance);
+	}
+
+	static M_BaseObject* __get__(mtpython::vm::ThreadContext* context, const Arguments& args)
+	{
+		static Signature get_signature({ "self", "obj", "type" });
+		ObjSpace* space = context->get_space();
+
+		std::vector<M_BaseObject*> scope;
+		args.parse("__get__", nullptr, get_signature, scope, { space->wrap_None() });
+
+		Property* self = static_cast<Property*>(scope[0]);
+		M_BaseObject* obj = scope[1];
+		M_BaseObject* cls = scope[2];
+
+		if (space->i_is(obj, space->wrap_None())) {
+			return space->wrap(context, self);
+		}
+
+		if (space->i_is(self->fget, space->wrap_None())) {
+			throw InterpError(space->TypeError_type(), space->wrap_str(context, "unreadable attribute"));
+		}
+
+		return space->call_function(context, self->fget, { obj });
+	}
+
+	static M_BaseObject* __set__(mtpython::vm::ThreadContext* context, M_BaseObject* _self, M_BaseObject* obj, M_BaseObject* value)
+	{
+		Property* self = static_cast<Property*>(_self);
+		ObjSpace* space = context->get_space();
+		if (space->i_is(self->fset, space->wrap_None())) {
+			throw InterpError(space->TypeError_type(), space->wrap_str(context, "can't set attribute"));
+		}
+		space->call_function(context, self->fset, { obj, value });
+		return space->wrap_None();
+	}
+
+	static M_BaseObject* setter(mtpython::vm::ThreadContext* context, M_BaseObject* _self, M_BaseObject* _setter)
+	{
+		return copy(context, _self, nullptr, _setter, nullptr);
+	}
+
+	static M_BaseObject* copy(mtpython::vm::ThreadContext* context, M_BaseObject* _self, M_BaseObject* _getter, M_BaseObject* _setter, M_BaseObject* _deleter)
+	{
+		ObjSpace* space = context->get_space();
+		Property* self = static_cast<Property*>(_self);
+		M_BaseObject* getter = _getter ? _getter : self->fget;
+		M_BaseObject* setter = _setter ? _setter : self->fset;
+		M_BaseObject* deleter = _deleter ? _deleter : self->fdel;
+		M_BaseObject* doc = self->doc;
+
+		M_BaseObject* type = self->get_class(space);
+		return space->call_function(context, type, { getter, setter, deleter, doc });
+	}
+};
+
+Typedef Property_typedef("property", {
+	{ "__new__", new InterpFunctionWrapper("__new__", Property::__new__) },
+	{ "__get__", new InterpFunctionWrapper("__get__", Property::__get__) },
+	{ "__set__", new InterpFunctionWrapper("__set__", Property::__set__) },
+	{ "setter", new InterpFunctionWrapper("setter", Property::setter) },
+});
+
 BuiltinsModule::BuiltinsModule(ObjSpace* space, M_BaseObject* name) : BuiltinModule(space, name)
 {
 	/* constants */
@@ -337,6 +657,7 @@ BuiltinsModule::BuiltinsModule(ObjSpace* space, M_BaseObject* name) : BuiltinMod
 
 	/* builtin type */
 	add_def("bool", space->bool_type());
+	add_def("bytearray", space->bytearray_type());
 	add_def("dict", space->dict_type());
 	add_def("int", space->int_type());
 	add_def("object", space->object_type());
@@ -367,9 +688,15 @@ BuiltinsModule::BuiltinsModule(ObjSpace* space, M_BaseObject* name) : BuiltinMod
 	add_def("__build_class__", new InterpFunctionWrapper("__build_class__", builtin___build_class__, Signature({"func", "name"}, "bases", "kwargs", {})));
 
 	add_def("abs", new InterpFunctionWrapper("abs", builtin_abs));
+	add_def("classmethod", space->get_typeobject(ClassMethod::_classmethod_typedef()));
 	add_def("compile", new InterpFunctionWrapper("compile", builtin_compile, Signature({"source", "filename", "mode", "flags", "dont_inherit", "optimize"})));
 	add_def("globals", new InterpFunctionWrapper("globals", builtin_globals));
+	add_def("iter", new InterpFunctionWrapper("iter", builtin_iter) );
 	add_def("len", new InterpFunctionWrapper("len", builtin_len));
 	add_def("open", space->getattr_str(space->get__io(), "open"));
 	add_def("print", new InterpFunctionWrapper("print", builtin_print, Signature("args", "kwargs")));
+	add_def("property", space->get_typeobject(&Property_typedef));
+	add_def("range", space->get_typeobject(&Range_typedef));
+	add_def("reversed", new InterpFunctionWrapper("reversed", builtin_reversed));
+	add_def("staticmethod", space->get_typeobject(StaticMethod::_staticmethod_typedef()));
 }

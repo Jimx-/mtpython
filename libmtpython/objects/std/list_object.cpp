@@ -14,6 +14,7 @@ static mtpython::interpreter::Typedef list_typedef("list", {
 	{ "__repr__", new InterpFunctionWrapper("__repr__", M_StdListObject::__repr__) },
 	{ "__len__", new InterpFunctionWrapper("__len__", M_StdListObject::__len__) },
 	{ "__contains__", new InterpFunctionWrapper("__contains__", M_StdListObject::__contains__) },
+	{ "__iter__", new InterpFunctionWrapper("__iter__", M_StdListObject::__iter__) },
 
 	{ "append", new InterpFunctionWrapper("append", M_StdListObject::append) },
 	{ "extend", new InterpFunctionWrapper("extend", M_StdListObject::append) },
@@ -67,6 +68,11 @@ M_BaseObject* M_StdListObject::__contains__(mtpython::vm::ThreadContext* context
 	}
 
 	return space->wrap_False();
+}
+
+M_BaseObject* M_StdListObject::__iter__(mtpython::vm::ThreadContext* context, M_BaseObject* self)
+{
+	return context->get_space()->new_seqiter(context, self);
 }
 
 M_BaseObject* M_StdListObject::append(mtpython::vm::ThreadContext* context, M_BaseObject* self, M_BaseObject* item)

@@ -13,6 +13,7 @@ SET(LIBMTPYTHON_SRCLIST
 		objects/base_object.cpp
 		objects/bltin_exceptions.cpp
 		objects/std/bool_object.cpp
+		objects/std/bytearray_object.cpp
 		objects/std/dict_object.cpp
 		objects/std/int_object.cpp
 		objects/std/iter_object.cpp

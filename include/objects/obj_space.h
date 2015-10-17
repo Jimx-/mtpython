@@ -82,6 +82,7 @@ public:
 	virtual M_BaseObject* lookup_type_cls(M_BaseObject* obj, const std::string& attr, M_BaseObject*& cls) { throw NotImplementedException("Abstract"); }
 
 	virtual M_BaseObject* bool_type() { throw NotImplementedException("Abstract"); }
+	virtual M_BaseObject* bytearray_type() { throw NotImplementedException("Abstract"); }
 	virtual M_BaseObject* dict_type() { throw NotImplementedException("Abstract"); }
 	virtual M_BaseObject* int_type() { throw NotImplementedException("Abstract"); }
 	virtual M_BaseObject* object_type() { throw NotImplementedException("Abstract"); }
@@ -122,6 +123,7 @@ public:
 	virtual M_BaseObject* new_list(vm::ThreadContext* context, std::vector<M_BaseObject*>& items) { throw NotImplementedException("Abstract"); }
 	virtual M_BaseObject* new_dict(vm::ThreadContext* context) { throw NotImplementedException("Abstract"); }
 	virtual M_BaseObject* new_set(vm::ThreadContext* context) { throw NotImplementedException("Abstract"); }
+	virtual M_BaseObject* new_seqiter(vm::ThreadContext* context, M_BaseObject* obj) { throw NotImplementedException("Abstract"); }
 
 	virtual int unwrap_int(M_BaseObject* obj, bool allow_conversion = true);
 	virtual std::string unwrap_str(M_BaseObject* obj) { return obj->to_string(this); }

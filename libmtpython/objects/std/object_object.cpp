@@ -66,7 +66,7 @@ M_BaseObject* M_StdObjectObject::__str__(mtpython::vm::ThreadContext* context, M
 	if (!impl) {
 		throw InterpError(space->TypeError_type(), space->wrap_str(context, "operand does not support unary str"));
 	}
-	return space->get_and_call_function(context, impl, {obj});
+	return space->get_and_call_function(context, impl, { obj });
 }
 
 M_BaseObject* M_StdObjectObject::__repr__(mtpython::vm::ThreadContext* context, M_BaseObject* obj)

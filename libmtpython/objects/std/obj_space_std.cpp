@@ -3,6 +3,7 @@
 #include "objects/std/obj_space_std.h"
 #include "objects/std/type_object.h"
 #include "objects/std/int_object.h"
+#include "objects/std/iter_object.h"
 #include "objects/std/list_object.h"
 #include "objects/std/bool_object.h"
 #include "objects/std/none_object.h"
@@ -11,6 +12,7 @@
 #include "objects/std/object_object.h"
 #include "objects/std/set_object.h"
 #include "objects/std/tuple_object.h"
+#include "objects/std/bytearray_object.h"
 #include "objects/std/frame.h"
 
 using namespace mtpython::objects;
@@ -25,6 +27,7 @@ StdObjSpace::StdObjSpace() : ObjSpace()
 	wrapped_False = new M_StdBoolObject(false);
 	
 	builtin_types["bool"] = get_typeobject(M_StdBoolObject::_bool_typedef());
+	builtin_types["bytearray"] = get_typeobject(M_StdByteArrayObject::_bytearray_typedef());
 	builtin_types["dict"] = get_typeobject(M_StdDictObject::_dict_typedef());
 	builtin_types["int"] = get_typeobject(M_StdIntObject::_int_typedef());
 	builtin_types["object"] = get_typeobject(M_StdObjectObject::_object_typedef());
@@ -102,6 +105,11 @@ M_BaseObject* StdObjSpace::new_dict(vm::ThreadContext* context)
 M_BaseObject* StdObjSpace::new_set(vm::ThreadContext* context)
 {
 	return context->new_object(new M_StdSetObject(this));
+}
+
+M_BaseObject* StdObjSpace::new_seqiter(vm::ThreadContext* context, M_BaseObject* obj)
+{
+	return context->new_object(new M_StdSeqIterObject(obj));
 }
 
 void StdObjSpace::unwrap_tuple(M_BaseObject* obj, std::vector<M_BaseObject*>& list)

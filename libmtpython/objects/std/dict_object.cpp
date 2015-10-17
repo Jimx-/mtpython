@@ -16,6 +16,8 @@ static mtpython::interpreter::Typedef dict_typedef("dict", {
 	{ "__setitem__", new InterpFunctionWrapper("__setitem__", M_StdDictObject::__setitem__) },
 	{ "__contains__", new InterpFunctionWrapper("__contains__", M_StdDictObject::__contains__) },
 	{ "keys", new InterpFunctionWrapper("keys", M_StdDictObject::keys) },
+	{ "values", new InterpFunctionWrapper("values", M_StdDictObject::values) },
+	{ "items", new InterpFunctionWrapper("items", M_StdDictObject::items) },
 });
 
 M_BaseObject* M_StdDictObject::getitem(M_BaseObject* key)
@@ -117,4 +119,36 @@ M_BaseObject* M_StdDictObject::keys(mtpython::vm::ThreadContext* context, M_Base
 	as_dict->unlock();
 
 	return context->get_space()->new_tuple(context, keys);
+}
+
+M_BaseObject* M_StdDictObject::values(mtpython::vm::ThreadContext* context, M_BaseObject* self)
+{
+	M_StdDictObject* as_dict = static_cast<M_StdDictObject*>(self);
+	std::vector<M_BaseObject*> values;
+
+	as_dict->lock();
+	for (const auto& iter : as_dict->dict) {
+		values.push_back(iter.second);
+	}
+	as_dict->unlock();
+
+	return context->get_space()->new_tuple(context, values);
+}
+
+M_BaseObject* M_StdDictObject::items(mtpython::vm::ThreadContext* context, M_BaseObject* self)
+{
+	M_StdDictObject* as_dict = static_cast<M_StdDictObject*>(self);
+	std::vector<M_BaseObject*> items;
+	ObjSpace* space = context->get_space();
+
+	as_dict->lock();
+	for (const auto& iter : as_dict->dict) {
+		std::vector<M_BaseObject*> item;
+		item.push_back(iter.first);
+		item.push_back(iter.second);
+		items.push_back(space->new_tuple(context, item));
+	}
+	as_dict->unlock();
+
+	return context->get_space()->new_list(context, items);
 }

@@ -30,6 +30,7 @@ public:
 	std::string get_type_name(M_BaseObject* obj);
 
 	M_BaseObject* bool_type() { return builtin_types["bool"]; }
+	M_BaseObject* bytearray_type() { return builtin_types["bytearray"]; }
 	M_BaseObject* dict_type() { return builtin_types["dict"]; }
 	M_BaseObject* int_type() { return builtin_types["int"]; }
 	M_BaseObject* object_type() { return builtin_types["object"]; }
@@ -54,6 +55,7 @@ public:
 	M_BaseObject* new_list(vm::ThreadContext* context, std::vector<M_BaseObject*>& items);
 	M_BaseObject* new_dict(vm::ThreadContext* context);
 	M_BaseObject* new_set(vm::ThreadContext* context);
+	M_BaseObject* new_seqiter(vm::ThreadContext* context, M_BaseObject* obj);
 
 	void unwrap_tuple(M_BaseObject* obj, std::vector<M_BaseObject*>& list);
 };

@@ -9,7 +9,7 @@
 namespace mtpython {
 namespace objects {
 
-#define M_STDINTOBJECT(obj) (dynamic_cast<M_StdIntObject*>(obj))
+#define M_STDINTOBJECT(obj) (static_cast<M_StdIntObject*>(obj))
 
 class M_StdIntObject : public M_BaseObject {
 protected:

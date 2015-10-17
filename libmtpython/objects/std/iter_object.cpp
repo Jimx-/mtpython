@@ -6,7 +6,40 @@ using namespace mtpython::objects;
 using namespace mtpython::interpreter;
 using namespace mtpython::vm;
 
-static mtpython::interpreter::Typedef tuple_iter_typedef("tuple_iterator", {
+static Typedef seq_iter_typedef("seq_iterator", {
+    { "__next__", new InterpFunctionWrapper("__next__", M_StdSeqIterObject::__next__) },
+});
+
+M_BaseObject* M_StdSeqIterObject::__next__(ThreadContext* context, M_BaseObject* self)
+{
+    ObjSpace* space = context->get_space();
+
+    M_StdSeqIterObject* iter = static_cast<M_StdSeqIterObject*>(self);
+    iter->lock();
+    if (!iter->obj) {
+        throw InterpError(space->StopIteration_type(), space->wrap_None());
+    }
+
+    M_BaseObject* item;
+    try {
+        item = space->getitem(iter->obj, space->wrap_int(context, iter->index));
+    } catch (InterpError& exc) {
+        iter->obj = nullptr;
+        if (!exc.match(space, space->IndexError_type())) throw exc;
+        throw InterpError(space->StopIteration_type(), space->wrap_None());
+    }
+    iter->index++;
+    iter->unlock();
+
+    return item;
+}
+
+Typedef* M_StdSeqIterObject::get_typedef()
+{
+    return &seq_iter_typedef;
+}
+
+static Typedef tuple_iter_typedef("tuple_iterator", {
     { "__next__", new InterpFunctionWrapper("__next__", M_StdTupleIterObject::__next__) },
 });
 

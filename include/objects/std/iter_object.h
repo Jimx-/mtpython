@@ -8,6 +8,17 @@
 namespace mtpython {
 namespace objects {
 
+class M_StdSeqIterObject : public M_BaseObject {
+private:
+	int index;
+	M_BaseObject* obj;
+public:
+	M_StdSeqIterObject(M_BaseObject* obj, int index = 0) : obj(obj), index(index) { }
+	interpreter::Typedef* get_typedef();
+
+	static M_BaseObject* __next__(vm::ThreadContext* context, M_BaseObject* self);
+};
+
 class M_StdTupleIterObject : public M_BaseObject {
 private:
 	std::size_t index;
@@ -15,7 +26,7 @@ private:
 public:
 	M_StdTupleIterObject(const std::vector<M_BaseObject*>& items) : items(items) { index = 0; }
 
-	virtual interpreter::Typedef* get_typedef();
+	interpreter::Typedef* get_typedef();
 
 	static M_BaseObject* __next__(vm::ThreadContext* context, M_BaseObject* self);
 };

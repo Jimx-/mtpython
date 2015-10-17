@@ -8,7 +8,7 @@
 namespace mtpython {
 namespace objects {
 
-#define M_STDTUPLEOBJECT(obj) (dynamic_cast<M_StdTupleObject*>(obj))
+#define M_STDTUPLEOBJECT(obj) (static_cast<M_StdTupleObject*>(obj))
 
 class M_StdTupleObject : public M_BaseObject {
 private:

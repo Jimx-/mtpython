@@ -7,7 +7,7 @@
 namespace mtpython {
 namespace objects {
 
-#define M_STDBOOLOBJECT(obj) (dynamic_cast<M_StdBoolObject*>(obj))
+#define M_STDBOOLOBJECT(obj) (static_cast<M_StdBoolObject*>(obj))
 
 class M_StdBoolObject : public M_StdIntObject {
 public:

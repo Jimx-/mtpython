@@ -8,7 +8,7 @@
 namespace mtpython {
 namespace objects {
 
-#define M_STDLISTOBJECT(obj) (dynamic_cast<M_StdListObject*>(obj))
+#define M_STDLISTOBJECT(obj) (static_cast<M_StdListObject*>(obj))
 
 class M_StdListObject : public M_BaseObject {
 private:
@@ -26,6 +26,7 @@ public:
 	static M_BaseObject* __len__(vm::ThreadContext* context, M_BaseObject* self);
 	static M_BaseObject* __repr__(vm::ThreadContext* context, M_BaseObject* self);
 	static M_BaseObject* __contains__(vm::ThreadContext* context, M_BaseObject* self, M_BaseObject* obj);
+	static M_BaseObject* __iter__(vm::ThreadContext* context, M_BaseObject* self);
 
 	static M_BaseObject* append(vm::ThreadContext* context, M_BaseObject* self, M_BaseObject* item);
 	static M_BaseObject* extend(vm::ThreadContext* context, M_BaseObject* self, M_BaseObject* iterable);

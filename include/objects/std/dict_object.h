@@ -39,6 +39,8 @@ public:
 	static M_BaseObject* __contains__(vm::ThreadContext* context, M_BaseObject* self, M_BaseObject* obj);
 	
 	static M_BaseObject* keys(vm::ThreadContext* context, M_BaseObject* self);
+	static M_BaseObject* values(vm::ThreadContext* context, M_BaseObject* self);
+	static M_BaseObject* items(vm::ThreadContext* context, M_BaseObject* self);
 	
 	static interpreter::Typedef* _dict_typedef();
 	virtual interpreter::Typedef* get_typedef();

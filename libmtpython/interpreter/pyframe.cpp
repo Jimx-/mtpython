@@ -323,6 +323,9 @@ int PyFrame::dispatch_bytecode(ThreadContext* context, std::vector<unsigned char
 		case LOAD_BUILD_CLASS:
 			load_build_class(arg, next_pc);
 			break;
+		case BUILD_MAP:
+			build_map(arg, next_pc);
+			break;
 		}
 	}
 }
@@ -910,4 +913,10 @@ void PyFrame::load_build_class(int arg, int next_pc)
 	}
 
 	push_value(value);
+}
+
+void PyFrame::build_map(int arg, int next_pc)
+{
+	M_BaseObject* dict = space->new_dict(context);
+	push_value(dict);
 }

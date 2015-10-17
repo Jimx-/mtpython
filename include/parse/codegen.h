@@ -51,6 +51,7 @@ public:
     mtpython::tree::ASTNode* visit_const(mtpython::tree::ConstNode* node);
     /*ASTNode* visit_continue(ContinueNode* node);
     ASTNode* visit_delete(DeleteNode* node); */
+    mtpython::tree::ASTNode* visit_dict(mtpython::tree::DictNode* node);
 	mtpython::tree::ASTNode* visit_expr(mtpython::tree::ExprNode* node);
     mtpython::tree::ASTNode* visit_for(mtpython::tree::ForNode* node);
     mtpython::tree::ASTNode* visit_functiondef(mtpython::tree::FunctionDefNode* node);

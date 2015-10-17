@@ -7,7 +7,7 @@
 namespace mtpython {
 namespace objects {
 
-#define M_STDUNICODEOBJECT(obj) (dynamic_cast<M_StdUnicodeObject*>(obj))
+#define M_STDUNICODEOBJECT(obj) (static_cast<M_StdUnicodeObject*>(obj))
 
 class M_StdUnicodeObject : public M_BaseObject {
 private:
@@ -17,6 +17,7 @@ public:
 
 	bool i_is(ObjSpace* space, M_BaseObject* other);
 
+	static M_BaseObject* __iter__(mtpython::vm::ThreadContext* context, M_BaseObject* self);
 	static M_BaseObject* __repr__(mtpython::vm::ThreadContext* context, mtpython::objects::M_BaseObject* self);
 	static M_BaseObject* __str__(mtpython::vm::ThreadContext* context, mtpython::objects::M_BaseObject* self);
 	static M_BaseObject* __hash__(mtpython::vm::ThreadContext* context, mtpython::objects::M_BaseObject* self);

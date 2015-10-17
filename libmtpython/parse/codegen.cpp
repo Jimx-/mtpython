@@ -251,6 +251,23 @@ ASTNode* BaseCodeGenerator::visit_compare(CompareNode *node) {
 	return node;
 }
 
+ASTNode* BaseCodeGenerator::visit_dict(DictNode* node)
+{
+	set_lineno(node->get_line());
+	emit_op_arg(BUILD_MAP, 0);
+
+	std::vector<ASTNode*>& keys = node->get_keys();
+	std::vector<ASTNode*>& values = node->get_values();
+
+	for (int i = 0; i < keys.size(); i++) {
+		values[i]->visit(this);
+		keys[i]->visit(this);
+		emit_op(STORE_MAP);
+	}
+
+	return node;
+}
+
 ASTNode* BaseCodeGenerator::visit_for(ForNode* node)
 {
 	set_lineno(node->get_line());

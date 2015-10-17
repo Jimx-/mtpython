@@ -197,6 +197,7 @@ protected:
     void binary__and(int arg, int next_pc);
     void build_set(int arg, int next_pc);
     void load_build_class(int arg, int next_pc);
+    void build_map(int arg, int next_pc);
 
     objects::M_BaseObject* end_finally();
 
