@@ -31,7 +31,7 @@ Typedef* M_StdObjectObject::_object_typedef()
 
 M_BaseObject* M_StdObjectObject::__new__(mtpython::vm::ThreadContext* context, const Arguments& args)
 {
-	static Signature new_signature({ "type" });
+	static Signature new_signature({ "type" }, "args", "kwargs", {});
 	ObjSpace* space = context->get_space();
 
 	std::vector<M_BaseObject*> scope;
