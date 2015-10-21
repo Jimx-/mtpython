@@ -51,7 +51,6 @@ dict_items = type({}.items())
 ## misc ##
 mappingproxy = type(type.__dict__)
 
-
 ### ONE-TRICK PONIES ###
 
 class Hashable(metaclass=ABCMeta):

@@ -192,6 +192,8 @@ M_BaseObject* M_StdTypeObject::__new__(mtpython::vm::ThreadContext* context, con
 	int add_dict = 1;
 
 	M_StdTypeObject* cls = new M_StdTypeObject(space, name, bases, dict);
+	if (!wrapped_dict) wrapped_dict = space->new_dict(context);
+	cls->wrapped_dict = wrapped_dict;
 	cls->set_has_dict(add_dict);
 	cls->ready();
 	return space->wrap(context, cls);

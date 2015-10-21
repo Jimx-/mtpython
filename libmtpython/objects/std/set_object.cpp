@@ -9,16 +9,17 @@
 using namespace mtpython::objects;
 using namespace mtpython::interpreter;
 
-static mtpython::interpreter::Typedef set_typedef("set", {
+static Typedef set_typedef("set", {
 	{ "__new__", new InterpFunctionWrapper("__new__", M_StdSetObject::__new__) },
 	{ "__init__", new InterpFunctionWrapper("__init__", M_StdSetObject::__init__) },
 	{ "__repr__", new InterpFunctionWrapper("__repr__", M_StdSetObject::__repr__) },
 	{ "__contains__", new InterpFunctionWrapper("__contains__", M_StdSetObject::__contains__) },
 	{ "__le__", new InterpFunctionWrapper("__le__", M_StdSetObject::__le__) },
+	{ "__iter__", new InterpFunctionWrapper("__iter__", M_StdSetObject::__iter__) },
 	{ "add", new InterpFunctionWrapper("add", M_StdSetObject::add) },
 });
 
-bool mtpython::objects::M_StdSetObject::i_issubset(M_StdSetObject * other)
+bool M_StdSetObject::i_issubset(M_StdSetObject * other)
 {
 	for (auto& item : set) {
 		auto got = other->set.find(item);
@@ -86,6 +87,12 @@ M_BaseObject* M_StdSetObject::__le__(mtpython::vm::ThreadContext * context, M_Ba
 	return space->new_bool(self_as_set->i_issubset(other_as_set));
 }
 
+M_BaseObject* M_StdSetObject::__iter__(mtpython::vm::ThreadContext* context, M_BaseObject* self)
+{
+	M_StdSetObject* as_set = static_cast<M_StdSetObject*>(self);
+	return new M_StdSetIterObject(as_set);
+}
+
 Typedef* M_StdSetObject::_set_typedef()
 {
 	return &set_typedef;
@@ -106,3 +113,49 @@ M_BaseObject* M_StdSetObject::add(mtpython::vm::ThreadContext* context, M_BaseOb
 
 	return context->get_space()->wrap_None();
 }
+
+static Typedef set_iterator_typedef("set_iterator", {
+	{ "__next__", new InterpFunctionWrapper("__next__", M_StdSetIterObject::__next__) },
+});
+
+M_StdSetIterObject::M_StdSetIterObject(M_StdSetObject* set)
+{
+	this->set = set;
+	set->lock();
+	size = set->size();
+	iter = set->begin();
+	index = size == 0 ? -1 : 0;
+	set->unlock();
+}
+
+M_BaseObject* M_StdSetIterObject::__next__(mtpython::vm::ThreadContext* context, M_BaseObject* self)
+{
+	ObjSpace* space = context->get_space();
+	M_StdSetIterObject* iter = static_cast<M_StdSetIterObject*>(self);
+
+	if (iter->index < 0) throw InterpError(space->StopIteration_type(), space->wrap_None());
+	iter->set->lock();
+
+	if (iter->size != iter->set->size()) {
+		iter->set->unlock();
+		throw InterpError(space->IndexError_type(), space->wrap_str(context, "Set changed size during iteration"));
+	}
+
+	M_BaseObject* item = *(iter->iter);
+
+	iter->iter++;
+	iter->index++;
+
+	if (iter->index == iter->size) {
+		iter->index = -1;
+	}
+	iter->set->unlock();
+
+	return item;
+}
+
+Typedef* M_StdSetIterObject::get_typedef()
+{
+	return &set_iterator_typedef;
+}
+

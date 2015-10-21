@@ -124,10 +124,7 @@ M_BaseObject* M_StdObjectObject::__delattr__(mtpython::vm::ThreadContext* contex
 
 M_BaseObject* M_StdObjectObject::__dict__get(mtpython::vm::ThreadContext* context, M_BaseObject* obj)
 {
-	ObjSpace* space = context->get_space();
-	M_StdObjectObject* as_obj = static_cast<M_StdObjectObject*>(obj);
-
-	return as_obj->dict;
+	return obj->get_dict(context->get_space());
 }
 
 void M_StdObjectObject::__dict__set(mtpython::vm::ThreadContext* context, M_BaseObject* obj,

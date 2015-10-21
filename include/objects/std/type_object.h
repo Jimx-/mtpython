@@ -19,6 +19,7 @@ private:
 	std::string name;
 	std::vector<M_BaseObject*> bases;
 	std::unordered_map<std::string, M_BaseObject*> dict;
+	M_BaseObject* wrapped_dict;
 	std::vector<M_BaseObject*> mro;
 	bool _has_dict;
 
@@ -31,6 +32,7 @@ public:
 	std::string get_name() { return name; }
 	bool has_dict() { return _has_dict; }
 	void set_has_dict(bool has_dict) { _has_dict = has_dict; }
+	M_BaseObject* get_dict(ObjSpace* space) { return wrapped_dict; }
 
 	interpreter::Typedef* get_typedef();
 	static interpreter::Typedef* _type_typedef();

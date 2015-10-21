@@ -648,6 +648,49 @@ Typedef Property_typedef("property", {
 	{ "setter", new InterpFunctionWrapper("setter", Property::setter) },
 });
 
+class M_Zip : public M_BaseObject {
+public:
+	M_Zip(ObjSpace* space) { }
+
+	static M_BaseObject* __new__(mtpython::vm::ThreadContext* context, const Arguments& args)
+	{
+		static Signature new_signature({ "type" });
+		ObjSpace* space = context->get_space();
+
+		std::vector<M_BaseObject*> scope;
+		args.parse("__new__", nullptr, new_signature, scope);
+
+		M_Zip* instance = new M_Zip(space);
+		return space->wrap(context, instance);
+	}
+
+	static M_BaseObject* __iter__(mtpython::vm::ThreadContext* context, M_BaseObject* self)
+	{
+		ObjSpace* space = context->get_space();
+		return space->wrap(context, self);
+	}
+
+	static M_BaseObject* __next__(mtpython::vm::ThreadContext* context, M_BaseObject* self)
+	{
+		ObjSpace* space = context->get_space();
+		return space->wrap_None();
+
+	}
+
+	Typedef* get_typedef();
+};
+
+Typedef Zip_typedef("zip", {
+	{ "__new__", new InterpFunctionWrapper("__new__", M_Zip::__new__) },
+	{ "__iter__", new InterpFunctionWrapper("__iter__", M_Zip::__iter__) },
+	{ "__next__", new InterpFunctionWrapper("__next__", M_Zip::__next__) },
+});
+
+Typedef* M_Zip::get_typedef()
+{
+	return &Zip_typedef;
+}
+
 BuiltinsModule::BuiltinsModule(ObjSpace* space, M_BaseObject* name) : BuiltinModule(space, name)
 {
 	/* constants */
@@ -699,4 +742,5 @@ BuiltinsModule::BuiltinsModule(ObjSpace* space, M_BaseObject* name) : BuiltinMod
 	add_def("range", space->get_typeobject(&Range_typedef));
 	add_def("reversed", new InterpFunctionWrapper("reversed", builtin_reversed));
 	add_def("staticmethod", space->get_typeobject(StaticMethod::_staticmethod_typedef()));
+	add_def("zip", space->get_typeobject(&Zip_typedef));
 }
