@@ -32,7 +32,7 @@ public:
 	std::string get_name() { return name; }
 	bool has_dict() { return _has_dict; }
 	void set_has_dict(bool has_dict) { _has_dict = has_dict; }
-	M_BaseObject* get_dict(ObjSpace* space) { return wrapped_dict; }
+	M_BaseObject* get_dict(ObjSpace* space);
 
 	interpreter::Typedef* get_typedef();
 	static interpreter::Typedef* _type_typedef();

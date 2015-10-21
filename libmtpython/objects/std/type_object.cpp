@@ -20,6 +20,7 @@ M_StdTypeObject::M_StdTypeObject(ObjSpace* space, std::string& name, const std::
 			space(space), name(name), bases(bases), dict(dict)
 {
 	_has_dict = false;
+	wrapped_dict = nullptr;
 	init_mro();
 }
 
@@ -75,6 +76,20 @@ void M_StdTypeObject::init_mro()
 			if ((*it)[0] == candidate) (*it).erase((*it).begin());
 		}
 	}
+}
+
+M_BaseObject* M_StdTypeObject::get_dict(ObjSpace* space)
+{
+	if (wrapped_dict) return wrapped_dict;
+
+	mtpython::vm::ThreadContext* context = space->current_thread();
+	wrapped_dict = space->new_dict(context);
+
+	for (auto& it : dict) {
+		space->setitem(wrapped_dict, space->wrap_str(context, it.first), space->wrap(context, it.second));
+	}
+
+	return wrapped_dict;
 }
 
 M_BaseObject* M_StdTypeObject::get_dict_value(ObjSpace* space, const std::string& attr)
@@ -192,9 +207,7 @@ M_BaseObject* M_StdTypeObject::__new__(mtpython::vm::ThreadContext* context, con
 	int add_dict = 1;
 
 	M_StdTypeObject* cls = new M_StdTypeObject(space, name, bases, dict);
-	if (!wrapped_dict) wrapped_dict = space->new_dict(context);
-	cls->wrapped_dict = wrapped_dict;
-	cls->set_has_dict(add_dict);
+	cls->set_has_dict(add_dict > 0);
 	cls->ready();
 	return space->wrap(context, cls);
 }
