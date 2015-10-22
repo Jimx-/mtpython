@@ -17,6 +17,7 @@ private:
 	std::string name;
 	Code* code;
 	objects::M_BaseObject* func_globals;
+	objects::M_BaseObject* func_dict;
 	std::vector<objects::M_BaseObject*> defaults;
 public:
 	Function(objects::ObjSpace* space, Code* code, objects::M_BaseObject* globals=nullptr) : Function(space, code, {}, globals) {}
@@ -25,6 +26,7 @@ public:
 	Typedef* get_typedef();
 
 	Code* get_code() { return code; }
+	objects::M_BaseObject* get_dict(objects::ObjSpace* space);
 
 	objects::M_BaseObject* get_globals() { return func_globals; }
 	std::string& get_name() { return name; }

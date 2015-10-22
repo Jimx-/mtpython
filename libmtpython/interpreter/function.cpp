@@ -11,12 +11,20 @@ static Typedef Function_typedef("function", {
 Function::Function(ObjSpace* space, Code* code, const std::vector<M_BaseObject*>& defaults, M_BaseObject* globals)
 	: space(space), name(code->get_name()), code(code), func_globals(globals), defaults(defaults)
 {
-
+	func_dict = nullptr;
 }
 
 Typedef* Function::get_typedef()
 {
 	return &Function_typedef;
+}
+
+M_BaseObject* Function::get_dict(ObjSpace* space)
+{
+	if (func_dict) return func_dict;
+	func_dict = space->new_dict(space->current_thread());
+
+	return func_dict;
 }
 
 M_BaseObject* Function::call_args(mtpython::vm::ThreadContext* context, Arguments& args)
