@@ -37,24 +37,110 @@ int Scope::lookup(const std::string& id)
 	return got->second;
 }
 
-void Scope::finalize_name(const std::string& id, int flags)
+void Scope::analyze_name(const std::string& id, int flags, std::unordered_set<std::string>& local, std::unordered_set<std::string>& bound, std::unordered_set<std::string>& free, std::unordered_set<std::string>& global)
 {
 	if (flags & SYM_BOUND) {
 		symbols[id] = SCOPE_LOCAL;
-	} else
+		local.insert(id);
+		global.erase(id);
+	} else if (bound.find(id) != bound.end()) {
+		symbols[id] = SCOPE_FREE;
+		has_free = true;
+		free.insert(id);
+		free_vars.push_back(id);
+	} else if (global.find(id) != global.end()) {
 		symbols[id] = SCOPE_GLOBAL_IMPLICIT;
+	} else {
+		symbols[id] = SCOPE_GLOBAL_IMPLICIT;
+	}
 }
 
-void Scope::finalize()
+void Scope::analyze_cells(std::unordered_set<std::string>& free)
+{
+
+}
+
+void Scope::analyze(std::unordered_set<std::string>& bound, std::unordered_set<std::string>& free, std::unordered_set<std::string>& global)
 {
 	symbols.clear();
 
-	for (auto iter = id2flags.begin(); iter != id2flags.end(); iter++) {
-		finalize_name(iter->first, iter->second);
+	std::unordered_set<std::string> new_bound, new_free, new_global, local;
+
+	/* class scope has no effects on names visible in nested functions */
+	if (is_class_scope) {
+		new_bound.insert(bound.begin(), bound.end());
+		new_global.insert(global.begin(), global.end());
 	}
 
+	for (auto iter = id2flags.begin(); iter != id2flags.end(); iter++) {
+		analyze_name(iter->first, iter->second, local, bound, free, global);
+	}
+
+	if (!is_class_scope) {
+		new_bound.insert(bound.begin(), bound.end());
+		new_global.insert(global.begin(), global.end());
+	} else {
+		new_bound.insert("@__class__");
+	}
+
+	std::unordered_set<std::string> allfree;
 	for (auto child : children) {
-		child->finalize();
+		std::unordered_set<std::string> bound_copy(new_bound), child_free(new_free), global_copy(global);
+		child->analyze(bound_copy, child_free, global_copy);
+		allfree.insert(child_free.begin(), child_free.end());
+		if (child->has_free || child->child_has_free) child_has_free = true;
+	}
+
+	new_free.insert(allfree.begin(), allfree.end());
+	analyze_cells(new_free);
+
+	for (const auto& name : new_free) {
+		int flags;
+		auto iter = id2flags.find(name);
+
+		if (iter == id2flags.end()) {
+			if (bound.find(name) != bound.end()) {
+				symbols[name] = SCOPE_FREE;
+				free_vars.push_back(name);
+			}
+		}
+		else {
+			flags = iter->second;
+			if ((flags & (SYM_BOUND | SYM_GLOB)) && is_class_scope) {
+				free_vars.push_back(name);
+			}
+		}
+	}
+
+	free.insert(new_free.begin(), new_free.end());
+}
+
+void FunctionScope::analyze_cells(std::unordered_set<std::string>& free)
+{
+	for (auto iter = symbols.begin(); iter != symbols.end(); iter++) {
+		if (iter->second == SCOPE_LOCAL && free.find(iter->first) != free.end()) {
+			iter->second = SCOPE_CELL;
+			free.erase(iter->first);
+		}
+	}
+}
+
+const std::string& FunctionScope::add_name(const std::string& id, int flags)
+{
+	if (id == "super" && flags == SYM_USE) {
+		add_name("@__class__", SYM_USE);
+	}
+
+	return Scope::add_name(id, flags);
+}
+
+void ClassScope::analyze_cells(std::unordered_set<std::string>& free)
+{
+	for (auto iter = symbols.begin(); iter != symbols.end(); iter++) {
+		if (iter->second == SCOPE_LOCAL && free.find(iter->first) != free.end() && iter->first == "@__class__") {
+			iter->second = SCOPE_CELL;
+			free.erase(iter->first);
+		}
 	}
 }
 
@@ -68,7 +154,8 @@ SymtableVisitor::SymtableVisitor(mtpython::objects::ObjSpace* space, ASTNode* mo
 	current = root;
 
 	module->visit(this);
-	root->finalize();
+	std::unordered_set<std::string> bound, free, global;
+	root->analyze(bound, free, global);
 }
 
 Scope* SymtableVisitor::find_scope(ASTNode* node)
@@ -136,6 +223,7 @@ ASTNode* SymtableVisitor::visit_classdef(ClassDefNode* node)
 	ClassScope* scope = new ClassScope(node);
 	push_scope(scope, node);
 
+	scope->add_name("@__class__", SYM_ASSIGN);
 	visit_sequence(node->get_body());
 	pop_scope();
 

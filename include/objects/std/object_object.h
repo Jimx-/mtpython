@@ -33,6 +33,7 @@ public:
 
 	static M_BaseObject* __dict__get(mtpython::vm::ThreadContext* context, M_BaseObject* obj);
 	static void __dict__set(vm::ThreadContext* context, M_BaseObject* obj, M_BaseObject* value);
+	static M_BaseObject* __class__get(mtpython::vm::ThreadContext* context, M_BaseObject* obj);
 };
 
 }

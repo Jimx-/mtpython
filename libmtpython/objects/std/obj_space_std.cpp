@@ -77,37 +77,37 @@ M_BaseObject* StdObjSpace::wrap_int(ThreadContext* context, int x)
 	return context->new_object(new M_StdIntObject(x));
 }
 
-M_BaseObject* StdObjSpace::wrap_int(vm::ThreadContext* context, const std::string& x)
+M_BaseObject* StdObjSpace::wrap_int(ThreadContext* context, const std::string& x)
 {
 	return context->new_object(new M_StdIntObject(x));
 }
 
-M_BaseObject* StdObjSpace::wrap_str(vm::ThreadContext* context, const std::string& x)
+M_BaseObject* StdObjSpace::wrap_str(ThreadContext* context, const std::string& x)
 {
 	return context->new_object(new M_StdUnicodeObject(x));
 }
 
-M_BaseObject* StdObjSpace::new_tuple(vm::ThreadContext* context, std::vector<M_BaseObject*>& items)
+M_BaseObject* StdObjSpace::new_tuple(ThreadContext* context, std::vector<M_BaseObject*>& items)
 {
 	return context->new_object(new M_StdTupleObject(items));
 }
 
-M_BaseObject* StdObjSpace::new_list(vm::ThreadContext* context, std::vector<M_BaseObject*>& items)
+M_BaseObject* StdObjSpace::new_list(ThreadContext* context, std::vector<M_BaseObject*>& items)
 {
 	return context->new_object(new M_StdListObject(items));
 }
 
-M_BaseObject* StdObjSpace::new_dict(vm::ThreadContext* context)
+M_BaseObject* StdObjSpace::new_dict(ThreadContext* context)
 {
 	return context->new_object(new M_StdDictObject(this));
 }
 
-M_BaseObject* StdObjSpace::new_set(vm::ThreadContext* context)
+M_BaseObject* StdObjSpace::new_set(ThreadContext* context)
 {
 	return context->new_object(new M_StdSetObject(this));
 }
 
-M_BaseObject* StdObjSpace::new_seqiter(vm::ThreadContext* context, M_BaseObject* obj)
+M_BaseObject* StdObjSpace::new_seqiter(ThreadContext* context, M_BaseObject* obj)
 {
 	return context->new_object(new M_StdSeqIterObject(obj));
 }

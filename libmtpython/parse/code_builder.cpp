@@ -142,10 +142,10 @@ void CodeBlock::get_block_list(std::vector<CodeBlock*>& blocks)
 }
 
 template <typename T>
-static void vector2map(std::vector<T>& vec, std::unordered_map<T, int>& map)
+static void vector2map(std::vector<T>& vec, std::unordered_map<T, int>& map, int offset = 0)
 {
 	for (unsigned int i = 0; i < vec.size(); i++) {
-		map[vec[i]] = i;
+		map[vec[i]] = i + offset;
 	}
 }
 
@@ -165,6 +165,17 @@ CodeBuilder::CodeBuilder(const std::string& name, mtpython::vm::ThreadContext* c
 	qualname = space->wrap_None();
 
 	vector2map<std::string>(scope->get_varnames(), varnames);
+
+	std::unordered_map<std::string, int>& symbols = scope->get_symbols();
+	int cell_index = 0;
+	for (auto iter = symbols.begin(); iter != symbols.end(); iter++) {
+		if (iter->second == SCOPE_CELL) {
+			cellvars[iter->first] = cell_index;
+			cell_index++;
+		}
+	}
+
+	vector2map<std::string>(scope->get_free_vars(), freevars, cellvars.size());
 }
 
 void CodeBuilder::set_lineno(int lineno)
@@ -395,11 +406,11 @@ void CodeBuilder::build_lnotab(std::vector<CodeBlock*>& blocks, std::vector<unsi
 }
 
 template <typename T>
-static void map2vector(std::unordered_map<T, int>& map, std::vector<T>& vec)
+static void map2vector(std::unordered_map<T, int>& map, std::vector<T>& vec, int offset = 0)
 {
 	vec.resize(map.size());
 	for (auto it = map.begin(); it != map.end(); it++) {
-		vec[it->second] = it->first;
+		vec[it->second - offset] = it->first;
 	}
 }
 
@@ -440,7 +451,7 @@ mtpython::interpreter::PyCode* CodeBuilder::build()
 	map2vector<std::string>(this->varnames, varnames_array);
 
 	std::vector<std::string> freevars_array;
-	map2vector<std::string>(this->freevars, freevars_array);
+	map2vector<std::string>(this->freevars, freevars_array, this->cellvars.size());
 
 	std::vector<std::string> cellvars_array;
 	map2vector<std::string>(this->cellvars, cellvars_array);

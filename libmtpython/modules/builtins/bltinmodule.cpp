@@ -236,9 +236,20 @@ static M_BaseObject* builtin___build_class__(mtpython::vm::ThreadContext* contex
 											 M_BaseObject* bases, M_BaseObject* kwargs)
 {
 	ObjSpace* space = context->get_space();
-	M_BaseObject* metaclass = kwargs->get_dict_value(space, "metaclass");
-	if (!metaclass) {
-		metaclass = space->type_type();
+
+	std::vector<M_BaseObject*> bases_w;
+	space->unwrap_tuple(bases, bases_w);
+
+	bool isclass = false;
+	M_BaseObject* metaclass = space->finditem_str(kwargs, "metaclass");
+	if (metaclass) {
+		isclass = true;
+	} else {
+		if (bases_w.size() > 0) {
+			metaclass = space->type(bases_w[0]);
+		} else {
+			metaclass = space->type_type();
+		}
 	}
 
 	M_BaseObject* prep, *ns;
@@ -560,14 +571,14 @@ static M_BaseObject* builtin_reversed(mtpython::vm::ThreadContext* context, M_Ba
 /*
  *  Property
  */
-class Property : public M_BaseObject {
+class M_Property : public M_BaseObject {
 private:
 	M_BaseObject* fget;
 	M_BaseObject* fset;
 	M_BaseObject* fdel;
 	M_BaseObject* doc;
 public:
-	Property(ObjSpace* space, M_BaseObject* fget = nullptr, M_BaseObject* fset = nullptr, M_BaseObject* fdel = nullptr,
+	M_Property(ObjSpace* space, M_BaseObject* fget = nullptr, M_BaseObject* fset = nullptr, M_BaseObject* fdel = nullptr,
 				M_BaseObject* doc = nullptr)
 	{
 		this->fget = fget ? fget : space->wrap_None();
@@ -584,7 +595,7 @@ public:
 		std::vector<M_BaseObject*> scope;
 		args.parse("__new__", nullptr, new_signature, scope, { space->wrap_None(), space->wrap_None(), space->wrap_None(), space->wrap_None() });
 
-		Property* instance = new Property(space, scope[1], scope[2], scope[3], scope[4]);
+		M_Property* instance = new M_Property(space, scope[1], scope[2], scope[3], scope[4]);
 		return space->wrap(context, instance);
 	}
 
@@ -596,7 +607,7 @@ public:
 		std::vector<M_BaseObject*> scope;
 		args.parse("__get__", nullptr, get_signature, scope, { space->wrap_None() });
 
-		Property* self = static_cast<Property*>(scope[0]);
+		M_Property* self = static_cast<M_Property*>(scope[0]);
 		M_BaseObject* obj = scope[1];
 		M_BaseObject* cls = scope[2];
 
@@ -613,7 +624,7 @@ public:
 
 	static M_BaseObject* __set__(mtpython::vm::ThreadContext* context, M_BaseObject* _self, M_BaseObject* obj, M_BaseObject* value)
 	{
-		Property* self = static_cast<Property*>(_self);
+		M_Property* self = static_cast<M_Property*>(_self);
 		ObjSpace* space = context->get_space();
 		if (space->i_is(self->fset, space->wrap_None())) {
 			throw InterpError(space->TypeError_type(), space->wrap_str(context, "can't set attribute"));
@@ -630,7 +641,7 @@ public:
 	static M_BaseObject* copy(mtpython::vm::ThreadContext* context, M_BaseObject* _self, M_BaseObject* _getter, M_BaseObject* _setter, M_BaseObject* _deleter)
 	{
 		ObjSpace* space = context->get_space();
-		Property* self = static_cast<Property*>(_self);
+		M_Property* self = static_cast<M_Property*>(_self);
 		M_BaseObject* getter = _getter ? _getter : self->fget;
 		M_BaseObject* setter = _setter ? _setter : self->fset;
 		M_BaseObject* deleter = _deleter ? _deleter : self->fdel;
@@ -642,11 +653,72 @@ public:
 };
 
 Typedef Property_typedef("property", {
-	{ "__new__", new InterpFunctionWrapper("__new__", Property::__new__) },
-	{ "__get__", new InterpFunctionWrapper("__get__", Property::__get__) },
-	{ "__set__", new InterpFunctionWrapper("__set__", Property::__set__) },
-	{ "setter", new InterpFunctionWrapper("setter", Property::setter) },
+	{ "__new__", new InterpFunctionWrapper("__new__", M_Property::__new__) },
+	{ "__get__", new InterpFunctionWrapper("__get__", M_Property::__get__) },
+	{ "__set__", new InterpFunctionWrapper("__set__", M_Property::__set__) },
+	{ "setter", new InterpFunctionWrapper("setter", M_Property::setter) },
 });
+
+/* Super */
+class M_Super : public M_BaseObject {
+private:
+	M_BaseObject* type;
+	M_BaseObject* obj_type;
+	M_BaseObject* self;
+public:
+	M_Super(M_BaseObject* type, M_BaseObject* obj_type, M_BaseObject* self)
+	{
+		this->type = type;
+		this->obj_type = obj_type;
+		this->self = self;
+	}
+
+	static M_BaseObject* __new__(mtpython::vm::ThreadContext* context, const Arguments& args)
+	{
+		static Signature new_signature({ "sub_type", "type", "obj_or_type" });
+		ObjSpace* space = context->get_space();
+
+		std::vector<M_BaseObject*> scope;
+		args.parse("__new__", nullptr, new_signature, scope, { space->wrap_None(), space->wrap_None() });
+		M_BaseObject* w_type = scope[1];
+		M_BaseObject* w_obj = scope[2];
+		M_BaseObject* obj_type = nullptr;
+
+		if (space->i_is(w_type, space->wrap_None())) {
+
+		}
+
+		if (space->i_is(w_obj, space->wrap_None())) {
+			w_type = nullptr;
+		} else {
+			obj_type = space->type(w_type);
+		}
+
+		M_Super* instance = new M_Super(w_type, obj_type, w_obj);
+		return space->wrap(context, instance);
+	}
+
+	static M_BaseObject* __getattribute__(mtpython::vm::ThreadContext* context, M_BaseObject* obj,
+		M_BaseObject* attr)
+	{
+		ObjSpace* space = context->get_space();
+		std::string name = space->unwrap_str(attr);
+
+		return nullptr;
+	}
+
+	Typedef* get_typedef();
+};
+
+Typedef Super_typedef("super", {
+	{ "__new__", new InterpFunctionWrapper("__new__", M_Super::__new__) },
+	{ "__getattribute__", new InterpFunctionWrapper("__getattribute__", M_Super::__getattribute__) },
+});
+
+Typedef* M_Super::get_typedef()
+{
+	return &Super_typedef;
+}
 
 class M_Zip : public M_BaseObject {
 public:
@@ -742,5 +814,6 @@ BuiltinsModule::BuiltinsModule(ObjSpace* space, M_BaseObject* name) : BuiltinMod
 	add_def("range", space->get_typeobject(&Range_typedef));
 	add_def("reversed", new InterpFunctionWrapper("reversed", builtin_reversed));
 	add_def("staticmethod", space->get_typeobject(StaticMethod::_staticmethod_typedef()));
+	add_def("super", space->get_typeobject(&Super_typedef));
 	add_def("zip", space->get_typeobject(&Zip_typedef));
 }

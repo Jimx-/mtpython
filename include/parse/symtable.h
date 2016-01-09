@@ -5,6 +5,7 @@
 #include "objects/obj_space.h"
 #include <stack>
 #include <unordered_map>
+#include <unordered_set>
 #include <vector>
 
 namespace mtpython {
@@ -19,6 +20,9 @@ namespace parse {
 #define SCOPE_UNKNOWN	0
 #define SCOPE_LOCAL		1
 #define SCOPE_GLOBAL_IMPLICIT	2
+#define SCOPE_GLOBAL_EXPLICIT	3
+#define SCOPE_FREE				4
+#define SCOPE_CELL				5
 
 class Scope {
 protected:
@@ -27,24 +31,37 @@ protected:
 	Scope* parent;
 	std::vector<Scope*> children;
 	bool _can_be_optimized;
+	bool is_class_scope;
+	bool has_free;
+	bool child_has_free;
 	std::vector<std::string> varnames;
+	std::vector<std::string> free_vars;
 	std::unordered_map<std::string, int> id2flags;
 
 	std::unordered_map<std::string, int> symbols;
 
-	void finalize_name(const std::string& id, int flags);
+	void analyze_name(const std::string& id, int flags, std::unordered_set<std::string>& local, std::unordered_set<std::string>& bound, std::unordered_set<std::string>& free, std::unordered_set<std::string>& global);
+	virtual void analyze_cells(std::unordered_set<std::string>& free);
 
 public:
-	Scope(const std::string& name, int line, int col) : name(name), line(line), col(col) { _can_be_optimized = false; }
+	Scope(const std::string& name, int line, int col) : name(name), line(line), col(col) 
+	{ 
+		_can_be_optimized = false; 
+		is_class_scope = false; 
+		child_has_free = false; 
+		has_free = false; 
+	}
 
 	void add_child(Scope* child);
-	const std::string& add_name(const std::string& id, int flags);
+	virtual const std::string& add_name(const std::string& id, int flags);
 	int lookup(const std::string& id);
 
 	bool can_be_optimized() { return _can_be_optimized; }
 	std::vector<std::string>& get_varnames() { return varnames; }
+	std::vector<std::string>& get_free_vars() { return free_vars; }
+	std::unordered_map<std::string, int>& get_symbols() { return symbols;  }
 
-	void finalize();
+	void analyze(std::unordered_set<std::string>& bound, std::unordered_set<std::string>& free, std::unordered_set<std::string>& global);
 };
 
 class ModuleScope : public Scope {
@@ -53,13 +70,19 @@ public:
 };
 
 class FunctionScope : public Scope {
+protected:
+	void analyze_cells(std::unordered_set<std::string>& free);
 public:
 	FunctionScope(const std::string& name, int line, int col) : Scope(name, line, col) { _can_be_optimized = true; }
+
+	const std::string& add_name(const std::string& id, int flags);
 };
 
 class ClassScope : public Scope {
+protected:
+	void analyze_cells(std::unordered_set<std::string>& free);
 public:
-	ClassScope(mtpython::tree::ClassDefNode* cls) : Scope(cls->get_name(), cls->get_line(), 0) { }
+	ClassScope(mtpython::tree::ClassDefNode* cls) : Scope(cls->get_name(), cls->get_line(), 0) { is_class_scope = true; }
 };
 
 class SymtableVisitor : public mtpython::tree::GenericVisitor {

@@ -17,6 +17,7 @@ static Typedef object_typedef("object", {
 	{ "__setattr__", new InterpFunctionWrapper("__setattr__", M_StdObjectObject::__setattr__) },
 	{ "__delattr__", new InterpFunctionWrapper("__delattr__", M_StdObjectObject::__setattr__) },
 	{ "__dict__", new GetSetDescriptor(M_StdObjectObject::__dict__get, M_StdObjectObject::__dict__set) },
+	{ "__class__", new GetSetDescriptor(M_StdObjectObject::__class__get) },
 });
 
 Typedef* M_StdObjectObject::get_typedef()
@@ -82,7 +83,7 @@ M_BaseObject* M_StdObjectObject::__getattribute__(mtpython::vm::ThreadContext* c
 												  M_BaseObject* attr)
 {
 	ObjSpace* space = context->get_space();
-	const std::string& name = space->unwrap_str(attr);
+	std::string name = space->unwrap_str(attr);
 	M_BaseObject* descr = space->lookup(obj, name);
 
 	M_BaseObject* value = obj->get_dict_value(space, name);
@@ -136,4 +137,9 @@ void M_StdObjectObject::__dict__set(mtpython::vm::ThreadContext* context, M_Base
 	as_obj->lock();
 	as_obj->dict = value;
 	as_obj->unlock();
+}
+
+M_BaseObject* M_StdObjectObject::__class__get(mtpython::vm::ThreadContext* context, M_BaseObject* obj)
+{
+	return context->get_space()->type(obj);
 }
