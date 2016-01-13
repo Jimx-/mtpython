@@ -32,6 +32,7 @@ protected:
 	std::vector<Scope*> children;
 	bool _can_be_optimized;
 	bool is_class_scope;
+	bool _optimized;
 	bool has_free;
 	bool child_has_free;
 	std::vector<std::string> varnames;
@@ -43,10 +44,13 @@ protected:
 	void analyze_name(const std::string& id, int flags, std::unordered_set<std::string>& local, std::unordered_set<std::string>& bound, std::unordered_set<std::string>& free, std::unordered_set<std::string>& global);
 	virtual void analyze_cells(std::unordered_set<std::string>& free);
 
+	virtual void pass_on_bindings(const std::unordered_set<std::string>& local, const std::unordered_set<std::string>& bound, const std::unordered_set<std::string>& global,
+								  std::unordered_set<std::string>& new_bound, std::unordered_set<std::string>& new_global);
 public:
 	Scope(const std::string& name, int line, int col) : name(name), line(line), col(col) 
 	{ 
-		_can_be_optimized = false; 
+		_can_be_optimized = false;
+		_optimized = true;
 		is_class_scope = false; 
 		child_has_free = false; 
 		has_free = false; 
@@ -57,6 +61,7 @@ public:
 	int lookup(const std::string& id);
 
 	bool can_be_optimized() { return _can_be_optimized; }
+	bool optimized() { return _optimized; }
 	std::vector<std::string>& get_varnames() { return varnames; }
 	std::vector<std::string>& get_free_vars() { return free_vars; }
 	std::unordered_map<std::string, int>& get_symbols() { return symbols;  }
@@ -72,8 +77,15 @@ public:
 class FunctionScope : public Scope {
 protected:
 	void analyze_cells(std::unordered_set<std::string>& free);
+
+	void pass_on_bindings(const std::unordered_set<std::string>& local, const std::unordered_set<std::string>& bound, const std::unordered_set<std::string>& global,
+								  std::unordered_set<std::string>& new_bound, std::unordered_set<std::string>& new_global);
 public:
-	FunctionScope(const std::string& name, int line, int col) : Scope(name, line, col) { _can_be_optimized = true; }
+	FunctionScope(const std::string& name, int line, int col) : Scope(name, line, col)
+	{
+		_can_be_optimized = true;
+		_optimized = true;
+	}
 
 	const std::string& add_name(const std::string& id, int flags);
 };

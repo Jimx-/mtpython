@@ -41,10 +41,10 @@ void PyCode::generate_signature()
 	signature = Signature(argnames, varargname, kwargname, kwonlyargnames);
 }
 
-M_BaseObject* PyCode::exec_code(ThreadContext* context, M_BaseObject* globals, M_BaseObject* locals)
+M_BaseObject* PyCode::exec_code(ThreadContext* context, M_BaseObject* globals, M_BaseObject* locals, M_BaseObject* outer)
 {
 	ObjSpace* space = context->get_space();
-	PyFrame* frame = space->create_frame(context, this, globals);
+	PyFrame* frame = space->create_frame(context, this, globals, outer);
 	if (!frame) return nullptr;
 	frame->set_locals(locals);
 	
@@ -58,7 +58,7 @@ M_BaseObject* PyCode::funcrun_obj(ThreadContext* context, M_BaseObject* func, M_
 	Function* as_func = dynamic_cast<Function*>(func);
 	if (!as_func)
 		throw InterpError(space->TypeError_type(), space->wrap_str(context, "expected Functon object"));
-	PyFrame* frame = space->create_frame(context, this, as_func->get_globals());
+	PyFrame* frame = space->create_frame(context, this, as_func->get_globals(), func);
 	if (!frame) return nullptr;
 
 	args.parse(as_func->get_name(), obj, signature, frame->get_local_vars(), as_func->get_defaults());

@@ -91,8 +91,6 @@ private:
 	/* const -> index mapping */
 	std::unordered_map<mtpython::objects::M_BaseObject*, int> consts;
 
-	virtual int get_code_flags() { return 0; }
-	
 	void append_instruction(Instruction* inst);
 
 	int add_const(mtpython::objects::M_BaseObject* obj);
@@ -111,6 +109,8 @@ protected:
 	std::unordered_map<std::string, int> varnames;
 	std::unordered_map<std::string, int> freevars;
 	std::unordered_map<std::string, int> cellvars;
+
+	virtual int get_code_flags() { return 0; }
 
 	int add_name(std::unordered_map<std::string, int>& container, const std::string& id);
 

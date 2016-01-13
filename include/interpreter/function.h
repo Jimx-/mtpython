@@ -19,6 +19,7 @@ private:
 	objects::M_BaseObject* func_globals;
 	objects::M_BaseObject* func_dict;
 	std::vector<objects::M_BaseObject*> defaults;
+	std::vector<objects::M_BaseObject*> closure;
 public:
 	Function(objects::ObjSpace* space, Code* code, objects::M_BaseObject* globals=nullptr) : Function(space, code, {}, globals) {}
 
@@ -31,6 +32,8 @@ public:
 	objects::M_BaseObject* get_globals() { return func_globals; }
 	std::string& get_name() { return name; }
 	const std::vector<objects::M_BaseObject*>& get_defaults() { return defaults; }
+	const std::vector<objects::M_BaseObject*>& get_closure() { return closure; }
+	void set_closure(const std::vector<objects::M_BaseObject*>& closure) { this->closure = closure; }
 
 	objects::M_BaseObject* call_args(vm::ThreadContext* context, Arguments& args);
 	objects::M_BaseObject* call_obj_args(vm::ThreadContext* context, objects::M_BaseObject* obj, Arguments& args);

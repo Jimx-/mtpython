@@ -271,7 +271,13 @@ public:
 	}
 
 	virtual ASTNode* visit_raise(RaiseNode* node) {return node; }
-	virtual ASTNode* visit_return(ReturnNode* node) { return node;}
+
+	virtual ASTNode* visit_return(ReturnNode* node)
+	{
+		ASTNode* value = node->get_value();
+		if (value) value->visit(this);
+		return node;
+	}
 
 	virtual ASTNode* visit_set(SetNode* node)
 	{

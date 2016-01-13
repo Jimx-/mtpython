@@ -34,6 +34,7 @@ SET(LIBMTPYTHON_SRCLIST
 		interpreter/pyframe.cpp
 		interpreter/module.cpp
 		interpreter/descriptor.cpp
+		interpreter/cell.cpp
 		modules/_io/iomodule.cpp
 		modules/_io/iobase.cpp
 		modules/_io/bufferedio.cpp

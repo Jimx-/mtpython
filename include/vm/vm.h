@@ -79,7 +79,7 @@ public:
 
 	void init_bootstrap_path(const std::string& executable);
 
-	void run_file(std::string& filename);
+	void run_file(const std::string& filename);
 };
 
 }

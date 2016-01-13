@@ -72,7 +72,7 @@ public:
 	M_BaseObject* get_gateway_cache(M_BaseObject* key) { return gateway_cache.get(key); }
 
 	virtual interpreter::BaseCompiler* get_compiler(vm::ThreadContext* context);
-	virtual interpreter::PyFrame* create_frame(vm::ThreadContext* context, interpreter::Code* code, M_BaseObject* globals) { throw NotImplementedException("Abstract"); }
+	virtual interpreter::PyFrame* create_frame(vm::ThreadContext* context, interpreter::Code* code, M_BaseObject* globals, M_BaseObject* outer=nullptr) { throw NotImplementedException("Abstract"); }
 
 	virtual M_BaseObject* get_typeobject(interpreter::Typedef* def) { return typedef_cache->get(def); }
 	virtual M_BaseObject* type(M_BaseObject* obj) { throw NotImplementedException("Abstract"); }

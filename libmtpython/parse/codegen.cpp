@@ -307,7 +307,28 @@ void BaseCodeGenerator::make_closure(mtpython::interpreter::PyCode* code, int ar
 		load_const(code);
 		load_const(qualname);
 		emit_op_arg(MAKE_FUNCTION, args);
+
+		return;
 	}
+
+	std::vector<std::string>& co_freevars = code->get_freevars();
+	for (int i = 0; i < nfree; i++) {
+		std::string name = co_freevars[i];
+		int reftype = scope->lookup(name);
+		int index;
+
+		if (reftype == SCOPE_CELL) {
+			index = cellvars[name];
+		} else {
+			index = this->freevars[name];
+		}
+		emit_op_arg(LOAD_CLOSURE, index);
+	}
+
+	emit_op_arg(BUILD_TUPLE, nfree);
+	load_const(code);
+	load_const(qualname);
+	emit_op_arg(MAKE_CLOSURE, args);
 }
 
 ASTNode* BaseCodeGenerator::visit_functiondef(FunctionDefNode* node)
@@ -815,6 +836,15 @@ ModuleCodeGenerator::ModuleCodeGenerator(mtpython::vm::ThreadContext* context, m
 	compile(module);
 }
 
+int ModuleCodeGenerator::get_code_flags()
+{
+	int flags = 0;
+	if (cellvars.size() == 0 && freevars.size() == 0) {
+		flags |= CO_NOFREE;
+	}
+	return flags;
+}
+
 void ModuleCodeGenerator::compile(ASTNode* module)
 {
 	module->visit(this);
@@ -836,6 +866,16 @@ void FunctionCodeGenerator::compile(ASTNode* tree)
 	if (body) visit_sequence(body);
 }
 
+int FunctionCodeGenerator::get_code_flags()
+{
+	int flags = 0;
+	if (scope->optimized())	{
+		flags |= CO_OPTIMIZED;
+	}
+
+	return BaseCodeGenerator::get_code_flags() | flags;
+}
+
 ClassCodeGenerator::ClassCodeGenerator(const std::string& name, mtpython::vm::ThreadContext* context, mtpython::tree::ASTNode* tree, SymtableVisitor* symtab, int lineno, CompileInfo* info) : BaseCodeGenerator(name, context, tree, symtab, lineno, info)
 {
 	compile(tree);
@@ -853,6 +893,12 @@ void ClassCodeGenerator::compile(ASTNode* tree)
 	ASTNode* body = classdef->get_body();
 	if (body) visit_sequence(body);
 
-	load_const(space->wrap_None());
+	if (scope->lookup("@__class__") == SCOPE_CELL) {
+		/* return the cell where to store __cell__ */
+		emit_op_arg(LOAD_CLOSURE, cellvars["@__class__"]);
+	} else {
+		load_const(space->wrap_None());
+	}
+
 	emit_op(RETURN_VALUE);
 }

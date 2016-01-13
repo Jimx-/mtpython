@@ -58,7 +58,7 @@ int FinallyBlock::handle(PyFrame* frame, StackUnwinder* unwinder)
 	return handler;
 }
 
-PyFrame::PyFrame(ThreadContext* context, Code* code, M_BaseObject* globals)
+PyFrame::PyFrame(ThreadContext* context, Code* code, M_BaseObject* globals, M_BaseObject* outer)
 {
 	this->context = context;
     space = context->get_space();
@@ -71,6 +71,36 @@ PyFrame::PyFrame(ThreadContext* context, Code* code, M_BaseObject* globals)
 	this->locals = globals;
 
 	pc = -1;
+	init_cells(outer, pycode);
+}
+
+void PyFrame::init_cells(M_BaseObject* outer, PyCode* code)
+{
+	int ncellvars = code->get_ncellvars();
+	int nfreevars = code->get_nfreevars();
+
+	if (!ncellvars && !nfreevars) return;
+
+	if (!outer) {
+		throw InterpError(space->TypeError_type(), space->wrap_str(context, ""));
+	}
+
+	Function* outer_func = static_cast<Function*>(outer);
+	const std::vector<M_BaseObject*>& closure = outer_func->get_closure();
+
+	int closure_size = closure.size();
+	if (closure_size != nfreevars) {
+		throw InterpError(space->ValueError_type(), space->wrap_str(context, "code object received a closure with a wrong"
+			" number of free variables"));
+	}
+
+	cells.resize(ncellvars + nfreevars);
+	for (int i = 0; i < ncellvars; i++) {
+		cells[i] = new Cell();
+	}
+	for (int i = 0; i < nfreevars; i++) {
+		cells[i + ncellvars] = static_cast<Cell*>(closure[i]);
+	}
 }
 
 M_BaseObject* PyFrame::exec()
@@ -224,6 +254,9 @@ int PyFrame::dispatch_bytecode(ThreadContext* context, std::vector<unsigned char
 		case MAKE_FUNCTION:
 			make_function(arg, next_pc);
 			break;
+		case MAKE_CLOSURE:
+			make_closure(arg, next_pc);
+			break;
 		case DUP_TOP:
 			dup_top(arg, next_pc);
 			break;
@@ -325,6 +358,9 @@ int PyFrame::dispatch_bytecode(ThreadContext* context, std::vector<unsigned char
 			break;
 		case BUILD_MAP:
 			build_map(arg, next_pc);
+			break;
+		case LOAD_CLOSURE:
+			load_closure(arg, next_pc);
 			break;
 		}
 	}
@@ -494,6 +530,31 @@ void PyFrame::make_function(int arg, int next_pc)
 	if (!code) throw InterpError(space->TypeError_type(), space->wrap_str(context, "expected code object"));
 
 	M_BaseObject* func = new Function(space, code, defaults, globals);
+	push_value(space->wrap(context, func));
+}
+
+void PyFrame::make_closure(int arg, int next_pc)
+{
+	context->push_local_frame();
+	M_BaseObject* qualname = pop_value_untrack();
+	M_BaseObject* code_obj = pop_value_untrack();
+	M_BaseObject* freevars_obj = pop_value_untrack();
+
+	std::vector<M_BaseObject*> freevars;
+	space->unwrap_tuple(freevars_obj, freevars);
+
+	int nr_defaults = arg & 0xff;
+	std::vector<M_BaseObject*> defaults;
+
+	if (nr_defaults > 0) pop_values_untrack(nr_defaults, defaults);
+
+	PyCode* code = dynamic_cast<PyCode*>(code_obj);
+	if (!code) throw InterpError(space->TypeError_type(), space->wrap_str(context, "expected code object"));
+
+	Function* _func = new Function(space, code, defaults, globals);
+	_func->set_closure(freevars);
+	M_BaseObject* func = context->pop_local_frame(_func);
+
 	push_value(space->wrap(context, func));
 }
 
@@ -920,3 +981,10 @@ void PyFrame::build_map(int arg, int next_pc)
 	M_BaseObject* dict = space->new_dict(context);
 	push_value(dict);
 }
+
+void PyFrame::load_closure(int arg, int next_pc)
+{
+	M_BaseObject* cell = cells[arg];
+	push_value(space->wrap(context, cell));
+}
+

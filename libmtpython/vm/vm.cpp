@@ -26,7 +26,7 @@ Module* PyVM::init_main_module(ThreadContext* context)
 	return module;
 }
 
-void PyVM::run_file(std::string& filename)
+void PyVM::run_file(const std::string& filename)
 {
 	std::ifstream file;
 	file.open(filename);

@@ -9,6 +9,7 @@
 #include "interpreter/code.h"
 #include "interpreter/pycode.h"
 #include "interpreter/error.h"
+#include "interpreter/cell.h"
 #include "vm/vm.h"
 #include "exceptions.h"
 
@@ -87,6 +88,9 @@ public:
 };
 
 class PyFrame : public mtpython::objects::M_BaseObject {
+private:
+    void init_cells(mtpython::objects::M_BaseObject* outer, PyCode* code);
+
 protected:
     vm::ThreadContext* context;
     objects::ObjSpace* space;
@@ -96,7 +100,7 @@ protected:
 
     std::stack<mtpython::objects::M_BaseObject*> value_stack;
     std::vector<mtpython::objects::M_BaseObject*> local_vars;
-
+    std::vector<mtpython::interpreter::Cell*> cells;
     std::stack<FrameBlock*> block_stack;
 
     int pc;
@@ -160,6 +164,7 @@ protected:
     void load_global(int arg, int next_pc);
     void call_function(int arg, int next_pc);
     void make_function(int arg, int next_pc);
+    void make_closure(int arg, int next_pc);
     int jump_absolute(int arg);
     int jump_forward(int arg, int next_pc);
     int pop_jump_if_false(int arg, int next_pc);
@@ -198,12 +203,13 @@ protected:
     void build_set(int arg, int next_pc);
     void load_build_class(int arg, int next_pc);
     void build_map(int arg, int next_pc);
+    void load_closure(int arg, int next_pc);
 
     objects::M_BaseObject* end_finally();
 
     void call_function_common(int arg, mtpython::objects::M_BaseObject* star=nullptr, mtpython::objects::M_BaseObject* starstar=nullptr);
 public:
-    PyFrame(vm::ThreadContext* context, Code* code, mtpython::objects::M_BaseObject* globals);
+    PyFrame(vm::ThreadContext* context, Code* code, mtpython::objects::M_BaseObject* globals, mtpython::objects::M_BaseObject* outer);
 
     void push_value(mtpython::objects::M_BaseObject* value)
     {
@@ -223,11 +229,13 @@ public:
     objects::M_BaseObject* get_globals() { return globals; }
 	objects::M_BaseObject* get_locals();
 	void set_locals(objects::M_BaseObject* locals);
+    PyCode* get_pycode() { return pycode; }
 
     objects::M_BaseObject* exec();
     objects::M_BaseObject* execute_frame();
 
     std::vector<mtpython::objects::M_BaseObject*>& get_local_vars() { return local_vars; }
+    const std::vector<mtpython::interpreter::Cell*>& get_cells() { return cells; }
 
     objects::M_BaseObject* dispatch(vm::ThreadContext* context, Code* code, int next_pc);
     int execute_bytecode(vm::ThreadContext* context, std::vector<unsigned char>& bytecode, int next_pc);

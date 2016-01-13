@@ -40,10 +40,15 @@ public:
 	std::vector<mtpython::objects::M_BaseObject*>& get_consts() { return co_consts; }
 	std::vector<mtpython::objects::M_BaseObject*>& get_names() { return co_names; }
 	std::vector<std::string>& get_varnames() { return co_varnames; }
+	std::vector<std::string>& get_freevars() { return co_freevars; }
 	int get_nlocals() { return co_nlocals; }
 	int get_nfreevars() { return co_freevars.size(); }
+	int get_ncellvars() { return co_cellvars.size(); }
+	int get_flags() { return co_flags; }
+	int get_argcount() { return co_argcount; }
 	
-	objects::M_BaseObject* exec_code(vm::ThreadContext* context, objects::M_BaseObject* globals, objects::M_BaseObject* locals);
+	objects::M_BaseObject* exec_code(vm::ThreadContext* context, objects::M_BaseObject* globals, objects::M_BaseObject* locals,
+									 objects::M_BaseObject* outer=nullptr);
 
 	mtpython::objects::M_BaseObject* funcrun(vm::ThreadContext* context, mtpython::objects::M_BaseObject* func, Arguments& args)
 	{

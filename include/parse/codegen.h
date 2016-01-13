@@ -4,6 +4,7 @@
 #include <deque>
 #include <utility>
 
+#include "consts.h"
 #include "parse/code_builder.h"
 #include "parse/symtable.h"
 
@@ -30,7 +31,7 @@ protected:
     void make_call(int n, const std::vector<mtpython::tree::ASTNode*>& args, const std::vector<mtpython::tree::KeywordNode*>& keywords);
     void make_closure(mtpython::interpreter::PyCode* code, int args, mtpython::objects::M_BaseObject* qualname);
 
-    virtual int get_code_flags() { return 0; }
+    virtual int get_code_flags() { return CO_NEWLOCALS; }
 public:
 	BaseCodeGenerator(const std::string& name, vm::ThreadContext* context, mtpython::tree::ASTNode* module, SymtableVisitor* symtab, int lineno, CompileInfo* info);
 
@@ -83,6 +84,8 @@ public:
 class ModuleCodeGenerator : public BaseCodeGenerator {
 private:
 	void compile(mtpython::tree::ASTNode* node);
+protected:
+    int get_code_flags();
 public:
 	ModuleCodeGenerator(mtpython::vm::ThreadContext* context, mtpython::tree::ASTNode* module, SymtableVisitor* symtab, CompileInfo* info);
 };
@@ -90,6 +93,8 @@ public:
 class FunctionCodeGenerator : public BaseCodeGenerator {
 private:
     void compile(mtpython::tree::ASTNode* tree);
+protected:
+    int get_code_flags();
 public:
     FunctionCodeGenerator(const std::string& name, mtpython::vm::ThreadContext* context, mtpython::tree::ASTNode* tree, SymtableVisitor* symtab, int lineno, CompileInfo* info);
 };

@@ -21,7 +21,7 @@ private:
 public:
 	StdObjSpace();
 
-	interpreter::PyFrame* create_frame(vm::ThreadContext* context, interpreter::Code* code, M_BaseObject* globals);
+	interpreter::PyFrame* create_frame(vm::ThreadContext* context, interpreter::Code* code, M_BaseObject* globals, M_BaseObject* outer=nullptr);
 	
 	M_BaseObject* lookup(M_BaseObject* obj, const std::string& name);
 	M_BaseObject* lookup_type_cls(M_BaseObject* obj, const std::string& attr, M_BaseObject*& where);

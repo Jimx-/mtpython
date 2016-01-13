@@ -9,6 +9,7 @@
 #include "interpreter/compiler.h"
 #include "interpreter/error.h"
 #include "interpreter/pyframe.h"
+#include "interpreter/cell.h"
 #include "interpreter/typedef.h"
 #include "utils/file_helper.h"
 
@@ -268,9 +269,14 @@ static M_BaseObject* builtin___build_class__(mtpython::vm::ThreadContext* contex
 		throw InterpError(space->TypeError_type(), space->wrap_str(context, "__build_class__: func must be a function"));
 	}
 
-	func_obj->get_code()->exec_code(context, func_obj->get_globals(), ns);
+	M_BaseObject* __class__cell = func_obj->get_code()->exec_code(context, func_obj->get_globals(), ns, func_obj);
 
 	M_BaseObject* class_obj = space->call_function(context, metaclass, { name, bases, ns });
+
+	Cell* cell = dynamic_cast<Cell*>(__class__cell);
+	if (cell) {
+		cell->set(class_obj);
+	}
 
 	return class_obj;
 }
@@ -680,21 +686,52 @@ public:
 
 		std::vector<M_BaseObject*> scope;
 		args.parse("__new__", nullptr, new_signature, scope, { space->wrap_None(), space->wrap_None() });
-		M_BaseObject* w_type = scope[1];
+		M_BaseObject* w_starttype = scope[1];
 		M_BaseObject* w_obj = scope[2];
 		M_BaseObject* obj_type = nullptr;
 
-		if (space->i_is(w_type, space->wrap_None())) {
+		if (space->i_is(w_starttype, space->wrap_None())) {
+			/* PEP 3135: calling super without arguments, using __class__ cell and the first parameter of the method */
+			PyFrame* frame = context->top_frame();
+			const std::vector<M_BaseObject*>& local_vars = frame->get_local_vars();
+			M_BaseObject* first_arg = local_vars[0];
 
+			PyCode* code = frame->get_pycode();
+			if (!code) {
+				throw InterpError(space->SystemError_type(), space->wrap_str(context, "super(): no code object"));
+			}
+
+			if (code->get_argcount() == 0) {
+				throw InterpError(space->SystemError_type(), space->wrap_str(context, "super(): no arguments"));
+			}
+
+			if (!first_arg) {
+				throw InterpError(space->SystemError_type(), space->wrap_str(context, "super(): arg[0] deleted"));
+			}
+
+			const std::vector<std::string>& co_freevars = code->get_freevars();
+			int i;
+			for (i = 0; i < co_freevars.size(); i++) {
+				if (co_freevars[i] == "@__class__") break;
+			}
+
+			if (i == co_freevars.size()) {
+				throw InterpError(space->SystemError_type(), space->wrap_str(context, "super(): __class__ cell not found"));
+			}
+
+			const std::vector<Cell*>& cells = frame->get_cells();
+			Cell* cell = cells[code->get_ncellvars() + i];
+			w_starttype = cell->get();
+			obj_type = first_arg;
 		}
 
 		if (space->i_is(w_obj, space->wrap_None())) {
-			w_type = nullptr;
+			w_starttype = nullptr;
 		} else {
-			obj_type = space->type(w_type);
+			obj_type = space->type(w_starttype);
 		}
 
-		M_Super* instance = new M_Super(w_type, obj_type, w_obj);
+		M_Super* instance = new M_Super(w_starttype, obj_type, w_obj);
 		return space->wrap(context, instance);
 	}
 

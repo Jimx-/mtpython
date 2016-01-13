@@ -41,9 +41,9 @@ StdObjSpace::StdObjSpace() : ObjSpace()
 	setup_builtin_modules();
 }
 
-mtpython::interpreter::PyFrame* StdObjSpace::create_frame(ThreadContext* context, mtpython::interpreter::Code* code, M_BaseObject* globals)
+mtpython::interpreter::PyFrame* StdObjSpace::create_frame(ThreadContext* context, mtpython::interpreter::Code* code, M_BaseObject* globals, M_BaseObject* outer)
 {
-	return new StdFrame(context, code, globals);
+	return new StdFrame(context, code, globals, outer);
 }
 
 M_BaseObject* StdObjSpace::lookup(M_BaseObject* obj, const std::string& name)

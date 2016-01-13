@@ -60,6 +60,14 @@ void Scope::analyze_cells(std::unordered_set<std::string>& free)
 
 }
 
+void Scope::pass_on_bindings(const std::unordered_set<std::string>& local, const std::unordered_set<std::string>& bound,
+							 const std::unordered_set<std::string>& global, std::unordered_set<std::string>& new_bound,
+							 std::unordered_set<std::string>& new_global)
+{
+	new_bound.insert(bound.begin(), bound.end());
+	new_global.insert(global.begin(), global.end());
+}
+
 void Scope::analyze(std::unordered_set<std::string>& bound, std::unordered_set<std::string>& free, std::unordered_set<std::string>& global)
 {
 	symbols.clear();
@@ -68,8 +76,7 @@ void Scope::analyze(std::unordered_set<std::string>& bound, std::unordered_set<s
 
 	/* class scope has no effects on names visible in nested functions */
 	if (is_class_scope) {
-		new_bound.insert(bound.begin(), bound.end());
-		new_global.insert(global.begin(), global.end());
+		pass_on_bindings(local, bound, global, new_bound, new_global);
 	}
 
 	for (auto iter = id2flags.begin(); iter != id2flags.end(); iter++) {
@@ -77,8 +84,7 @@ void Scope::analyze(std::unordered_set<std::string>& bound, std::unordered_set<s
 	}
 
 	if (!is_class_scope) {
-		new_bound.insert(bound.begin(), bound.end());
-		new_global.insert(global.begin(), global.end());
+		pass_on_bindings(local, bound, global, new_bound, new_global);
 	} else {
 		new_bound.insert("@__class__");
 	}
@@ -132,6 +138,14 @@ const std::string& FunctionScope::add_name(const std::string& id, int flags)
 	}
 
 	return Scope::add_name(id, flags);
+}
+
+void FunctionScope::pass_on_bindings(const std::unordered_set<std::string>& local, const std::unordered_set<std::string>& bound,
+							 const std::unordered_set<std::string>& global, std::unordered_set<std::string>& new_bound,
+							 std::unordered_set<std::string>& new_global)
+{
+	new_bound.insert(local.begin(), local.end());
+	Scope::pass_on_bindings(local, bound, global, new_bound, new_global);
 }
 
 void ClassScope::analyze_cells(std::unordered_set<std::string>& free)
@@ -284,3 +298,4 @@ ASTNode* SymtableVisitor::visit_excepthandler(ExceptHandlerNode* node)
 
 	return node;
 }
+
