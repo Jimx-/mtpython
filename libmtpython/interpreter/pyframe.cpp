@@ -362,6 +362,12 @@ int PyFrame::dispatch_bytecode(ThreadContext* context, std::vector<unsigned char
 		case LOAD_CLOSURE:
 			load_closure(arg, next_pc);
 			break;
+		case LOAD_DEREF:
+			load_deref(arg, next_pc);
+			break;
+		case STORE_DEREF:
+			store_deref(arg, next_pc);
+			break;
 		}
 	}
 }
@@ -413,6 +419,17 @@ M_BaseObject* PyFrame::get_name(int index)
 const std::string& PyFrame::get_localname(int index)
 {
 	return pycode->get_varnames()[index];
+}
+
+void PyFrame::fill_cellvars_from_args()
+{
+	const std::vector<int>& args_as_cells = pycode->args_as_cellvars();
+	for (size_t i = 0; i < args_as_cells.size(); i++) {
+		int idx = args_as_cells[i];
+		if (idx != -1) {
+			cells[i]->set(local_vars[idx]);
+		}
+	}
 }
 
 #define DEF_BINARY_OPER(name) \
@@ -986,5 +1003,47 @@ void PyFrame::load_closure(int arg, int next_pc)
 {
 	M_BaseObject* cell = cells[arg];
 	push_value(space->wrap(context, cell));
+}
+
+void PyFrame::throw_unbound_error(int index)
+{
+	std::string varname;
+	std::string error_msg;
+	M_BaseObject* error_type = nullptr;
+	int ncells = pycode->get_ncellvars();
+	if (index < ncells) {
+		varname = pycode->get_cellvars()[index];
+		error_msg = "local variable '";
+		error_msg = error_msg + varname;
+		error_msg = error_msg + "' referenced before assignment";
+		error_type = space->UnboundLocalError_type();
+	} else {
+		varname = pycode->get_freevars()[index - ncells];
+		error_msg = "free variable '";
+		error_msg = error_msg + varname;
+		error_msg = error_msg + "' referenced before assignment in enclosing scope";
+		error_type = space->NameError_type();
+	}
+
+	throw InterpError(error_type, space->wrap_str(context, error_msg));
+}
+
+void PyFrame::load_deref(int arg, int next_pc)
+{
+	Cell* cell = cells[arg];
+	M_BaseObject* value = cell->get();
+	if (!value) {
+		throw_unbound_error(arg);
+	}
+	push_value(value);
+}
+
+void PyFrame::store_deref(int arg, int next_pc)
+{
+	context->push_local_frame();
+	M_BaseObject* value = pop_value_untrack();
+	Cell* cell = cells[arg];
+	cell->set(value);
+	context->pop_local_frame(nullptr);
 }
 

@@ -24,12 +24,14 @@ private:
 	std::vector<std::string> co_varnames;
 	std::vector<std::string> co_freevars;
 	std::vector<std::string> co_cellvars;
+	std::vector<int> _args_as_cellvars;
 	std::string co_filename;
 	int co_firstlineno;
 	std::vector<unsigned char> co_lnotab;
 
 	Signature signature;
 	void generate_signature();
+	void init_arg_cellvars();
 public:
 	PyCode(mtpython::objects::ObjSpace* space, int argcount, int kwonlyargcount, int nlocals, int stacksize, int flags,
 			std::vector<unsigned char>& code, std::vector<mtpython::objects::M_BaseObject*>& consts, 
@@ -41,6 +43,8 @@ public:
 	std::vector<mtpython::objects::M_BaseObject*>& get_names() { return co_names; }
 	std::vector<std::string>& get_varnames() { return co_varnames; }
 	std::vector<std::string>& get_freevars() { return co_freevars; }
+	std::vector<std::string>& get_cellvars() { return co_cellvars; }
+	const std::vector<int>& args_as_cellvars() { return _args_as_cellvars; }
 	int get_nlocals() { return co_nlocals; }
 	int get_nfreevars() { return co_freevars.size(); }
 	int get_ncellvars() { return co_cellvars.size(); }

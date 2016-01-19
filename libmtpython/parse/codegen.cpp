@@ -9,6 +9,7 @@ using namespace mtpython::objects;
 static std::unordered_map<int, int> name_ops_default = {{EC_LOAD, LOAD_NAME}, {EC_STORE, STORE_NAME}, {EC_DEL, DELETE_NAME}};
 static std::unordered_map<int, int> name_ops_fast = {{EC_LOAD, LOAD_FAST}, {EC_STORE, STORE_FAST}, {EC_DEL, DELETE_FAST}};
 static std::unordered_map<int, int> name_ops_global = {{EC_LOAD, LOAD_GLOBAL}, {EC_STORE, STORE_GLOBAL}, {EC_DEL, DELETE_GLOBAL}};
+static std::unordered_map<int, int> name_ops_deref = {{EC_LOAD, LOAD_DEREF}, {EC_STORE, STORE_DEREF}, {EC_DEL, DELETE_DEREF}};
 static std::unordered_map<int, int> subscr_op = {{EC_LOAD, BINARY_SUBSCR}, {EC_STORE, STORE_SUBSCR}, {EC_DEL, DELETE_SUBSCR}};
 
 BaseCodeGenerator::BaseCodeGenerator(const std::string& name, mtpython::vm::ThreadContext* context, ASTNode* module, SymtableVisitor* symtab, int lineno, CompileInfo* info) : CodeBuilder(name, context, symtab->find_scope(module), lineno, info)
@@ -172,6 +173,12 @@ void BaseCodeGenerator::gen_name(const std::string& name, ExprContext ctx)
 			op = name_ops_global[ctx];
 			arg = add_name(names, name);
 		}
+	} else if (scope == SCOPE_CELL) {
+		op = name_ops_deref[ctx];
+		arg = add_name(cellvars, name);
+	} else if (scope == SCOPE_FREE) {
+		op = name_ops_deref[ctx];
+		arg = add_name(freevars, name);
 	}
 
 	if (op == NOP) {

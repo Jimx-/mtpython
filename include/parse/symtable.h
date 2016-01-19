@@ -35,6 +35,8 @@ protected:
 	bool _optimized;
 	bool has_free;
 	bool child_has_free;
+	bool has_vararg;
+	bool has_kwarg;
 	std::vector<std::string> varnames;
 	std::vector<std::string> free_vars;
 	std::unordered_map<std::string, int> id2flags;
@@ -53,7 +55,9 @@ public:
 		_optimized = true;
 		is_class_scope = false; 
 		child_has_free = false; 
-		has_free = false; 
+		has_free = false;
+		has_vararg = false;
+		has_kwarg = false;
 	}
 
 	void add_child(Scope* child);

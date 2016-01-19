@@ -90,6 +90,7 @@ public:
 class PyFrame : public mtpython::objects::M_BaseObject {
 private:
     void init_cells(mtpython::objects::M_BaseObject* outer, PyCode* code);
+    void throw_unbound_error(int index);
 
 protected:
     vm::ThreadContext* context;
@@ -204,6 +205,8 @@ protected:
     void load_build_class(int arg, int next_pc);
     void build_map(int arg, int next_pc);
     void load_closure(int arg, int next_pc);
+    void load_deref(int arg, int next_pc);
+    void store_deref(int arg, int next_pc);
 
     objects::M_BaseObject* end_finally();
 
@@ -236,6 +239,8 @@ public:
 
     std::vector<mtpython::objects::M_BaseObject*>& get_local_vars() { return local_vars; }
     const std::vector<mtpython::interpreter::Cell*>& get_cells() { return cells; }
+
+    void fill_cellvars_from_args();
 
     objects::M_BaseObject* dispatch(vm::ThreadContext* context, Code* code, int next_pc);
     int execute_bytecode(vm::ThreadContext* context, std::vector<unsigned char>& bytecode, int next_pc);
