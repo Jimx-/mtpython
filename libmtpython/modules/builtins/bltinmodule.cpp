@@ -725,13 +725,15 @@ public:
 			obj_type = first_arg;
 		}
 
-		if (space->i_is(w_obj, space->wrap_None())) {
-			w_starttype = nullptr;
+		M_BaseObject* w_type;
+		if (space->i_is(obj_type, space->wrap_None())) {
+			w_type = nullptr;
+			obj_type = space->wrap_None();
 		} else {
-			obj_type = space->type(w_starttype);
+			w_type = space->type(obj_type);
 		}
 
-		M_Super* instance = new M_Super(w_starttype, obj_type, w_obj);
+		M_Super* instance = new M_Super(w_starttype, w_type, obj_type);
 		return space->wrap(context, instance);
 	}
 
@@ -740,6 +742,27 @@ public:
 	{
 		ObjSpace* space = context->get_space();
 		std::string name = space->unwrap_str(attr);
+		M_Super* as_super = static_cast<M_Super*>(obj);
+
+		if (as_super->obj_type && name != "__class__") {
+			M_BaseObject* value = space->lookup_type_starting_at(as_super->obj_type, as_super->type, name);
+
+			if (value) {
+				M_BaseObject* getter = space->lookup(value, "__get__");
+				if (!getter) {
+					return value;
+				}
+
+				M_BaseObject* obj = nullptr;
+				if (as_super->self == as_super->obj_type) {
+					obj = space->wrap_None();
+				} else {
+					obj = as_super->self;
+				}
+
+				return space->get_and_call_function(context, getter, {value, obj, as_super->obj_type});
+			}
+		}
 
 		return nullptr;
 	}

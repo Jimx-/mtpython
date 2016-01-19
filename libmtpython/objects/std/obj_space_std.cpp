@@ -121,3 +121,10 @@ void StdObjSpace::unwrap_tuple(M_BaseObject* obj, std::vector<M_BaseObject*>& li
 	list.clear();
 	list.insert(list.end(), items.begin(), items.end());
 }
+
+M_BaseObject* StdObjSpace::lookup_type_starting_at(M_BaseObject* type, M_BaseObject* start, const std::string& name)
+{
+	M_StdTypeObject* as_type = static_cast<M_StdTypeObject*>(type);
+
+	return as_type->lookup_starting_at(start, name);
+}

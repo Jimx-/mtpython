@@ -25,6 +25,7 @@ public:
 	
 	M_BaseObject* lookup(M_BaseObject* obj, const std::string& name);
 	M_BaseObject* lookup_type_cls(M_BaseObject* obj, const std::string& attr, M_BaseObject*& where);
+	M_BaseObject* lookup_type_starting_at(M_BaseObject* type, M_BaseObject* start, const std::string& name);
 
 	M_BaseObject* type(M_BaseObject* obj) { return obj->get_class(this); }
 	std::string get_type_name(M_BaseObject* obj);

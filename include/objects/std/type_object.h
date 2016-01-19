@@ -40,6 +40,7 @@ public:
 	M_BaseObject* get_dict_value(ObjSpace* space, const std::string& attr);
 
 	M_BaseObject* lookup(const std::string& name);
+	M_BaseObject* lookup_starting_at(M_BaseObject* start, const std::string& name);
 	M_BaseObject* lookup_cls(const std::string& attr, M_BaseObject*& cls);
 
 	static M_BaseObject* __new__(vm::ThreadContext* context, const interpreter::Arguments& args);

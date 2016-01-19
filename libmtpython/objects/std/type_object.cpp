@@ -112,6 +112,23 @@ M_BaseObject* M_StdTypeObject::lookup(const std::string& name)
 	return nullptr;
 }
 
+M_BaseObject* M_StdTypeObject::lookup_starting_at(M_BaseObject* start, const std::string& name)
+{
+	int found = false;
+	for (auto base : mro) {
+		if (base == start) {
+			found = true;
+		} else if (found) {
+			M_BaseObject* value = base->get_dict_value(space, name);
+			if (value) {
+				return value;
+			}
+		}
+	}
+
+	return nullptr;
+}
+
 M_BaseObject* M_StdTypeObject::lookup_cls(const std::string& attr, M_BaseObject*& cls)
 {
 	for (auto base : mro) {
