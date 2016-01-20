@@ -13,6 +13,7 @@ static mtpython::interpreter::Typedef type_typedef("type", {
 	{ "__new__", new InterpFunctionWrapper("__new__", M_StdTypeObject::__new__) },
 	{ "__call__", new InterpFunctionWrapper("__call__", M_StdTypeObject::__call__) },
 	{ "__repr__", new InterpFunctionWrapper("__repr__", M_StdTypeObject::__repr__) },
+	{ "__subclasscheck__", new InterpFunctionWrapper("__subclasscheck__", M_StdTypeObject::__subclasscheck__) },
 	{ "__mro__", new GetSetDescriptor(M_StdTypeObject::__mro__get) },
 });
 
@@ -142,6 +143,15 @@ M_BaseObject* M_StdTypeObject::lookup_cls(const std::string& attr, M_BaseObject*
 	return nullptr;
 }
 
+bool M_StdTypeObject::issubtype(M_BaseObject* type)
+{
+	for (const auto base : mro) {
+		if (base == type) return true;
+	}
+
+	return false;
+}
+
 M_BaseObject* StdTypedefCache::build(mtpython::interpreter::Typedef* key)
 {
 	std::unordered_map<std::string, M_BaseObject*>& dict = key->get_dict();
@@ -251,6 +261,14 @@ M_BaseObject* M_StdTypeObject::__call__(mtpython::vm::ThreadContext* context, co
 	}
 
 	return obj;
+}
+
+M_BaseObject * mtpython::objects::M_StdTypeObject::__subclasscheck__(vm::ThreadContext * context, M_BaseObject * self, M_BaseObject * sub)
+{
+	M_StdTypeObject* as_type = static_cast<M_StdTypeObject*>(self);
+	M_StdTypeObject* sub_as_type = static_cast<M_StdTypeObject*>(sub);
+
+	return context->get_space()->new_bool(sub_as_type->issubtype(as_type));
 }
 
 M_BaseObject* M_StdTypeObject::__repr__(mtpython::vm::ThreadContext* context, M_BaseObject* self)

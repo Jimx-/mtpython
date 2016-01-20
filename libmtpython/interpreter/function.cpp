@@ -41,7 +41,7 @@ M_BaseObject* Function::__get__(mtpython::vm::ThreadContext* context, M_BaseObje
 								M_BaseObject* type)
 {
 	ObjSpace* space = context->get_space();
-	if (!obj) return self;
+	if (!obj || space->i_is(obj, space->wrap_None())) return self;
 
 	Function* as_func = dynamic_cast<Function*>(self);
 	return space->wrap(context, new Method(space, as_func, obj));

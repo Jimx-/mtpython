@@ -730,7 +730,13 @@ public:
 			w_type = nullptr;
 			obj_type = space->wrap_None();
 		} else {
-			w_type = space->type(obj_type);
+			M_BaseObject* w_objtype = space->type(obj_type);
+			if (space->is_true(space->issubtype(w_objtype, space->type_type())) && 
+				space->is_true(space->issubtype(obj_type, w_starttype))) {
+				w_type = obj_type;
+			} else {
+				w_type = w_objtype;
+			}
 		}
 
 		M_Super* instance = new M_Super(w_starttype, w_type, obj_type);

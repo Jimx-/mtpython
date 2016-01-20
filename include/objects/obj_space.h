@@ -81,6 +81,7 @@ public:
 	virtual M_BaseObject* lookup(M_BaseObject* obj, const std::string& name) { throw NotImplementedException("Abstract"); }
 	virtual M_BaseObject* lookup_type_cls(M_BaseObject* obj, const std::string& attr, M_BaseObject*& cls) { throw NotImplementedException("Abstract"); }
 	virtual M_BaseObject* lookup_type_starting_at(M_BaseObject* type, M_BaseObject* start, const std::string& name) { throw NotImplementedException("Abstract"); }
+	virtual M_BaseObject* issubtype(M_BaseObject* sub, M_BaseObject* type) { throw NotImplementedException("Abstract"); }
 
 	virtual M_BaseObject* bool_type() { throw NotImplementedException("Abstract"); }
 	virtual M_BaseObject* bytearray_type() { throw NotImplementedException("Abstract"); }

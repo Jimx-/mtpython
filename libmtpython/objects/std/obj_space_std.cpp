@@ -1,5 +1,6 @@
 #include <string>
 #include "interpreter/code.h"
+#include "interpreter/error.h"
 #include "objects/std/obj_space_std.h"
 #include "objects/std/type_object.h"
 #include "objects/std/int_object.h"
@@ -17,6 +18,7 @@
 
 using namespace mtpython::objects;
 using namespace mtpython::vm;
+using namespace mtpython::interpreter;
 
 StdObjSpace::StdObjSpace() : ObjSpace()
 {
@@ -64,6 +66,25 @@ M_BaseObject* StdObjSpace::lookup_type_cls(M_BaseObject* obj, const std::string&
 	type->unlock();
 
 	return value;
+}
+
+M_BaseObject* StdObjSpace::lookup_type_starting_at(M_BaseObject* type, M_BaseObject* start, const std::string& name)
+{
+	M_StdTypeObject* as_type = static_cast<M_StdTypeObject*>(type);
+
+	return as_type->lookup_starting_at(start, name);
+}
+
+M_BaseObject* StdObjSpace::issubtype(M_BaseObject* sub, M_BaseObject* type)
+{
+	M_StdTypeObject* sub_as_type = dynamic_cast<M_StdTypeObject*>(sub);
+	M_StdTypeObject* type_as_type = dynamic_cast<M_StdTypeObject*>(type);
+
+	if (sub_as_type && type_as_type) {
+		return new_bool(sub_as_type->issubtype(type));
+	}
+
+	throw InterpError(TypeError_type(), wrap_str(current_thread(), "need type objects"));
 }
 
 std::string StdObjSpace::get_type_name(M_BaseObject* obj)
@@ -120,11 +141,4 @@ void StdObjSpace::unwrap_tuple(M_BaseObject* obj, std::vector<M_BaseObject*>& li
 
 	list.clear();
 	list.insert(list.end(), items.begin(), items.end());
-}
-
-M_BaseObject* StdObjSpace::lookup_type_starting_at(M_BaseObject* type, M_BaseObject* start, const std::string& name)
-{
-	M_StdTypeObject* as_type = static_cast<M_StdTypeObject*>(type);
-
-	return as_type->lookup_starting_at(start, name);
 }

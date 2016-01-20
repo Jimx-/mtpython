@@ -31,7 +31,7 @@ void Arguments::parse(const std::string& fname, M_BaseObject* first, Signature& 
 {
 	int argcount = sig.get_nargs();
 
-	scope.resize(sig.scope_len(), nullptr);
+	if (scope.size() < sig.scope_len()) scope.resize(sig.scope_len(), nullptr);
 
 	/* place the first object */
 	int front = 0;

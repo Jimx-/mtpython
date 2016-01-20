@@ -42,6 +42,7 @@ public:
 	M_BaseObject* lookup(const std::string& name);
 	M_BaseObject* lookup_starting_at(M_BaseObject* start, const std::string& name);
 	M_BaseObject* lookup_cls(const std::string& attr, M_BaseObject*& cls);
+	bool issubtype(M_BaseObject* type);
 
 	static M_BaseObject* __new__(vm::ThreadContext* context, const interpreter::Arguments& args);
 
@@ -49,6 +50,7 @@ public:
 	static M_BaseObject* __mro__get(vm::ThreadContext* context, M_BaseObject* self);
 
 	static M_BaseObject* __call__(vm::ThreadContext* context, const interpreter::Arguments& args);
+	static M_BaseObject* __subclasscheck__(vm::ThreadContext* context, M_BaseObject* self, M_BaseObject* sub);
 };
 
 class StdTypedefCache : public TypedefCache {
