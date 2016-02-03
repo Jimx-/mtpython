@@ -843,6 +843,7 @@ BuiltinsModule::BuiltinsModule(ObjSpace* space, M_BaseObject* name) : BuiltinMod
 	add_def("int", space->int_type());
 	add_def("object", space->object_type());
 	add_def("set", space->set_type());
+	add_def("frozenset", space->frozenset_type());
 	add_def("str", space->str_type());
 	add_def("tuple", space->tuple_type());
 	add_def("list", space->list_type());

@@ -89,6 +89,7 @@ public:
 	virtual M_BaseObject* int_type() { throw NotImplementedException("Abstract"); }
 	virtual M_BaseObject* object_type() { throw NotImplementedException("Abstract"); }
 	virtual M_BaseObject* set_type() { throw NotImplementedException("Abstract"); }
+	virtual M_BaseObject* frozenset_type() { throw NotImplementedException("Abstract"); }
 	virtual M_BaseObject* str_type() { throw NotImplementedException("Abstract"); }
 	virtual M_BaseObject* tuple_type() { throw NotImplementedException("Abstract"); }
 	virtual M_BaseObject* list_type() { throw NotImplementedException("Abstract"); }

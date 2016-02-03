@@ -34,6 +34,7 @@ StdObjSpace::StdObjSpace() : ObjSpace()
 	builtin_types["int"] = get_typeobject(M_StdIntObject::_int_typedef());
 	builtin_types["object"] = get_typeobject(M_StdObjectObject::_object_typedef());
 	builtin_types["set"] = get_typeobject(M_StdSetObject::_set_typedef());
+	builtin_types["frozenset"] = get_typeobject(M_StdSetObject::_set_typedef());
 	builtin_types["str"] = get_typeobject(M_StdUnicodeObject::_str_typedef());
 	builtin_types["tuple"] = get_typeobject(M_StdTupleObject::_tuple_typedef());
 	builtin_types["list"] = get_typeobject(M_StdListObject::_list_typedef());

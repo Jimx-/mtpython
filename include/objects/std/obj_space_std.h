@@ -37,6 +37,7 @@ public:
 	M_BaseObject* int_type() { return builtin_types["int"]; }
 	M_BaseObject* object_type() { return builtin_types["object"]; }
 	M_BaseObject* set_type() { return builtin_types["set"]; }
+	M_BaseObject* frozenset_type() { return builtin_types["frozenset"]; }
 	M_BaseObject* str_type() { return builtin_types["str"]; }
 	M_BaseObject* tuple_type() { return builtin_types["tuple"]; }
 	M_BaseObject* list_type() { return builtin_types["list"]; }
