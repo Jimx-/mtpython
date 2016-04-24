@@ -83,17 +83,7 @@ public:
 	virtual M_BaseObject* lookup_type_starting_at(M_BaseObject* type, M_BaseObject* start, const std::string& name) { throw NotImplementedException("Abstract"); }
 	virtual M_BaseObject* issubtype(M_BaseObject* sub, M_BaseObject* type) { throw NotImplementedException("Abstract"); }
 
-	virtual M_BaseObject* bool_type() { throw NotImplementedException("Abstract"); }
-	virtual M_BaseObject* bytearray_type() { throw NotImplementedException("Abstract"); }
-	virtual M_BaseObject* dict_type() { throw NotImplementedException("Abstract"); }
-	virtual M_BaseObject* int_type() { throw NotImplementedException("Abstract"); }
-	virtual M_BaseObject* object_type() { throw NotImplementedException("Abstract"); }
-	virtual M_BaseObject* set_type() { throw NotImplementedException("Abstract"); }
-	virtual M_BaseObject* frozenset_type() { throw NotImplementedException("Abstract"); }
-	virtual M_BaseObject* str_type() { throw NotImplementedException("Abstract"); }
-	virtual M_BaseObject* tuple_type() { throw NotImplementedException("Abstract"); }
-	virtual M_BaseObject* list_type() { throw NotImplementedException("Abstract"); }
-	virtual M_BaseObject* type_type() { throw NotImplementedException("Abstract"); }
+	virtual M_BaseObject* get_type_by_name(const std::string& name) { throw NotImplementedException("Abstract"); }
 
 	M_BaseObject* TypeError_type() { return type_TypeError; }
 	M_BaseObject* StopIteration_type() { return type_StopIteration; }

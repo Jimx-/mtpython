@@ -1,5 +1,6 @@
 #include <fstream>
 #include <iostream>
+#include <vector>
 
 #include "modules/builtins/bltinmodule.h"
 #include "objects/bltin_exceptions.h"
@@ -9,8 +10,6 @@
 #include "interpreter/compiler.h"
 #include "interpreter/error.h"
 #include "interpreter/pyframe.h"
-#include "interpreter/cell.h"
-#include "interpreter/typedef.h"
 #include "utils/file_helper.h"
 
 using namespace mtpython::modules;
@@ -42,7 +41,7 @@ static M_BaseObject* check_sys_modules(ObjSpace* space, const std::string& mod_n
 /* only look up the module in sys.modules without loading anything */
 static M_BaseObject* lookup_sys_modules(ObjSpace* space, const std::string& mod_name)
 {
-	M_BaseObject* first_mod;
+	M_BaseObject* first_mod = nullptr;
 	if (mod_name.find('.') == std::string::npos) {
 		first_mod = check_sys_modules(space, mod_name);
 	}
@@ -50,7 +49,7 @@ static M_BaseObject* lookup_sys_modules(ObjSpace* space, const std::string& mod_
 	return first_mod;
 }
 
-static ModType get_modtype(mtpython::vm::ThreadContext* context, const std::string& filepart,std::string& suffix)
+static ModType get_modtype(const std::string& filepart, std::string& suffix)
 {
 	std::string py_file = filepart + ".py";
 	if (mtpython::FileHelper::file_exists(py_file)) {
@@ -77,7 +76,7 @@ static ModuleSpec* find_module(mtpython::vm::ThreadContext* context, const std::
 			dir += part;
 
 			std::string suffix;
-			ModType mod_type = get_modtype(context, dir, suffix);
+			ModType mod_type = get_modtype(dir, suffix);
 			if (mod_type == PY_SOURCE) {
 				return new ModuleSpec(mod_type, dir + suffix, suffix);
 			}
@@ -249,7 +248,7 @@ static M_BaseObject* builtin___build_class__(mtpython::vm::ThreadContext* contex
 		if (bases_w.size() > 0) {
 			metaclass = space->type(bases_w[0]);
 		} else {
-			metaclass = space->type_type();
+			metaclass = space->get_type_by_name("type");
 		}
 	}
 
@@ -731,7 +730,7 @@ public:
 			obj_type = space->wrap_None();
 		} else {
 			M_BaseObject* w_objtype = space->type(obj_type);
-			if (space->is_true(space->issubtype(w_objtype, space->type_type())) && 
+			if (space->is_true(space->issubtype(w_objtype, space->get_type_by_name("type"))) &&
 				space->is_true(space->issubtype(obj_type, w_starttype))) {
 				w_type = obj_type;
 			} else {
@@ -837,17 +836,11 @@ BuiltinsModule::BuiltinsModule(ObjSpace* space, M_BaseObject* name) : BuiltinMod
 	add_def("False", space->wrap_False());
 
 	/* builtin type */
-	add_def("bool", space->bool_type());
-	add_def("bytearray", space->bytearray_type());
-	add_def("dict", space->dict_type());
-	add_def("int", space->int_type());
-	add_def("object", space->object_type());
-	add_def("set", space->set_type());
-	add_def("frozenset", space->frozenset_type());
-	add_def("str", space->str_type());
-	add_def("tuple", space->tuple_type());
-	add_def("list", space->list_type());
-	add_def("type", space->type_type());
+	std::vector<std::string> builtin_type_names = { "bool", "bytearray", "dict", "frozenset", "int", "object", "set",
+												"str", "tuple", "list", "type" };
+	for (const auto& name : builtin_type_names) {
+		add_def(name, space->get_type_by_name(name));
+	}
 
 	/* builtin exceptions */
 #define ADD_EXCEPTION(name) add_def(#name, BaseException::get_bltin_exception_type(space, #name))

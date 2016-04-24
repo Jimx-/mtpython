@@ -201,7 +201,7 @@ M_BaseObject* M_StdTypeObject::__new__(mtpython::vm::ThreadContext* context, con
 	M_BaseObject* wrapped_dict = scope[3];
 
 	/* special case: type(x) */
-	if (space->i_is(wrapped_type, space->type_type()) && !wrapped_bases && !wrapped_dict) {
+	if (space->i_is(wrapped_type, space->get_type_by_name("type")) && !wrapped_bases && !wrapped_dict) {
 		return space->type(wrapped_name);
 	}
 
@@ -213,7 +213,7 @@ M_BaseObject* M_StdTypeObject::__new__(mtpython::vm::ThreadContext* context, con
 	if (wrapped_bases) {
 		space->unwrap_tuple(wrapped_bases, bases);
 	}
-	if (bases.size() == 0) bases.push_back(space->object_type());
+	if (bases.size() == 0) bases.push_back(space->get_type_by_name("object"));
 
 	std::string name = space->unwrap_str(wrapped_name);
 	M_BaseObject* keys_impl = space->getattr_str(wrapped_dict, "keys");
