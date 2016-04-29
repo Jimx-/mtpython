@@ -19,7 +19,7 @@ class ObjSpace;
 class M_BaseObject {
 public:
 	virtual M_BaseObject* get_class(ObjSpace* space);
-	virtual interpreter::Typedef* get_typedef() { throw NotImplementedException("Abstract"); }
+	virtual interpreter::Typedef* get_typedef() { throw NotImplementedException("get_typedef()"); }
 
 	virtual M_BaseObject* bind_space(ObjSpace* space) { return this; }
 
@@ -33,11 +33,11 @@ public:
 
 	virtual bool i_is(ObjSpace* space, M_BaseObject* other);
 
-	virtual int to_int(ObjSpace* space, bool allow_conversion) { throw NotImplementedException("Abstract"); }
+	virtual int to_int(ObjSpace* space, bool allow_conversion) { throw NotImplementedException("to_int()"); }
 	virtual M_BaseObject* get_repr(ObjSpace* space, const std::string& info);
-	virtual std::string to_string(ObjSpace* space) { throw NotImplementedException("Abstract"); }
+	virtual std::string to_string(ObjSpace* space) { throw NotImplementedException("to_string()"); }
 
-	virtual void unpack_iterable(ObjSpace* space, std::vector<M_BaseObject*>& list) { throw NotImplementedException("Abstract"); }
+	virtual void unpack_iterable(ObjSpace* space, std::vector<M_BaseObject*>& list) { throw NotImplementedException("unpack_iterable()"); }
 
 	void lock() {}
 	void unlock() {}

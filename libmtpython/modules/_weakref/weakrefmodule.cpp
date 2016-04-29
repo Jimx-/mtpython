@@ -8,9 +8,53 @@
 using namespace mtpython::modules;
 using namespace mtpython::objects;
 using namespace mtpython::interpreter;
+using namespace mtpython::vm;
+
+class M_Ref : public M_BaseObject {
+private:
+    M_BaseObject* obj;
+    M_BaseObject* callback;
+public:
+    M_Ref(mtpython::objects::ObjSpace* space, M_BaseObject* obj, M_BaseObject* callback) : obj(obj), callback(callback)
+    {
+    }
+
+    static M_BaseObject* __new__(ThreadContext* context, const Arguments& args)
+    {
+        static Signature new_signature({ "type", "obj", "callback" });
+
+        ObjSpace* space = context->get_space();
+        M_BaseObject* None = space->wrap_None();
+        std::vector<M_BaseObject*> scope;
+        args.parse("__new__", nullptr, new_signature, scope, { None, None });
+
+        M_BaseObject* obj = scope[1];
+        M_BaseObject* callback = scope[2];
+        M_BaseObject* ref = new M_Ref(space, obj, callback);
+
+        return space->wrap(context, ref);
+    }
+
+    static M_BaseObject* __init__(ThreadContext* context, const Arguments& args)
+    {
+        return nullptr;
+    }
+
+    Typedef* get_typedef();
+};
+
+static Typedef ref_typedef("weakref", {
+    {"__new__",  new InterpFunctionWrapper("__new__", M_Ref::__new__)},
+    {"__init__", new InterpFunctionWrapper("__init__", M_Ref::__init__)},
+});
+
+Typedef* M_Ref::get_typedef()
+{
+    return &ref_typedef;
+}
 
 WeakrefModule::WeakrefModule(mtpython::objects::ObjSpace* space, M_BaseObject* name) : BuiltinModule(space, name)
 {
-    add_def("ref", space->wrap_None());
+    add_def("ref", space->get_typeobject(&ref_typedef));
 }
 
