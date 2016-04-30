@@ -643,6 +643,12 @@ void PyFrame::compare_op(int arg, int next_pc)
 		break;
 	case 7:
 		break;
+	case 8:
+		result = space->new_bool(space->i_is(v1, v2));
+		break;
+	case 9:
+		result = space->new_bool(!space->i_is(v1, v2));
+		break;
 	case 10:
 		result = space->new_bool(space->match_exception(v1, v2));
 		break;

@@ -27,7 +27,12 @@ StdObjSpace::StdObjSpace() : ObjSpace()
 	wrapped_None = new M_StdNoneObject();
 	wrapped_True = new M_StdBoolObject(true);
 	wrapped_False = new M_StdBoolObject(false);
-	
+
+	/* type of all types */
+	M_BaseObject* type_obj = get_typeobject(M_StdTypeObject::_type_typedef());
+	type_obj->set_class(this, type_obj);
+	builtin_types["type"] = type_obj;
+
 	builtin_types["bool"] = get_typeobject(M_StdBoolObject::_bool_typedef());
 	builtin_types["bytearray"] = get_typeobject(M_StdByteArrayObject::_bytearray_typedef());
 	builtin_types["dict"] = get_typeobject(M_StdDictObject::_dict_typedef());
@@ -38,7 +43,6 @@ StdObjSpace::StdObjSpace() : ObjSpace()
 	builtin_types["str"] = get_typeobject(M_StdUnicodeObject::_str_typedef());
 	builtin_types["tuple"] = get_typeobject(M_StdTupleObject::_tuple_typedef());
 	builtin_types["list"] = get_typeobject(M_StdListObject::_list_typedef());
-	builtin_types["type"] = get_typeobject(M_StdTypeObject::_type_typedef());
 
 	make_builtins();
 	setup_builtin_modules();
@@ -86,6 +90,15 @@ M_BaseObject* StdObjSpace::issubtype(M_BaseObject* sub, M_BaseObject* type)
 	}
 
 	throw InterpError(TypeError_type(), wrap_str(current_thread(), "need type objects"));
+}
+
+M_BaseObject* StdObjSpace::get_type_by_name(const std::string& name)
+{
+	auto found = builtin_types.find(name);
+	if (found == builtin_types.end())
+		return nullptr;
+
+	return found->second;
 }
 
 std::string StdObjSpace::get_type_name(M_BaseObject* obj)

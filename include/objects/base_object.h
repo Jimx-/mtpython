@@ -19,6 +19,7 @@ class ObjSpace;
 class M_BaseObject {
 public:
 	virtual M_BaseObject* get_class(ObjSpace* space);
+	virtual void set_class(ObjSpace* space, M_BaseObject* type) { throw NotImplementedException("set_class()"); }
 	virtual interpreter::Typedef* get_typedef() { throw NotImplementedException("get_typedef()"); }
 
 	virtual M_BaseObject* bind_space(ObjSpace* space) { return this; }

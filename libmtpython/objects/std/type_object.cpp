@@ -17,8 +17,8 @@ static mtpython::interpreter::Typedef type_typedef("type", {
 	{ "__mro__", new GetSetDescriptor(M_StdTypeObject::__mro__get) },
 });
 
-M_StdTypeObject::M_StdTypeObject(ObjSpace* space, std::string& name, const std::vector<M_BaseObject*>& bases, const std::unordered_map<std::string, M_BaseObject*>& dict) :
-			space(space), name(name), bases(bases), dict(dict)
+M_StdTypeObject::M_StdTypeObject(ObjSpace* space, M_BaseObject* cls, std::string& name, const std::vector<M_BaseObject*>& bases, const std::unordered_map<std::string, M_BaseObject*>& dict) :
+			space(space), cls(cls), name(name), bases(bases), dict(dict)
 {
 	_has_dict = false;
 	wrapped_dict = nullptr;
@@ -176,7 +176,8 @@ M_BaseObject* StdTypedefCache::build(mtpython::interpreter::Typedef* key)
 		wrapped_dict[it->first] = space->wrap(space->current_thread(), it->second);
 	}
 
-	M_StdTypeObject* wrapped_type = new M_StdTypeObject(space, key->get_name(), wrapped_bases, wrapped_dict);
+	M_StdTypeObject* wrapped_type = new M_StdTypeObject(space, space->get_type_by_name("type"), key->get_name(),
+														wrapped_bases, wrapped_dict);
 
 	return wrapped_type;
 }
@@ -233,7 +234,7 @@ M_BaseObject* M_StdTypeObject::__new__(mtpython::vm::ThreadContext* context, con
 	/* TODO: handle __slots__ */
 	int add_dict = 1;
 
-	M_StdTypeObject* cls = new M_StdTypeObject(space, name, bases, dict);
+	M_StdTypeObject* cls = new M_StdTypeObject(space, wrapped_type, name, bases, dict);
 	cls->set_has_dict(add_dict > 0);
 	cls->ready();
 	return space->wrap(context, cls);

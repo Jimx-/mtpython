@@ -17,6 +17,7 @@ public:
 	interpreter::Typedef* get_typedef();
 	static interpreter::Typedef* _object_typedef();
 	M_BaseObject* get_class(ObjSpace* space) { return obj_type; }
+	void set_class(ObjSpace* space, M_BaseObject* type) { obj_type = type; }
 
 	M_BaseObject* get_dict(ObjSpace* space) { return dict; }
 	void set_dict(M_BaseObject* dict) { this->dict = dict; }

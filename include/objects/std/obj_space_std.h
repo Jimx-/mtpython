@@ -31,7 +31,7 @@ public:
 	M_BaseObject* type(M_BaseObject* obj) { return obj->get_class(this); }
 	std::string get_type_name(M_BaseObject* obj);
 
-	M_BaseObject* get_type_by_name(const std::string& name) { return builtin_types[name]; }
+	M_BaseObject* get_type_by_name(const std::string& name);
 
 	M_BaseObject* wrap(vm::ThreadContext* context, M_BaseObject* obj) { return obj->bind_space(this); }
 

@@ -22,17 +22,21 @@ private:
 	M_BaseObject* wrapped_dict;
 	std::vector<M_BaseObject*> mro;
 	bool _has_dict;
+	M_BaseObject* cls;
 
 	void init_mro();
 
 	void ready();
 public:
-	M_StdTypeObject(ObjSpace* space, std::string& name, const std::vector<M_BaseObject*>& bases, const std::unordered_map<std::string, M_BaseObject*>& dict);
+	M_StdTypeObject(ObjSpace* space, M_BaseObject* cls, std::string& name, const std::vector<M_BaseObject*>& bases, const std::unordered_map<std::string, M_BaseObject*>& dict);
 
 	std::string get_name() { return name; }
 	bool has_dict() { return _has_dict; }
 	void set_has_dict(bool has_dict) { _has_dict = has_dict; }
 	M_BaseObject* get_dict(ObjSpace* space);
+
+	M_BaseObject* get_class(ObjSpace* space) { return cls; }
+	void set_class(ObjSpace* space, M_BaseObject* type) { cls = type; }
 
 	interpreter::Typedef* get_typedef();
 	static interpreter::Typedef* _type_typedef();
