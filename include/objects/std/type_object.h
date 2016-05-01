@@ -42,6 +42,7 @@ public:
 	static interpreter::Typedef* _type_typedef();
 
 	M_BaseObject* get_dict_value(ObjSpace* space, const std::string& attr);
+	bool set_dict_value(ObjSpace* space, const std::string& attr, M_BaseObject* value);
 
 	M_BaseObject* lookup(const std::string& name);
 	M_BaseObject* lookup_starting_at(M_BaseObject* start, const std::string& name);

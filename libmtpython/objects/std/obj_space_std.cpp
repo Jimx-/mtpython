@@ -80,16 +80,24 @@ M_BaseObject* StdObjSpace::lookup_type_starting_at(M_BaseObject* type, M_BaseObj
 	return as_type->lookup_starting_at(start, name);
 }
 
-M_BaseObject* StdObjSpace::issubtype(M_BaseObject* sub, M_BaseObject* type)
+bool StdObjSpace::i_issubtype(M_BaseObject* sub, M_BaseObject* type)
 {
 	M_StdTypeObject* sub_as_type = dynamic_cast<M_StdTypeObject*>(sub);
 	M_StdTypeObject* type_as_type = dynamic_cast<M_StdTypeObject*>(type);
 
 	if (sub_as_type && type_as_type) {
-		return new_bool(sub_as_type->issubtype(type));
+		return sub_as_type->issubtype(type);
 	}
 
 	throw InterpError(TypeError_type(), wrap_str(current_thread(), "need type objects"));
+}
+
+bool StdObjSpace::i_isinstance(M_BaseObject* inst, M_BaseObject* type)
+{
+	if (dynamic_cast<M_StdTypeObject*>(type) == nullptr) {
+		throw InterpError(TypeError_type(), wrap_str(this->current_thread(), "need type object"));
+	}
+	return static_cast<M_StdTypeObject*>(this->type(inst))->issubtype(type);
 }
 
 M_BaseObject* StdObjSpace::get_type_by_name(const std::string& name)
@@ -156,3 +164,4 @@ void StdObjSpace::unwrap_tuple(M_BaseObject* obj, std::vector<M_BaseObject*>& li
 	list.clear();
 	list.insert(list.end(), items.begin(), items.end());
 }
+

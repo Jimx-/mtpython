@@ -81,7 +81,8 @@ public:
 	virtual M_BaseObject* lookup(M_BaseObject* obj, const std::string& name) { throw NotImplementedException("Abstract"); }
 	virtual M_BaseObject* lookup_type_cls(M_BaseObject* obj, const std::string& attr, M_BaseObject*& cls) { throw NotImplementedException("Abstract"); }
 	virtual M_BaseObject* lookup_type_starting_at(M_BaseObject* type, M_BaseObject* start, const std::string& name) { throw NotImplementedException("Abstract"); }
-	virtual M_BaseObject* issubtype(M_BaseObject* sub, M_BaseObject* type) { throw NotImplementedException("Abstract"); }
+	virtual bool i_isinstance(M_BaseObject* obj, M_BaseObject* cls) { throw NotImplementedException("i_isinstance()"); }
+	virtual bool i_issubtype(M_BaseObject* sub, M_BaseObject* type) { throw NotImplementedException("Abstract"); }
 
 	virtual M_BaseObject* get_type_by_name(const std::string& name) { throw NotImplementedException("Abstract"); }
 
@@ -153,7 +154,6 @@ public:
 
 	bool is_true(M_BaseObject* obj);
 	bool i_is(M_BaseObject* obj1, M_BaseObject* obj2) { return (!obj2) ? false : obj2->i_is(this, obj1); }
-	bool i_isinstance(M_BaseObject* obj, M_BaseObject* cls) { return true; }
 	bool i_eq(M_BaseObject* obj1, M_BaseObject* obj2);
 	std::size_t i_hash(M_BaseObject* obj);
 
@@ -183,6 +183,11 @@ public:
 	M_BaseObject* sub(M_BaseObject* obj1, M_BaseObject* obj2);
 	M_BaseObject* mul(M_BaseObject* obj1, M_BaseObject* obj2);
 	M_BaseObject* _and(M_BaseObject* obj1, M_BaseObject* obj2);
+
+	M_BaseObject* issubtype(M_BaseObject* sub, M_BaseObject* type);
+	M_BaseObject* issubtype_override(M_BaseObject* sub, M_BaseObject* type);
+	M_BaseObject* isinstance(M_BaseObject* obj, M_BaseObject* type);
+	M_BaseObject* isinstance_override(M_BaseObject* obj, M_BaseObject* type);
 };
 
 }

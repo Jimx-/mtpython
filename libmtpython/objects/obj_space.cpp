@@ -519,3 +519,33 @@ M_BaseObject* ObjSpace::len(M_BaseObject* obj)
 	return get_and_call_function(current_thread(), descr, {obj});
 }
 
+M_BaseObject* ObjSpace::issubtype(M_BaseObject* sub, M_BaseObject* type)
+{
+	return new_bool(i_issubtype(sub, type));
+}
+
+M_BaseObject* ObjSpace::issubtype_override(M_BaseObject* sub, M_BaseObject* type)
+{
+	M_BaseObject* descr = lookup(type, "__subclasscheck__");
+	if (descr) {
+		return get_and_call_function(current_thread(), descr, { type, sub });
+	}
+
+	throw InterpError(TypeError_type(),wrap_str(current_thread(), "issubclass not supported"));
+}
+
+M_BaseObject* ObjSpace::isinstance(M_BaseObject* obj, M_BaseObject* type)
+{
+	return new_bool(i_isinstance(obj, type));
+}
+
+M_BaseObject* ObjSpace::isinstance_override(M_BaseObject* obj, M_BaseObject* type)
+{
+	M_BaseObject* descr = lookup(type, "__instancecheck__");
+	if (descr) {
+		return get_and_call_function(current_thread(), descr, { type, obj });
+	}
+
+	return isinstance(obj, type);
+}
+

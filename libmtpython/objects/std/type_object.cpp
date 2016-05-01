@@ -101,6 +101,12 @@ M_BaseObject* M_StdTypeObject::get_dict_value(ObjSpace* space, const std::string
 	return got->second;
 }
 
+bool M_StdTypeObject::set_dict_value(ObjSpace* space, const std::string& attr, M_BaseObject* value)
+{
+	dict[attr] = value;
+	return true;
+}
+
 M_BaseObject* M_StdTypeObject::lookup(const std::string& name)
 {
 	for (auto base : mro) {

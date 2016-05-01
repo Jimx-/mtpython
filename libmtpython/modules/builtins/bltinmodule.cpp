@@ -304,9 +304,135 @@ static M_BaseObject* builtin_compile(mtpython::vm::ThreadContext* context, const
 	return space->wrap(context, code);
 }
 
+static M_BaseObject* builtin_getattr(mtpython::vm::ThreadContext* context, const Arguments& args)
+{
+	static Signature getattr_signature({ "obj", "name", "defval" });
+
+	ObjSpace* space = context->get_space();
+	std::vector<M_BaseObject*> scope;
+	args.parse("getattr", nullptr, getattr_signature, scope, { nullptr });
+
+	M_BaseObject* obj = scope[0];
+	M_BaseObject* name = scope[1];
+	M_BaseObject* defval = scope[2];
+
+	try {
+		return space->getattr(obj, name);
+	} catch(InterpError& e) {
+		if (defval) {
+			if (e.match(space, space->AttributeError_type())) {
+				return defval;
+			}
+		}
+		throw;
+	}
+
+	return nullptr;
+}
+
 static M_BaseObject* builtin_globals(mtpython::vm::ThreadContext* context)
 {
 	return context->top_frame()->get_globals();
+}
+
+/* isinstance() & issubtype() */
+static M_BaseObject* _get_class(ObjSpace* space, M_BaseObject* obj)
+{
+	try {
+		return space->getattr_str(obj, "__class__");
+	} catch(InterpError& e) {
+		if (!e.match(space, space->AttributeError_type())) {
+			throw;
+		}
+	}
+	return space->type(obj);
+}
+
+static bool _isinstance(ObjSpace* space, M_BaseObject* obj, M_BaseObject* cls, bool override = false)
+{
+	if (space->i_isinstance(cls, space->get_type_by_name("tuple"))) {
+		std::vector<M_BaseObject*> clsv;
+		space->unwrap_tuple(cls, clsv);
+
+		for (auto type : clsv) {
+			if (_isinstance(space, obj, type)) return true;
+		}
+		return false;
+	}
+
+	M_BaseObject* result;
+	try {
+		if (override) {
+			result = space->isinstance_override(obj, cls);
+		} else {
+			result = space->isinstance(obj, cls);
+		}
+	} catch (InterpError& e) {
+		if (!e.match(space, space->TypeError_type())) {
+			throw;
+		}
+	}
+
+	if (space->is_true(result)) return true;
+	M_BaseObject* klass = _get_class(space, obj);
+
+	try {
+		if (space->i_is(klass, space->type(obj))) return false;
+
+		if (override) {
+			result = space->issubtype_override(klass, cls);
+		} else {
+			result = space->issubtype(klass, cls);
+		}
+
+		return space->is_true(result);
+	} catch (InterpError& e) {
+		return false;
+	}
+
+	return false;
+}
+
+static bool _issubtype(ObjSpace* space, M_BaseObject* sub, M_BaseObject* cls, bool override = false)
+{
+	if (space->i_isinstance(cls, space->get_type_by_name("tuple"))) {
+		std::vector<M_BaseObject*> clsv;
+		space->unwrap_tuple(cls, clsv);
+
+		for (auto type : clsv) {
+			if (_issubtype(space, sub, type)) return true;
+		}
+		return false;
+	}
+
+	M_BaseObject* result;
+	try {
+		if (override) {
+			result = space->issubtype_override(sub, cls);
+		} else {
+			result = space->issubtype(sub, cls);
+		}
+
+		return space->is_true(result);
+	} catch (InterpError& e) {
+		if (!e.match(space, space->TypeError_type())) {
+			throw;
+		}
+	}
+
+	return false;
+}
+
+static M_BaseObject* builtin_isinstance(mtpython::vm::ThreadContext* context, M_BaseObject* obj, M_BaseObject* cls)
+{
+	ObjSpace* space = context->get_space();
+	return space->new_bool(_isinstance(space, obj, cls, true));
+}
+
+static M_BaseObject* builtin_issubclass(mtpython::vm::ThreadContext* context, M_BaseObject* sub, M_BaseObject* cls)
+{
+	ObjSpace* space = context->get_space();
+	return space->new_bool(_issubtype(space, sub, cls, true));
 }
 
 static M_BaseObject* builtin_iter(mtpython::vm::ThreadContext* context, const Arguments& args)
@@ -865,7 +991,10 @@ BuiltinsModule::BuiltinsModule(ObjSpace* space, M_BaseObject* name) : BuiltinMod
 	add_def("abs", new InterpFunctionWrapper("abs", builtin_abs));
 	add_def("classmethod", space->get_typeobject(ClassMethod::_classmethod_typedef()));
 	add_def("compile", new InterpFunctionWrapper("compile", builtin_compile, Signature({"source", "filename", "mode", "flags", "dont_inherit", "optimize"})));
+	add_def("getattr", new InterpFunctionWrapper("getattr", builtin_getattr));
 	add_def("globals", new InterpFunctionWrapper("globals", builtin_globals));
+	add_def("isinstance", new InterpFunctionWrapper("isinstance", builtin_isinstance));
+	add_def("issubclass", new InterpFunctionWrapper("issubclass", builtin_issubclass));
 	add_def("iter", new InterpFunctionWrapper("iter", builtin_iter) );
 	add_def("len", new InterpFunctionWrapper("len", builtin_len));
 	add_def("open", space->getattr_str(space->get__io(), "open"));
@@ -877,3 +1006,4 @@ BuiltinsModule::BuiltinsModule(ObjSpace* space, M_BaseObject* name) : BuiltinMod
 	add_def("super", space->get_typeobject(&Super_typedef));
 	add_def("zip", space->get_typeobject(&Zip_typedef));
 }
+
