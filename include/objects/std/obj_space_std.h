@@ -15,6 +15,7 @@ private:
 	M_BaseObject* wrapped_None;
 	M_BaseObject* wrapped_True;
 	M_BaseObject* wrapped_False;
+	M_BaseObject* wrapped_NotImplemented;
 
 	std::unordered_map<std::string, M_BaseObject*> builtin_types;
 	
@@ -44,6 +45,7 @@ public:
 	M_BaseObject* wrap_None() { return wrapped_None; }
 	M_BaseObject* wrap_True() { return wrapped_True; }
 	M_BaseObject* wrap_False() { return wrapped_False; }
+	M_BaseObject* wrap_NotImplemented() { return wrapped_NotImplemented; }
 
 	M_BaseObject* new_tuple(vm::ThreadContext* context, std::vector<M_BaseObject*>& items);
 	M_BaseObject* new_list(vm::ThreadContext* context, std::vector<M_BaseObject*>& items);

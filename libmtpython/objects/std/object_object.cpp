@@ -93,7 +93,6 @@ M_BaseObject* M_StdObjectObject::__getattribute__(mtpython::vm::ThreadContext* c
 	throw InterpError::format(space, space->AttributeError_type(), "'%s' object has no attribute '%s'", space->get_type_name(obj).c_str(), name.c_str());
 }
 
-
 M_BaseObject* M_StdObjectObject::__setattr__(mtpython::vm::ThreadContext* context, M_BaseObject* obj,
 											 M_BaseObject* attr, M_BaseObject* value)
 {

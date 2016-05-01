@@ -960,6 +960,7 @@ BuiltinsModule::BuiltinsModule(ObjSpace* space, M_BaseObject* name) : BuiltinMod
 	add_def("None", space->wrap_None());
 	add_def("True", space->wrap_True());
 	add_def("False", space->wrap_False());
+	add_def("NotImplemented", space->wrap_NotImplemented());
 
 	/* builtin type */
 	std::vector<std::string> builtin_type_names = { "bool", "bytearray", "dict", "frozenset", "int", "object", "set",

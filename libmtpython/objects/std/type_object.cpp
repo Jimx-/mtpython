@@ -12,6 +12,7 @@ using namespace mtpython::interpreter;
 static mtpython::interpreter::Typedef type_typedef("type", {
 	{ "__new__", new InterpFunctionWrapper("__new__", M_StdTypeObject::__new__) },
 	{ "__call__", new InterpFunctionWrapper("__call__", M_StdTypeObject::__call__) },
+	{ "__getattribute__", new InterpFunctionWrapper("__getattribute__", M_StdTypeObject::__getattribute__) },
 	{ "__repr__", new InterpFunctionWrapper("__repr__", M_StdTypeObject::__repr__) },
 	{ "__subclasscheck__", new InterpFunctionWrapper("__subclasscheck__", M_StdTypeObject::__subclasscheck__) },
 	{ "__mro__", new GetSetDescriptor(M_StdTypeObject::__mro__get) },
@@ -294,3 +295,24 @@ M_BaseObject* M_StdTypeObject::__mro__get(mtpython::vm::ThreadContext* context, 
 	M_StdTypeObject* as_type = static_cast<M_StdTypeObject*>(self);
 	return context->get_space()->new_tuple(context, as_type->mro);
 }
+
+M_BaseObject* M_StdTypeObject::__getattribute__(mtpython::vm::ThreadContext* context, M_BaseObject* obj,
+												  M_BaseObject* attr)
+{
+	ObjSpace* space = context->get_space();
+	std::string name = space->unwrap_str(attr);
+	M_BaseObject* descr = space->lookup(obj, name);
+
+	M_BaseObject* value = obj->get_dict_value(space, name);
+	if (value) {
+		M_BaseObject* getter = space->lookup(value, "__get__");
+		if (getter) {
+			return space->get(value, obj);
+		}
+		return value;
+	}
+
+	if (descr) return space->get(descr, obj);
+	throw InterpError::format(space, space->AttributeError_type(), "'%s' object has no attribute '%s'", space->get_type_name(obj).c_str(), name.c_str());
+}
+

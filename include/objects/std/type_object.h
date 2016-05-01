@@ -56,6 +56,8 @@ public:
 
 	static M_BaseObject* __call__(vm::ThreadContext* context, const interpreter::Arguments& args);
 	static M_BaseObject* __subclasscheck__(vm::ThreadContext* context, M_BaseObject* self, M_BaseObject* sub);
+	static M_BaseObject* __getattribute__(mtpython::vm::ThreadContext* context, M_BaseObject* obj,
+													M_BaseObject* attr);
 };
 
 class StdTypedefCache : public TypedefCache {

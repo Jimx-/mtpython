@@ -321,7 +321,9 @@ M_BaseObject* ObjSpace::call_args(ThreadContext* context, M_BaseObject* func, Ar
 		return as_method->call_args(context, args);
 	}
 	M_BaseObject* descr = lookup(func, "__call__");
-	if (!descr) throw InterpError::format(this, TypeError_type(), "'%s' object is not callable", get_type_name(func).c_str());
+	if (!descr) {
+		throw InterpError::format(this, TypeError_type(), "'%s' object is not callable", get_type_name(func).c_str());
+	}
 
 	return get_and_call_args(context, descr, func, args);
 }

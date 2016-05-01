@@ -1,6 +1,6 @@
-#include <string>
 #include "interpreter/code.h"
 #include "interpreter/error.h"
+#include "interpreter/gateway.h"
 #include "objects/std/obj_space_std.h"
 #include "objects/std/type_object.h"
 #include "objects/std/int_object.h"
@@ -16,9 +16,30 @@
 #include "objects/std/bytearray_object.h"
 #include "objects/std/frame.h"
 
+#include <string>
+
 using namespace mtpython::objects;
 using namespace mtpython::vm;
 using namespace mtpython::interpreter;
+
+class M_NotImplemented : public M_BaseObject {
+public:
+	static M_BaseObject* __repr__(ThreadContext* context, mtpython::objects::M_BaseObject* self)
+	{
+		return context->get_space()->new_interned_str("NotImplemented");
+	}
+
+	virtual Typedef* get_typedef();
+};
+
+static Typedef NotImplemented_typedef = { "NotImplemented", {
+	{ "__repr__", new InterpFunctionWrapper("__repr__", M_StdTypeObject::__repr__) },
+}};
+
+Typedef* M_NotImplemented::get_typedef()
+{
+	return &NotImplemented_typedef;
+}
 
 StdObjSpace::StdObjSpace() : ObjSpace()
 {
@@ -27,6 +48,7 @@ StdObjSpace::StdObjSpace() : ObjSpace()
 	wrapped_None = new M_StdNoneObject();
 	wrapped_True = new M_StdBoolObject(true);
 	wrapped_False = new M_StdBoolObject(false);
+	wrapped_NotImplemented = new M_NotImplemented();
 
 	/* type of all types */
 	M_BaseObject* type_obj = get_typeobject(M_StdTypeObject::_type_typedef());

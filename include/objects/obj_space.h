@@ -110,6 +110,7 @@ public:
 	virtual M_BaseObject* wrap_None() { throw NotImplementedException("Abstract"); }
 	virtual M_BaseObject* wrap_True() { throw NotImplementedException("Abstract"); }
 	virtual M_BaseObject* wrap_False() { throw NotImplementedException("Abstract"); }
+	virtual M_BaseObject* wrap_NotImplemented() { throw NotImplementedException("Abstract"); }
 
 	virtual M_BaseObject* new_bool(bool x) { if (x) return wrap_True(); else return wrap_False(); }
 	virtual M_BaseObject* new_interned_str(const std::string& x);
