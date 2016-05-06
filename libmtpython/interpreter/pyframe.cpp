@@ -368,6 +368,12 @@ int PyFrame::dispatch_bytecode(ThreadContext* context, std::vector<unsigned char
 		case STORE_DEREF:
 			store_deref(arg, next_pc);
 			break;
+		case SETUP_WITH:
+			setup_with(arg, next_pc);
+			break;
+		case WITH_CLEANUP:
+			with_cleanup(arg, next_pc);
+			break;
 		}
 	}
 }
@@ -1050,6 +1056,49 @@ void PyFrame::store_deref(int arg, int next_pc)
 	M_BaseObject* value = pop_value_untrack();
 	Cell* cell = cells[arg];
 	cell->set(value);
+	context->pop_local_frame(nullptr);
+}
+
+
+void PyFrame::setup_with(int arg, int next_pc)
+{
+	M_BaseObject* manager = peek_value();
+	M_BaseObject* enter = space->lookup(manager, "__enter__");
+	M_BaseObject* descr = space->lookup(manager, "__exit__");
+
+	if (!enter || !descr) {
+		throw InterpError::format(space, space->AttributeError_type(), "'%s' object is not a context manager (no __enter__/"
+                        "__exit__ method)", space->get_type_name(manager).c_str());
+	}
+
+	M_BaseObject* exit_func = space->get(descr, manager);
+
+	context->push_local_frame();
+	manager = pop_value_untrack();
+	push_value(exit_func);
+	M_BaseObject* result = space->get_and_call_function(context, enter, { manager });
+
+	FrameBlock* frame = new WithBlock(next_pc + arg, value_stack.size());
+	push_block(frame);
+
+	push_value(result);
+	context->pop_local_frame(nullptr);
+}
+
+void PyFrame::with_cleanup(int arg, int next_pc)
+{
+	context->push_local_frame();
+	StackUnwinder* unwinder = static_cast<StackUnwinder*>(pop_value_untrack());
+	M_BaseObject* exit_func = pop_value_untrack();
+	push_value(unwinder);
+
+	if (unwinder->why() == WhyCode::WHY_EXCEPTION) {
+		/* TODO: handle exception */
+
+	} else {
+		space->call_function(context, exit_func, { space->wrap_None(), space->wrap_None(), space->wrap_None() });
+	}
+
 	context->pop_local_frame(nullptr);
 }
 

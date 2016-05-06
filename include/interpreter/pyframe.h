@@ -87,6 +87,11 @@ public:
     virtual int handle(PyFrame* frame, StackUnwinder* unwinder);
 };
 
+class WithBlock : public FinallyBlock {
+public:
+    WithBlock(int handler, int level) : FinallyBlock(handler, level) { }
+};
+
 class PyFrame : public mtpython::objects::M_BaseObject {
 private:
     void init_cells(mtpython::objects::M_BaseObject* outer, PyCode* code);
@@ -207,6 +212,8 @@ protected:
     void load_closure(int arg, int next_pc);
     void load_deref(int arg, int next_pc);
     void store_deref(int arg, int next_pc);
+    void setup_with(int arg, int next_pc);
+    void with_cleanup(int arg, int next_pc);
 
     objects::M_BaseObject* end_finally();
 

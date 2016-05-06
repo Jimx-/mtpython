@@ -372,7 +372,15 @@ public:
 		return node;
 	}
 
-	virtual ASTNode* visit_yield(YieldNode* node) {return node; }
+	virtual ASTNode* visit_yield(YieldNode* node)
+	{
+		ASTNode* value = node->get_value();
+		if (value) {
+			value->visit(this);
+		}
+		return node;
+	}
+
 	virtual ASTNode* visit_yieldfrom(YieldFromNode* node) { return node;}
 };
 

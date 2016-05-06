@@ -1372,6 +1372,7 @@ ASTNode* Parser::with_stmt()
 	if (cur_tok == TOK_AS) {
 		match(TOK_AS);
 		opt_vars = expr();
+		opt_vars->set_context(EC_STORE);
 	}
 
 	WithItemNode* with_item = new WithItemNode(s.get_line());
@@ -1387,6 +1388,7 @@ ASTNode* Parser::with_stmt()
 		if (cur_tok == TOK_AS) {
 			match(TOK_AS);
 			opt_vars = expr();
+			opt_vars->set_context(EC_STORE);
 		}
 
 		with_item = new WithItemNode(s.get_line());

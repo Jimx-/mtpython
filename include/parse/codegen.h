@@ -77,6 +77,8 @@ public:
     mtpython::tree::ASTNode* visit_tuple(mtpython::tree::TupleNode* node);
     mtpython::tree::ASTNode* visit_unaryop(mtpython::tree::UnaryOpNode* node);
     mtpython::tree::ASTNode* visit_while(mtpython::tree::WhileNode* node);
+    mtpython::tree::ASTNode* visit_with(mtpython::tree::WithNode* node);
+    void handle_withitem(mtpython::tree::WithNode* withnode, mtpython::tree::WithItemNode* node);
     /*ASTNode* visit_yield(YieldNode* node);
     ASTNode* visit_yieldfrom(YieldFromNode* node);*/
 };

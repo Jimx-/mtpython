@@ -838,6 +838,43 @@ ASTNode* BaseCodeGenerator::visit_while(WhileNode* node)
 	return node;
 }
 
+mtpython::tree::ASTNode* BaseCodeGenerator::visit_with(mtpython::tree::WithNode* node)
+{
+	std::vector<WithItemNode*>& items = node->get_items();
+	handle_withitem(node, items[0]);
+
+	return node;
+}
+
+void BaseCodeGenerator::handle_withitem(mtpython::tree::WithNode* withnode, mtpython::tree::WithItemNode* node)
+{
+	set_lineno(node->get_line());
+
+	CodeBlock* body = new_block();
+	CodeBlock* cleanup = new_block();
+
+	node->get_context_expr()->visit(this);
+	emit_jump(SETUP_WITH, cleanup);
+
+	use_next_block(body);
+	push_frame_block(F_FINALLY, body);
+	if (node->get_optional_vars()) {
+		node->get_optional_vars()->visit(this);
+	} else {
+		emit_op(POP_TOP);
+	}
+	visit_sequence(withnode->get_body());
+	emit_op(POP_BLOCK);
+	pop_frame_block();
+
+	load_const(space->wrap_None());
+	use_next_block(cleanup);
+	push_frame_block(F_FINALLY_END, cleanup);
+	emit_op(WITH_CLEANUP);
+	emit_op(END_FINALLY);
+	pop_frame_block();
+}
+
 ModuleCodeGenerator::ModuleCodeGenerator(mtpython::vm::ThreadContext* context, mtpython::tree::ASTNode* module, SymtableVisitor* symtab, CompileInfo* info) : BaseCodeGenerator("module", context, module, symtab, -1, info)
 {
 	compile(module);
@@ -909,3 +946,4 @@ void ClassCodeGenerator::compile(ASTNode* tree)
 
 	emit_op(RETURN_VALUE);
 }
+
