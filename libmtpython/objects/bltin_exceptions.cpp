@@ -16,6 +16,7 @@ static mtpython::interpreter::Typedef ValueError_typedef("ValueError", { &Except
 static mtpython::interpreter::Typedef SystemError_typedef("SystemError", { &Exception_typedef }, {});
 static mtpython::interpreter::Typedef KeyError_typedef("KeyError", { &Exception_typedef }, {});
 static mtpython::interpreter::Typedef LookupError_typedef("LookupError", { &Exception_typedef}, {});
+static mtpython::interpreter::Typedef SyntaxError_typedef("SyntaxError", { &Exception_typedef}, {});
 
 static mtpython::interpreter::Typedef IndexError_typedef("IndexError", { &LookupError_typedef}, {});
 static mtpython::interpreter::Typedef UnboundLocalError_typedef("UnboundLocalError", { &NameError_typedef }, {});
@@ -33,6 +34,7 @@ static std::unordered_map<std::string, Typedef*> exception_typedefs{
 	{ "SystemError", &SystemError_typedef },
 	{ "KeyError", &KeyError_typedef },
 	{ "IndexError", &IndexError_typedef },
+	{ "SyntaxError", &SyntaxError_typedef },
 };
 
 M_BaseObject* BaseException::get_bltin_exception_type(ObjSpace* space, const std::string& name)

@@ -838,7 +838,7 @@ ASTNode* BaseCodeGenerator::visit_while(WhileNode* node)
 	return node;
 }
 
-mtpython::tree::ASTNode* BaseCodeGenerator::visit_with(mtpython::tree::WithNode* node)
+ASTNode* BaseCodeGenerator::visit_with(WithNode* node)
 {
 	std::vector<WithItemNode*>& items = node->get_items();
 	handle_withitem(node, items[0]);
@@ -846,7 +846,7 @@ mtpython::tree::ASTNode* BaseCodeGenerator::visit_with(mtpython::tree::WithNode*
 	return node;
 }
 
-void BaseCodeGenerator::handle_withitem(mtpython::tree::WithNode* withnode, mtpython::tree::WithItemNode* node)
+void BaseCodeGenerator::handle_withitem(WithNode* withnode, WithItemNode* node)
 {
 	set_lineno(node->get_line());
 
@@ -873,6 +873,19 @@ void BaseCodeGenerator::handle_withitem(mtpython::tree::WithNode* withnode, mtpy
 	emit_op(WITH_CLEANUP);
 	emit_op(END_FINALLY);
 	pop_frame_block();
+}
+
+ASTNode* BaseCodeGenerator::visit_yield(YieldNode* node)
+{
+	set_lineno(node->get_line());
+	if (node->get_value()) {
+		node->get_value()->visit(this);
+	} else {
+		load_const(space->wrap_None());
+	}
+
+	emit_op(YIELD_VALUE);
+	return node;
 }
 
 ModuleCodeGenerator::ModuleCodeGenerator(mtpython::vm::ThreadContext* context, mtpython::tree::ASTNode* module, SymtableVisitor* symtab, CompileInfo* info) : BaseCodeGenerator("module", context, module, symtab, -1, info)
@@ -915,6 +928,9 @@ int FunctionCodeGenerator::get_code_flags()
 	int flags = 0;
 	if (scope->optimized())	{
 		flags |= CO_OPTIMIZED;
+	}
+	if (scope->is_generator()) {
+		flags |= CO_GENERATOR;
 	}
 
 	return BaseCodeGenerator::get_code_flags() | flags;

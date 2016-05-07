@@ -1,3 +1,4 @@
+#include <interpreter/error.h>
 #include "parse/symtable.h"
 
 using namespace mtpython::parse;
@@ -28,6 +29,16 @@ const std::string& Scope::add_name(const std::string& id, int flags)
 	}
 
 	return id;
+}
+
+void Scope::note_return(mtpython::tree::ReturnNode* node)
+{
+	throw interpreter::InterpError(space->SyntaxError_type(), space->wrap_str(space->current_thread(), "return outside function"));
+}
+
+void Scope::note_yield(mtpython::tree::YieldNode* node)
+{
+	throw interpreter::InterpError(space->SyntaxError_type(), space->wrap_str(space->current_thread(), "yield outside function"));
 }
 
 int Scope::lookup(const std::string& id)
@@ -148,6 +159,24 @@ void FunctionScope::pass_on_bindings(const std::unordered_set<std::string>& loca
 	Scope::pass_on_bindings(local, bound, global, new_bound, new_global);
 }
 
+void FunctionScope::note_return(mtpython::tree::ReturnNode* node)
+{
+	if (node->get_value()) {
+		if (_is_generator) {
+			throw interpreter::InterpError(space->SyntaxError_type(), space->wrap_str(space->current_thread(), "'return' with argument in generator"));
+		}
+		return_with_value = true;
+	}
+}
+
+void FunctionScope::note_yield(mtpython::tree::YieldNode* node)
+{
+	if (return_with_value) {
+		throw interpreter::InterpError(space->SyntaxError_type(), space->wrap_str(space->current_thread(), "'return' with argument in generator"));
+	}
+	_is_generator = true;
+}
+
 void ClassScope::analyze_cells(std::unordered_set<std::string>& free)
 {
 	for (auto iter = symbols.begin(); iter != symbols.end(); iter++) {
@@ -163,7 +192,7 @@ SymtableVisitor::SymtableVisitor(mtpython::objects::ObjSpace* space, ASTNode* mo
 	this->space = space;
 
 	std::string root_name("root");
-	root = new ModuleScope(root_name);
+	root = new ModuleScope(space, root_name);
 	push_scope(root, module);
 	current = root;
 
@@ -234,7 +263,7 @@ ASTNode* SymtableVisitor::visit_classdef(ClassDefNode* node)
 		keyword->visit(this);
 	}
 
-	ClassScope* scope = new ClassScope(node);
+	ClassScope* scope = new ClassScope(space, node);
 	push_scope(scope, node);
 
 	scope->add_name("@__class__", SYM_ASSIGN);
@@ -248,7 +277,7 @@ ASTNode* SymtableVisitor::visit_functiondef(FunctionDefNode* node)
 {
 	add_name(node->get_name(), SYM_ASSIGN);
 
-	FunctionScope* scope = new FunctionScope(node->get_name(), node->get_line(), 0);
+	FunctionScope* scope = new FunctionScope(space, node->get_name(), node->get_line(), 0);
 	push_scope(scope, node);
 	node->get_args()->visit(this);
 	visit_sequence(node->get_body());
@@ -259,7 +288,7 @@ ASTNode* SymtableVisitor::visit_functiondef(FunctionDefNode* node)
 
 ASTNode* SymtableVisitor::visit_lambda(LambdaNode* node)
 {
-	FunctionScope* scope = new FunctionScope("lambda", node->get_line(), 0);
+	FunctionScope* scope = new FunctionScope(space, "lambda", node->get_line(), 0);
 	push_scope(scope, node);
 	node->get_args()->visit(this);
 	node->get_body()->visit(this);
@@ -297,5 +326,17 @@ ASTNode* SymtableVisitor::visit_excepthandler(ExceptHandlerNode* node)
 	if (ASTNode* type = node->get_type()) type->visit(this);
 
 	return node;
+}
+
+mtpython::tree::ASTNode* SymtableVisitor::visit_return(mtpython::tree::ReturnNode* node)
+{
+	current->note_return(node);
+	return GenericVisitor::visit_return(node);
+}
+
+mtpython::tree::ASTNode* SymtableVisitor::visit_yield(mtpython::tree::YieldNode* node)
+{
+	current->note_yield(node);
+	return GenericVisitor::visit_yield(node);
 }
 

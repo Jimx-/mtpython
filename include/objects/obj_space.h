@@ -37,6 +37,7 @@ private:
 	M_BaseObject* type_SystemError;
 	M_BaseObject* type_KeyError;
 	M_BaseObject* type_IndexError;
+	M_BaseObject* type_SyntaxError;
 
 	void init_builtin_exceptions();
 protected:
@@ -96,6 +97,7 @@ public:
 	M_BaseObject* SystemError_type() { return type_SystemError; }
 	M_BaseObject* KeyError_type() { return type_KeyError;  }
 	M_BaseObject* IndexError_type() { return type_IndexError; }
+	M_BaseObject* SyntaxError_type() { return type_SyntaxError; }
 	bool match_exception(M_BaseObject* type1, M_BaseObject* type2) { return type1 == type2; }
 
 	virtual M_BaseObject* wrap(vm::ThreadContext* context, int x) { return wrap_int(context, x); }

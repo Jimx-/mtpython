@@ -3,8 +3,10 @@
 
 #include "interpreter/pyframe.h"
 #include "interpreter/function.h"
+#include "interpreter/generator.h"
 #include "tools/opcode.h"
 #include "macros.h"
+#include "consts.h"
 
 using namespace mtpython::interpreter;
 using namespace mtpython::objects;
@@ -14,6 +16,7 @@ static BreakUnwinder break_unwinder;
 
 class ExitFrameException : public std::exception { };
 class ReturnException : public ExitFrameException { };
+class YieldException : public ExitFrameException { };
 
 void FrameBlock::cleanup(PyFrame* frame)
 {
@@ -70,6 +73,7 @@ PyFrame::PyFrame(ThreadContext* context, Code* code, M_BaseObject* globals, M_Ba
 	this->globals = globals;
 	this->locals = globals;
 
+	_finished_execution = false;
 	pc = -1;
 	init_cells(outer, pycode);
 }
@@ -105,10 +109,14 @@ void PyFrame::init_cells(M_BaseObject* outer, PyCode* code)
 
 M_BaseObject* PyFrame::exec()
 {
+	if (pycode->get_flags() & CO_GENERATOR) {
+		return space->wrap(context, new GeneratorIterator(this));
+	}
+
 	return execute_frame();
 }
 
-M_BaseObject* PyFrame::execute_frame()
+M_BaseObject* PyFrame::execute_frame(M_BaseObject* arg)
 {
 	M_BaseObject* retval;
 
@@ -138,8 +146,9 @@ M_BaseObject* PyFrame::dispatch(ThreadContext* context, Code* code, int next_pc)
 		while (true) {
 			next_pc = execute_bytecode(context, bytecode, next_pc);
 		}
-	}
-	catch (ExitFrameException) {
+	} catch (YieldException) {
+		return pop_value_untrack();
+	} catch (ExitFrameException) {
 		return pop_value_untrack();
 	}
 }
@@ -197,7 +206,19 @@ int PyFrame::dispatch_bytecode(ThreadContext* context, std::vector<unsigned char
 		}
 
 		if (opcode == RETURN_VALUE) {
-			throw ReturnException();
+			context->push_local_frame();
+			M_BaseObject* result = pop_value_untrack();
+			FrameBlock* block = unwind_stack(WHY_RETURN);
+			if (!block) {
+				push_value(result);
+				context->pop_local_frame(nullptr);
+				throw ReturnException();
+			} else {
+				StackUnwinder* unwinder = new ReturnUnwinder(result);
+				next_pc = block->handle(this, unwinder);
+			}
+
+			return next_pc;
 		}
 
 		if (opcode == END_FINALLY) {
@@ -374,6 +395,9 @@ int PyFrame::dispatch_bytecode(ThreadContext* context, std::vector<unsigned char
 		case WITH_CLEANUP:
 			with_cleanup(arg, next_pc);
 			break;
+		case YIELD_VALUE:
+			yield_value(arg, next_pc);
+			break;
 		}
 	}
 }
@@ -399,6 +423,7 @@ FrameBlock* PyFrame::unwind_stack(int why)
 		block->cleanup(this);
 	}
 
+	_finished_execution = true;
 	return nullptr;
 }
 
@@ -1100,5 +1125,10 @@ void PyFrame::with_cleanup(int arg, int next_pc)
 	}
 
 	context->pop_local_frame(nullptr);
+}
+
+void PyFrame::yield_value(int arg, int next_pc)
+{
+	throw YieldException();
 }
 

@@ -35,6 +35,7 @@ SET(LIBMTPYTHON_SRCLIST
 		interpreter/module.cpp
 		interpreter/descriptor.cpp
 		interpreter/cell.cpp
+		interpreter/generator.cpp
 		modules/_io/iomodule.cpp
 		modules/_io/iobase.cpp
 		modules/_io/bufferedio.cpp

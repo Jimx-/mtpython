@@ -8,7 +8,7 @@ using namespace mtpython::parse;
 using namespace mtpython::tree;
 using namespace mtpython::objects;
 
-Parser::Parser(mtpython::vm::ThreadContext* context, const std::string& source, CompileInfo* info, int flags) : sb(source, info->get_type()), diag(info, &sb), s(&sb, &diag)
+Parser::Parser(mtpython::vm::ThreadContext* context, const std::string& source, CompileInfo* info, int flags) : sb(source, info->get_type()), diag(context->get_space(), info, &sb), s(&sb, &diag)
 {
 	this->context = context;
 	this->space = context->get_space();

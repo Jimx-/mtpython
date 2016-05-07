@@ -26,6 +26,8 @@ namespace parse {
 
 class Scope {
 protected:
+	objects::ObjSpace* space;
+
 	std::string name;
 	int line, col;
 	Scope* parent;
@@ -35,6 +37,7 @@ protected:
 	bool _optimized;
 	bool has_free;
 	bool child_has_free;
+	bool _is_generator;
 	bool has_vararg;
 	bool has_kwarg;
 	std::vector<std::string> varnames;
@@ -49,8 +52,9 @@ protected:
 	virtual void pass_on_bindings(const std::unordered_set<std::string>& local, const std::unordered_set<std::string>& bound, const std::unordered_set<std::string>& global,
 								  std::unordered_set<std::string>& new_bound, std::unordered_set<std::string>& new_global);
 public:
-	Scope(const std::string& name, int line, int col) : name(name), line(line), col(col) 
-	{ 
+	Scope(objects::ObjSpace* sp, const std::string& name, int line, int col) : name(name), line(line), col(col)
+	{
+		space = sp;
 		_can_be_optimized = false;
 		_optimized = true;
 		is_class_scope = false; 
@@ -58,13 +62,17 @@ public:
 		has_free = false;
 		has_vararg = false;
 		has_kwarg = false;
+		_is_generator = false;
 	}
 
 	void add_child(Scope* child);
 	virtual const std::string& add_name(const std::string& id, int flags);
+	virtual void note_return(mtpython::tree::ReturnNode* node);
+	virtual void note_yield(mtpython::tree::YieldNode* node);
 	int lookup(const std::string& id);
 
 	bool can_be_optimized() { return _can_be_optimized; }
+	bool is_generator() { return _is_generator; }
 	bool optimized() { return _optimized; }
 	std::vector<std::string>& get_varnames() { return varnames; }
 	std::vector<std::string>& get_free_vars() { return free_vars; }
@@ -75,30 +83,35 @@ public:
 
 class ModuleScope : public Scope {
 public:
-	ModuleScope(const std::string& name) : Scope(name, 0, 0) { }
+	ModuleScope(objects::ObjSpace* space, const std::string& name) : Scope(space, name, 0, 0) { }
 };
 
 class FunctionScope : public Scope {
+private:
+	bool return_with_value;
 protected:
 	void analyze_cells(std::unordered_set<std::string>& free);
 
 	void pass_on_bindings(const std::unordered_set<std::string>& local, const std::unordered_set<std::string>& bound, const std::unordered_set<std::string>& global,
 								  std::unordered_set<std::string>& new_bound, std::unordered_set<std::string>& new_global);
 public:
-	FunctionScope(const std::string& name, int line, int col) : Scope(name, line, col)
+	FunctionScope(objects::ObjSpace* space, const std::string& name, int line, int col) : Scope(space, name, line, col)
 	{
 		_can_be_optimized = true;
 		_optimized = true;
+		return_with_value = false;
 	}
 
 	const std::string& add_name(const std::string& id, int flags);
+	void note_return(mtpython::tree::ReturnNode* node);
+	void note_yield(mtpython::tree::YieldNode* node);
 };
 
 class ClassScope : public Scope {
 protected:
 	void analyze_cells(std::unordered_set<std::string>& free);
 public:
-	ClassScope(mtpython::tree::ClassDefNode* cls) : Scope(cls->get_name(), cls->get_line(), 0) { is_class_scope = true; }
+	ClassScope(objects::ObjSpace* space, mtpython::tree::ClassDefNode* cls) : Scope(space, cls->get_name(), cls->get_line(), 0) { is_class_scope = true; }
 };
 
 class SymtableVisitor : public mtpython::tree::GenericVisitor {
@@ -139,13 +152,13 @@ public:
     mtpython::tree::ASTNode* visit_name(mtpython::tree::NameNode* node);
     /*ASTNode* visit_number(NumberNode* node);
     ASTNode* visit_pass(PassNode* node);
-    ASTNode* visit_raise(RaiseNode* node);
-    ASTNode* visit_return(ReturnNode* node);
-    ASTNode* visit_tuple(TupleNode* node);
+    ASTNode* visit_raise(RaiseNode* node); */
+    mtpython::tree::ASTNode* visit_return(mtpython::tree::ReturnNode* node);
+    /*ASTNode* visit_tuple(TupleNode* node);
     ASTNode* visit_unaryop(UnaryOpNode* node);
-    ASTNode* visit_while(WhileNode* node);
-    ASTNode* visit_yield(YieldNode* node);
-    ASTNode* visit_yieldfrom(YieldFromNode* node);*/
+    ASTNode* visit_while(WhileNode* node); */
+    mtpython::tree::ASTNode* visit_yield(mtpython::tree::YieldNode* node);
+    /*ASTNode* visit_yieldfrom(YieldFromNode* node);*/
 };
 
 }

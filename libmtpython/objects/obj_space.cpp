@@ -92,6 +92,7 @@ void ObjSpace::init_builtin_exceptions()
 	SET_EXCEPTION_TYPE(SystemError);
 	SET_EXCEPTION_TYPE(KeyError);
 	SET_EXCEPTION_TYPE(IndexError);
+	SET_EXCEPTION_TYPE(SyntaxError);
 }
 
 M_BaseObject* ObjSpace::get_builtin_module(const std::string& name)

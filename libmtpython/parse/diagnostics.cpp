@@ -1,4 +1,5 @@
 #include "parse/diagnostics.h"
+#include "interpreter/error.h"
 #include "exceptions.h"
 #include <iostream>
 
@@ -19,5 +20,6 @@ void Diagnostics::error(int line, int col, const std::string& error_msg)
 	std::cerr << "  " << source->get_line(line) << std::endl;
 	std::cerr << "  " << std::string(col - 1, ' ') << "^" << std::endl;
 
-	throw mtpython::SyntaxError(error_msg.c_str());
+	throw interpreter::InterpError(space->SyntaxError_type(), space->wrap_str(space->current_thread(), error_msg));
 }
+

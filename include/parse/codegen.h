@@ -79,8 +79,8 @@ public:
     mtpython::tree::ASTNode* visit_while(mtpython::tree::WhileNode* node);
     mtpython::tree::ASTNode* visit_with(mtpython::tree::WithNode* node);
     void handle_withitem(mtpython::tree::WithNode* withnode, mtpython::tree::WithItemNode* node);
-    /*ASTNode* visit_yield(YieldNode* node);
-    ASTNode* visit_yieldfrom(YieldFromNode* node);*/
+    mtpython::tree::ASTNode* visit_yield(mtpython::tree::YieldNode* node);
+    /*ASTNode* visit_yieldfrom(YieldFromNode* node);*/
 };
 
 class ModuleCodeGenerator : public BaseCodeGenerator {

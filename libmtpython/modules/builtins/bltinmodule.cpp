@@ -984,6 +984,7 @@ BuiltinsModule::BuiltinsModule(ObjSpace* space, M_BaseObject* name) : BuiltinMod
 	ADD_EXCEPTION(SystemError);
 	ADD_EXCEPTION(KeyError);
 	ADD_EXCEPTION(IndexError);
+	ADD_EXCEPTION(SyntaxError);
 
 	add_def("__doc__", new InterpDocstringWrapper("Built-in functions, exceptions, and other objects.\n\nNoteworthy: None is the `nil' object; Ellipsis represents `...' in slices."));
 	add_def("__import__", new InterpFunctionWrapper("__import__", builtin___import__, Signature({"name", "globals", "locals", "from_list", "level"})));

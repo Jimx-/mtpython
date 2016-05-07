@@ -42,6 +42,13 @@ public:
     const InterpError& get_error() { return error; }
 };
 
+class ReturnUnwinder : public StackUnwinder {
+private:
+    objects::M_BaseObject* retval;
+public:
+    ReturnUnwinder(objects::M_BaseObject* ret) : retval(ret) { why_code = WHY_RETURN; }
+};
+
 class BreakUnwinder : public StackUnwinder {
 public:
     BreakUnwinder() { why_code = WHY_BREAK; }
@@ -110,6 +117,7 @@ protected:
     std::stack<FrameBlock*> block_stack;
 
     int pc;
+    bool _finished_execution;
 
     mtpython::objects::M_BaseObject* pop_value()
     {
@@ -214,6 +222,7 @@ protected:
     void store_deref(int arg, int next_pc);
     void setup_with(int arg, int next_pc);
     void with_cleanup(int arg, int next_pc);
+    void yield_value(int arg, int next_pc);
 
     objects::M_BaseObject* end_finally();
 
@@ -238,11 +247,13 @@ public:
     objects::ObjSpace* get_space() { return space; }
     objects::M_BaseObject* get_globals() { return globals; }
 	objects::M_BaseObject* get_locals();
+    int get_pc() { return pc; }
+    bool finished_execution() { return _finished_execution; }
 	void set_locals(objects::M_BaseObject* locals);
     PyCode* get_pycode() { return pycode; }
 
     objects::M_BaseObject* exec();
-    objects::M_BaseObject* execute_frame();
+    objects::M_BaseObject* execute_frame(objects::M_BaseObject* arg = nullptr);
 
     std::vector<mtpython::objects::M_BaseObject*>& get_local_vars() { return local_vars; }
     const std::vector<mtpython::interpreter::Cell*>& get_cells() { return cells; }
