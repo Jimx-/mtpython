@@ -278,7 +278,11 @@ ASTNode* Parser::expr_stmt()
 		ASTNode* tgt;
 		while (cur_tok == TOK_EQL) {
 			match(TOK_EQL);
-			tgt = testlist();
+			if (cur_tok == TOK_YIELD) {
+				tgt = yield_expr();
+			} else {
+				tgt = testlist();
+			}
 			if (cur_tok == TOK_EQL) {
 				tgt->set_context(EC_STORE);
 				asgn->push_target(tgt);
@@ -299,7 +303,12 @@ ASTNode* Parser::expr_stmt()
 		asgn->set_target(expression);
 		asgn->set_op(tok2binop(cur_tok));
 		match(cur_tok);
-		asgn->set_value(testlist());
+
+		if (cur_tok == TOK_YIELD) {
+			asgn->set_value(yield_expr());
+		} else {
+			asgn->set_value(testlist());
+		}
 
 		expression = asgn;
 	} else {
@@ -831,8 +840,11 @@ ASTNode* Parser::atom()
 		match(TOK_LPAREN);
 		if (cur_tok == TOK_RPAREN)
 			node = new TupleNode(s.get_line());
+		else if (cur_tok == TOK_YIELD)
+			node = yield_expr();
 		else
 			node = testlist_comp();
+
 		s.set_implicit_line_joining(joining);
 		match(TOK_RPAREN);
 		break;

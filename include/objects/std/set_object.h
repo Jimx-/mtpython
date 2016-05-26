@@ -27,6 +27,8 @@ public:
 class M_StdSetObject : public M_BaseObject {
 private:
 	std::unordered_set<M_BaseObject*, M_StdObjectHasher, M_StdObjectEq> set;
+
+	M_BaseObject* _discard(vm::ThreadContext* context, M_BaseObject* item);
 public:
 	M_StdSetObject(ObjSpace* space) : set(5, M_StdObjectHasher(space), M_StdObjectEq(space)) { }
 	
@@ -42,6 +44,7 @@ public:
 	static M_BaseObject* __iter__(vm::ThreadContext* context, M_BaseObject* self);
 	
 	static M_BaseObject* add(vm::ThreadContext* context, M_BaseObject* self, M_BaseObject* item);
+	static M_BaseObject* remove(vm::ThreadContext* context, M_BaseObject* self, M_BaseObject* item);
 
 	static interpreter::Typedef* _set_typedef();
 	interpreter::Typedef* get_typedef();

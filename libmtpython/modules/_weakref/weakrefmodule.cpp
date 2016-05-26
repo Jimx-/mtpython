@@ -40,12 +40,19 @@ public:
         return nullptr;
     }
 
+    static M_BaseObject* __call__(ThreadContext* context, M_BaseObject* self)
+    {
+        M_Ref* ref = static_cast<M_Ref*>(self);
+        return ref->obj;
+    }
+
     Typedef* get_typedef();
 };
 
 static Typedef ref_typedef("weakref", {
     {"__new__",  new InterpFunctionWrapper("__new__", M_Ref::__new__)},
     {"__init__", new InterpFunctionWrapper("__init__", M_Ref::__init__)},
+    {"__call__", new InterpFunctionWrapper("__call__", M_Ref::__call__)},
 });
 
 Typedef* M_Ref::get_typedef()

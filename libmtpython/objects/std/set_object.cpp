@@ -17,7 +17,22 @@ static Typedef set_typedef("set", {
 	{ "__le__", new InterpFunctionWrapper("__le__", M_StdSetObject::__le__) },
 	{ "__iter__", new InterpFunctionWrapper("__iter__", M_StdSetObject::__iter__) },
 	{ "add", new InterpFunctionWrapper("add", M_StdSetObject::add) },
+	{ "remove", new InterpFunctionWrapper("remove", M_StdSetObject::remove) },
 });
+
+M_BaseObject* M_StdSetObject::_discard(vm::ThreadContext* context, M_BaseObject* item)
+{
+	M_BaseObject* result = nullptr;
+	lock();
+	auto iter = set.find(item);
+	if (iter != set.end()) {
+		set.erase(iter);
+		result = item;
+	}
+	unlock();
+
+	return result;
+}
 
 bool M_StdSetObject::i_issubset(M_StdSetObject * other)
 {
@@ -112,6 +127,18 @@ M_BaseObject* M_StdSetObject::add(mtpython::vm::ThreadContext* context, M_BaseOb
 	as_set->unlock();
 
 	return context->get_space()->wrap_None();
+}
+
+M_BaseObject* M_StdSetObject::remove(mtpython::vm::ThreadContext* context, M_BaseObject* self, M_BaseObject* item)
+{
+	M_StdSetObject* as_set = static_cast<M_StdSetObject*>(self);
+
+	M_BaseObject* result = as_set->_discard(context, item);
+	if (!result) {
+		throw InterpError(context->get_space()->KeyError_type(), item);
+	}
+
+	return nullptr;
 }
 
 static Typedef set_iterator_typedef("set_iterator", {

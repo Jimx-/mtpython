@@ -123,6 +123,9 @@ M_BaseObject* PyFrame::execute_frame(M_BaseObject* arg)
 	context->enter(this);
 
 	int next_pc = pc + 1;
+	if (next_pc != 0) {
+		push_value(arg);
+	}
 
 	try {
 		retval = dispatch(context, pycode, next_pc);
