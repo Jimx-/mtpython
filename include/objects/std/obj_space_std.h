@@ -47,8 +47,10 @@ public:
 	M_BaseObject* wrap_False() { return wrapped_False; }
 	M_BaseObject* wrap_NotImplemented() { return wrapped_NotImplemented; }
 
-	M_BaseObject* new_tuple(vm::ThreadContext* context, std::vector<M_BaseObject*>& items);
-	M_BaseObject* new_list(vm::ThreadContext* context, std::vector<M_BaseObject*>& items);
+	int i_get_index(M_BaseObject* obj, M_BaseObject* exc, M_BaseObject* descr);
+
+	M_BaseObject* new_tuple(vm::ThreadContext* context, const std::vector<M_BaseObject*>& items);
+	M_BaseObject* new_list(vm::ThreadContext* context, const std::vector<M_BaseObject*>& items);
 	M_BaseObject* new_dict(vm::ThreadContext* context);
 	M_BaseObject* new_set(vm::ThreadContext* context);
 	M_BaseObject* new_seqiter(vm::ThreadContext* context, M_BaseObject* obj);

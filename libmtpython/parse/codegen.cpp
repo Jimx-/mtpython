@@ -11,6 +11,8 @@ static std::unordered_map<int, int> name_ops_fast = {{EC_LOAD, LOAD_FAST}, {EC_S
 static std::unordered_map<int, int> name_ops_global = {{EC_LOAD, LOAD_GLOBAL}, {EC_STORE, STORE_GLOBAL}, {EC_DEL, DELETE_GLOBAL}};
 static std::unordered_map<int, int> name_ops_deref = {{EC_LOAD, LOAD_DEREF}, {EC_STORE, STORE_DEREF}, {EC_DEL, DELETE_DEREF}};
 static std::unordered_map<int, int> subscr_op = {{EC_LOAD, BINARY_SUBSCR}, {EC_STORE, STORE_SUBSCR}, {EC_DEL, DELETE_SUBSCR}};
+static std::unordered_map<int, int> augassign_op = {{OP_PLUSEQ, INPLACE_ADD}, {OP_MINUSEQ, INPLACE_SUBTRACT}, {OP_MULEQ, INPLACE_MULTIPLY},
+														   {OP_DIVEQ, INPLACE_TRUE_DIVIDE}};
 
 BaseCodeGenerator::BaseCodeGenerator(const std::string& name, mtpython::vm::ThreadContext* context, ASTNode* module, SymtableVisitor* symtab, int lineno, CompileInfo* info) : CodeBuilder(name, context, symtab->find_scope(module), lineno, info)
 {
@@ -89,6 +91,24 @@ ASTNode* BaseCodeGenerator::visit_assign(AssignNode* node)
 		(*target)->visit(this);
 	}
 
+	return node;
+}
+
+ASTNode* BaseCodeGenerator::visit_augassign(AugAssignNode* node)
+{
+	set_lineno(node->get_line());
+	ASTNode* target = node->get_target();
+
+	switch (target->get_tag()) {
+	case NT_IDENT: {
+		NameNode* name = static_cast<NameNode*>(target);
+		gen_name(name->get_name(), ExprContext::EC_LOAD);
+		node->get_value()->visit(this);
+		emit_op(augassign_op[node->get_op()]);
+		gen_name(name->get_name(), ExprContext::EC_STORE);
+		break;
+	}
+	}
 	return node;
 }
 

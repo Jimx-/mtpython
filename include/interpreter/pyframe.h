@@ -31,7 +31,7 @@ protected:
     WhyCode why_code;
 public:
     WhyCode why() { return why_code; }
-	objects::M_BaseObject* unhandle() { throw NotImplementedException("Abstract"); }
+	virtual objects::M_BaseObject* unhandle() { throw NotImplementedException("unhandle()"); }
 };
 
 class ExceptionUnwinder : public StackUnwinder {
@@ -40,6 +40,7 @@ private:
 public:
     ExceptionUnwinder(const InterpError& e) : error(e) { why_code = WHY_EXCEPTION; }
     const InterpError& get_error() { return error; }
+    virtual objects::M_BaseObject* unhandle() { throw error; }
 };
 
 class ReturnUnwinder : public StackUnwinder {
@@ -47,6 +48,7 @@ private:
     objects::M_BaseObject* retval;
 public:
     ReturnUnwinder(objects::M_BaseObject* ret) : retval(ret) { why_code = WHY_RETURN; }
+    virtual objects::M_BaseObject* unhandle() { return retval; }
 };
 
 class BreakUnwinder : public StackUnwinder {
@@ -63,7 +65,7 @@ public:
     FrameBlock(int handler, int level) : handler(handler), level(level) { mask = WHY_NOT; }
 
     int handling_mask() { return mask; }
-    virtual int handle(PyFrame* frame, StackUnwinder* unwinder) { throw mtpython::NotImplementedException("Abstract"); }
+    virtual int handle(PyFrame* frame, StackUnwinder* unwinder) { throw mtpython::NotImplementedException("handle()"); }
 
     void cleanup(PyFrame* frame);
 };
@@ -173,6 +175,9 @@ protected:
     void binary_add(int arg, int next_pc);
     void binary_sub(int arg, int next_pc);
     void binary_mul(int arg, int next_pc);
+    void binary_inplace_add(int arg, int next_pc);
+    void binary_inplace_sub(int arg, int next_pc);
+    void binary_inplace_mul(int arg, int next_pc);
     void load_fast(int arg, int next_pc);
     void store_fast(int arg, int next_pc);
     void load_global(int arg, int next_pc);

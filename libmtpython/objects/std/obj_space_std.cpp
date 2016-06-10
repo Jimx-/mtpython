@@ -152,12 +152,12 @@ M_BaseObject* StdObjSpace::wrap_str(ThreadContext* context, const std::string& x
 	return context->new_object(new M_StdUnicodeObject(x));
 }
 
-M_BaseObject* StdObjSpace::new_tuple(ThreadContext* context, std::vector<M_BaseObject*>& items)
+M_BaseObject* StdObjSpace::new_tuple(ThreadContext* context, const std::vector<M_BaseObject*>& items)
 {
 	return context->new_object(new M_StdTupleObject(items));
 }
 
-M_BaseObject* StdObjSpace::new_list(ThreadContext* context, std::vector<M_BaseObject*>& items)
+M_BaseObject* StdObjSpace::new_list(ThreadContext* context, const std::vector<M_BaseObject*>& items)
 {
 	return context->new_object(new M_StdListObject(items));
 }
@@ -185,5 +185,17 @@ void StdObjSpace::unwrap_tuple(M_BaseObject* obj, std::vector<M_BaseObject*>& li
 
 	list.clear();
 	list.insert(list.end(), items.begin(), items.end());
+}
+
+int StdObjSpace::i_get_index(M_BaseObject* obj, M_BaseObject* exc, M_BaseObject* descr)
+{
+	int result;
+	try {
+		result = obj->to_int(this, false);
+	} catch (const NotImplementedException&) {
+		return ObjSpace::i_get_index(obj, exc, descr);
+	}
+
+	return result;
 }
 

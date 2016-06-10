@@ -229,7 +229,11 @@ int PyFrame::dispatch_bytecode(ThreadContext* context, std::vector<unsigned char
 			if (unwinder) {
 				FrameBlock* block = unwind_stack(unwinder->why());
 				if (!block) {
-					push_value(unwinder->unhandle());
+					try {
+						push_value(unwinder->unhandle());
+					} catch (NotImplementedException) {
+						int i = 1;
+					}
 					throw ReturnException();
 				} else {
 					next_pc = block->handle(this, unwinder);
@@ -253,6 +257,15 @@ int PyFrame::dispatch_bytecode(ThreadContext* context, std::vector<unsigned char
 			break;
 		case BINARY_MULTIPLY:
 			binary_mul(arg, next_pc);
+			break;
+		case INPLACE_ADD:
+			binary_inplace_add(arg, next_pc);
+			break;
+		case INPLACE_SUBTRACT:
+			binary_inplace_sub(arg, next_pc);
+			break;
+		case INPLACE_MULTIPLY:
+			binary_inplace_mul(arg, next_pc);
 			break;
 		case LOAD_CONST:
 			load_const(arg, next_pc);
@@ -484,6 +497,9 @@ void PyFrame::fill_cellvars_from_args()
 DEF_BINARY_OPER(add)
 DEF_BINARY_OPER(sub)
 DEF_BINARY_OPER(mul)
+DEF_BINARY_OPER(inplace_add)
+DEF_BINARY_OPER(inplace_sub)
+DEF_BINARY_OPER(inplace_mul)
 DEF_BINARY_OPER(_and)
 DEF_BINARY_OPER_ALIAS(subscr, getitem)
 
@@ -654,33 +670,35 @@ void PyFrame::compare_op(int arg, int next_pc)
 	context->push_local_frame();
 	M_BaseObject* result;
 	switch (arg) {
-	case 0:
+	case 0:		/* < */
 		result = space->lt(v1, v2);
 		break;
-	case 1:
+	case 1:		/* <= */
 		result = space->le(v1, v2);
 		break;
-	case 2:
+	case 2:		/* == */
 		result = space->eq(v1, v2);
 		break;
-	case 3:
+	case 3:		/* != */
 		result = space->ne(v1, v2);
 		break;
-	case 4:
+	case 4:		/* > */
 		result = space->gt(v1, v2);
 		break;
-	case 5:
+	case 5:		/* >= */
 		result = space->ge(v1, v2);
 		break;
-	case 6:
+	case 6:		/* in */
 		result = space->contains(v2, v1);
 		break;
-	case 7:
+	case 7:		/* not in */
+		result = space->not_(space->contains(v2, v1));
 		break;
-	case 8:
+		break;
+	case 8:		/* is */
 		result = space->new_bool(space->i_is(v1, v2));
 		break;
-	case 9:
+	case 9:		/* is not */
 		result = space->new_bool(!space->i_is(v1, v2));
 		break;
 	case 10:

@@ -21,6 +21,7 @@ private:
 	std::unordered_map<std::string, M_BaseObject*> dict;
 	M_BaseObject* wrapped_dict;
 	std::vector<M_BaseObject*> mro;
+	std::vector<M_BaseObject*> subclasses;
 	bool _has_dict;
 	M_BaseObject* cls;
 
@@ -47,6 +48,9 @@ public:
 	M_BaseObject* lookup(const std::string& name);
 	M_BaseObject* lookup_starting_at(M_BaseObject* start, const std::string& name);
 	M_BaseObject* lookup_cls(const std::string& attr, M_BaseObject*& cls);
+
+	void add_subclass(M_BaseObject* cls);
+	const std::vector<M_BaseObject*>& get_subclasses();
 	bool issubtype(M_BaseObject* type);
 
 	static M_BaseObject* __new__(vm::ThreadContext* context, const interpreter::Arguments& args);
@@ -58,6 +62,7 @@ public:
 	static M_BaseObject* __subclasscheck__(vm::ThreadContext* context, M_BaseObject* self, M_BaseObject* sub);
 	static M_BaseObject* __getattribute__(mtpython::vm::ThreadContext* context, M_BaseObject* obj,
 													M_BaseObject* attr);
+	static M_BaseObject* __subclasses__(mtpython::vm::ThreadContext* context, M_BaseObject* self);
 };
 
 class StdTypedefCache : public TypedefCache {

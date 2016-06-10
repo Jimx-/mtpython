@@ -607,12 +607,35 @@ public:
 		return iter;
 	}
 
+	static M_BaseObject* __getitem__(mtpython::vm::ThreadContext* context, M_BaseObject* self, M_BaseObject* index)
+	{
+		ObjSpace* space = context->get_space();
+
+		M_Range* range = static_cast<M_Range*>(self);
+		int start = space->unwrap_int(range->start);
+		int stop = space->unwrap_int(range->stop);
+		int length = space->unwrap_int(range->length);
+		int step = space->unwrap_int(range->step);
+
+		int i = space->i_get_index(index, space->IndexError_type(), space->wrap_str(context, "range index"));
+		if (i < 0) {
+			i += length;
+		}
+
+		if (i >= length || i < 0) {
+			throw InterpError(space->IndexError_type(), space->wrap_str(context, "range object index out of range"));
+		}
+
+		return space->wrap_int(context, start + i * step);
+	}
+
 	Typedef* get_typedef();
 };
 
 static Typedef Range_typedef("range", {
 	{ "__new__", new InterpFunctionWrapper("__new__", M_Range::__new__) },
 	{ "__iter__", new InterpFunctionWrapper("__iter__", M_Range::__iter__) },
+	{ "__getitem__", new InterpFunctionWrapper("__getitem__", M_Range::__getitem__) },
 });
 
 Typedef* M_Range::get_typedef()
@@ -632,7 +655,7 @@ public:
 	{
 		ObjSpace* space = context->get_space();
 		remaining = space->unwrap_int(space->len(obj)) - 1;
-		if (space->lookup(obj, "__getitem__")) {
+		if (!space->lookup(obj, "__getitem__")) {
 			throw InterpError(space->TypeError_type(), space->wrap_str(context, "reversed() argument must be a sequence"));
 		}
 	}

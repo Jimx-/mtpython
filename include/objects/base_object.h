@@ -18,6 +18,8 @@ class ObjSpace;
 /* Base of all MTPython objects */
 class M_BaseObject {
 public:
+	virtual ~M_BaseObject() { }
+
 	virtual M_BaseObject* get_class(ObjSpace* space);
 	virtual void set_class(ObjSpace* space, M_BaseObject* type) { throw NotImplementedException("set_class()"); }
 	virtual interpreter::Typedef* get_typedef() { throw NotImplementedException("get_typedef()"); }
@@ -44,6 +46,14 @@ public:
 	void unlock() {}
 
 	virtual void dbg_print() { }	/* for debug purpose */
+};
+
+class ScopedObjectLock {
+private:
+	M_BaseObject* obj;
+public:
+	ScopedObjectLock(M_BaseObject* _obj) : obj(_obj) { obj->lock(); }
+	~ScopedObjectLock() { obj->unlock(); }
 };
 
 }

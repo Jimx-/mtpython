@@ -16,6 +16,7 @@ static mtpython::interpreter::Typedef type_typedef("type", {
 	{ "__repr__", new InterpFunctionWrapper("__repr__", M_StdTypeObject::__repr__) },
 	{ "__subclasscheck__", new InterpFunctionWrapper("__subclasscheck__", M_StdTypeObject::__subclasscheck__) },
 	{ "__mro__", new GetSetDescriptor(M_StdTypeObject::__mro__get) },
+	{ "__subclasses__", new InterpFunctionWrapper("__subclasses__", M_StdTypeObject::__subclasses__) },
 });
 
 M_StdTypeObject::M_StdTypeObject(ObjSpace* space, M_BaseObject* cls, std::string& name, const std::vector<M_BaseObject*>& bases, const std::unordered_map<std::string, M_BaseObject*>& dict) :
@@ -314,5 +315,33 @@ M_BaseObject* M_StdTypeObject::__getattribute__(mtpython::vm::ThreadContext* con
 
 	if (descr) return space->get(descr, obj);
 	throw InterpError::format(space, space->AttributeError_type(), "'%s' object has no attribute '%s'", space->get_type_name(obj).c_str(), name.c_str());
+}
+
+void M_StdTypeObject::add_subclass(M_BaseObject* cls)
+{
+	/* TODO: use weak ref */
+	for (auto p : subclasses) {
+		if (p == cls) {
+			return;
+		}
+	}
+
+	subclasses.push_back(cls);
+}
+
+const std::vector<M_BaseObject*>& M_StdTypeObject::get_subclasses()
+{
+	return subclasses;
+}
+
+M_BaseObject* M_StdTypeObject::__subclasses__(mtpython::vm::ThreadContext* context, M_BaseObject* self)
+{
+	ObjSpace* space = context->get_space();
+
+	self->lock();
+	M_BaseObject* list = space->new_list(context, (static_cast<M_StdTypeObject*>(self))->get_subclasses());
+	self->unlock();
+
+	return list;
 }
 

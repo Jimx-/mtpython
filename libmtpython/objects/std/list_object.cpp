@@ -15,9 +15,11 @@ static mtpython::interpreter::Typedef list_typedef("list", {
 	{ "__len__", new InterpFunctionWrapper("__len__", M_StdListObject::__len__) },
 	{ "__contains__", new InterpFunctionWrapper("__contains__", M_StdListObject::__contains__) },
 	{ "__iter__", new InterpFunctionWrapper("__iter__", M_StdListObject::__iter__) },
+	{ "__getitem__", new InterpFunctionWrapper("__getitem__", M_StdListObject::__getitem__) },
 
 	{ "append", new InterpFunctionWrapper("append", M_StdListObject::append) },
-	{ "extend", new InterpFunctionWrapper("extend", M_StdListObject::append) },
+	{ "extend", new InterpFunctionWrapper("extend", M_StdListObject::extend) },
+	{ "pop", new InterpFunctionWrapper("pop", M_StdListObject::pop) },
 });
 
 mtpython::interpreter::Typedef* M_StdListObject::_list_typedef()
@@ -104,4 +106,63 @@ M_BaseObject* M_StdListObject::extend(mtpython::vm::ThreadContext* context, M_Ba
 	as_list->unlock();
 
 	return nullptr;
+}
+
+M_BaseObject* M_StdListObject::__getitem__(mtpython::vm::ThreadContext* context, M_BaseObject* self, M_BaseObject* index)
+{
+	ObjSpace* space = context->get_space();
+	ScopedObjectLock lock(self);
+
+	M_StdListObject* as_list = static_cast<M_StdListObject*>(self);
+
+	int i = space->i_get_index(index, space->IndexError_type(), space->wrap_str(context, "list index"));
+	M_BaseObject* item = nullptr;
+	if (i < 0) {
+		if (i < -(int)(as_list->items.size())) throw InterpError(space->IndexError_type(), space->wrap_str(context, "list index out of range"));
+		item = as_list->items[as_list->items.size() + i];
+	} else {
+		if (i >= (int)as_list->items.size()) throw InterpError(space->IndexError_type(), space->wrap_str(context, "list index out of range"));
+		item = as_list->items[i];
+	}
+
+	return item;
+}
+
+M_BaseObject* M_StdListObject::pop(mtpython::vm::ThreadContext* context, const Arguments& args)
+{
+	static Signature pop_signature({"self", "index"});
+
+	ObjSpace* space = context->get_space();
+	std::vector<M_BaseObject*> scope;
+	args.parse("pop", nullptr, pop_signature, scope, { space->wrap_int(context, -1) });
+
+	M_BaseObject* self = scope[0];
+	M_BaseObject* ind = scope[1];
+
+	M_StdListObject* as_list = static_cast<M_StdListObject*>(self);
+	ScopedObjectLock lock(as_list);
+	int index = space->unwrap_int(ind);
+
+	int size = as_list->size();
+	if (size == 0) {
+		throw InterpError(space->IndexError_type(), space->wrap_str(context, "pop from empty list"));
+	}
+
+	if (index == -1) {
+		M_BaseObject* result = as_list->items.back();
+		context->new_local_ref(result);
+		as_list->items.pop_back();
+		return result;
+	}
+
+	if (index < 0) index += size;
+	if (index >= size) {
+		throw InterpError(space->IndexError_type(), space->wrap_str(context, "pop index out of range"));
+	}
+
+	M_BaseObject* result = as_list->items[index];
+	context->new_local_ref(result);
+	as_list->items.erase(as_list->items.begin() + index);
+
+	return result;
 }

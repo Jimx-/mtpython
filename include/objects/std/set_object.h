@@ -45,6 +45,7 @@ public:
 	
 	static M_BaseObject* add(vm::ThreadContext* context, M_BaseObject* self, M_BaseObject* item);
 	static M_BaseObject* remove(vm::ThreadContext* context, M_BaseObject* self, M_BaseObject* item);
+	static M_BaseObject* discard(vm::ThreadContext* context, M_BaseObject* self, M_BaseObject* item);
 
 	static interpreter::Typedef* _set_typedef();
 	interpreter::Typedef* get_typedef();

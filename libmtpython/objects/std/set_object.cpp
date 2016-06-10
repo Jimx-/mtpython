@@ -18,6 +18,7 @@ static Typedef set_typedef("set", {
 	{ "__iter__", new InterpFunctionWrapper("__iter__", M_StdSetObject::__iter__) },
 	{ "add", new InterpFunctionWrapper("add", M_StdSetObject::add) },
 	{ "remove", new InterpFunctionWrapper("remove", M_StdSetObject::remove) },
+	{ "discard", new InterpFunctionWrapper("discard", M_StdSetObject::discard) },
 });
 
 M_BaseObject* M_StdSetObject::_discard(vm::ThreadContext* context, M_BaseObject* item)
@@ -186,3 +187,9 @@ Typedef* M_StdSetIterObject::get_typedef()
 	return &set_iterator_typedef;
 }
 
+M_BaseObject* M_StdSetObject::discard(mtpython::vm::ThreadContext* context, M_BaseObject* self, M_BaseObject* item)
+{
+	(static_cast<M_StdSetObject*>(self))->_discard(context, item);
+
+	return nullptr;
+}

@@ -23,13 +23,17 @@ public:
 	static interpreter::Typedef* _list_typedef();
 	virtual interpreter::Typedef* get_typedef();
 
+	int size() { return items.size(); }
+
 	static M_BaseObject* __len__(vm::ThreadContext* context, M_BaseObject* self);
 	static M_BaseObject* __repr__(vm::ThreadContext* context, M_BaseObject* self);
 	static M_BaseObject* __contains__(vm::ThreadContext* context, M_BaseObject* self, M_BaseObject* obj);
 	static M_BaseObject* __iter__(vm::ThreadContext* context, M_BaseObject* self);
+	static M_BaseObject* __getitem__(vm::ThreadContext* context, M_BaseObject* self, M_BaseObject* index);
 
 	static M_BaseObject* append(vm::ThreadContext* context, M_BaseObject* self, M_BaseObject* item);
 	static M_BaseObject* extend(vm::ThreadContext* context, M_BaseObject* self, M_BaseObject* iterable);
+	static M_BaseObject* pop(vm::ThreadContext* context, const interpreter::Arguments& args);
 };
 
 }

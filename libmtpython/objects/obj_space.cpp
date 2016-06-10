@@ -146,7 +146,13 @@ M_BaseObject* ObjSpace::hash(M_BaseObject* obj)
 bool ObjSpace::is_true(M_BaseObject* obj)
 {
 	M_BaseObject* descr = lookup(obj, "__bool__");
-	if (!descr) return true;
+	if (!descr) {
+		descr = lookup(obj, "__len__");
+		if (!descr) return true;
+
+		M_BaseObject* result = get_and_call_function(current_thread(), descr, {obj});
+		return unwrap_int(result) != 0;
+	}
 
 	M_BaseObject* result = get_and_call_function(current_thread(), descr, {obj});
 
@@ -207,6 +213,10 @@ DEF_BINARY_OPER(add, __add__, __radd__)
 DEF_BINARY_OPER(sub, __sub__, __rsub__)
 DEF_BINARY_OPER(mul, __mul__, __rmul__)
 DEF_BINARY_OPER(_and, __and__, __rand__)
+
+DEF_BINARY_OPER(inplace_add, __iadd__, __iadd__)
+DEF_BINARY_OPER(inplace_sub, __isub__, __isub__)
+DEF_BINARY_OPER(inplace_mul, __imul__, __imul__)
 
 DEF_UNARY_OPER(pos, __pos__)
 DEF_UNARY_OPER(neg, __neg__)
@@ -534,7 +544,7 @@ M_BaseObject* ObjSpace::issubtype_override(M_BaseObject* sub, M_BaseObject* type
 		return get_and_call_function(current_thread(), descr, { type, sub });
 	}
 
-	throw InterpError(TypeError_type(),wrap_str(current_thread(), "issubclass not supported"));
+	throw InterpError(TypeError_type(), wrap_str(current_thread(), "issubclass not supported"));
 }
 
 M_BaseObject* ObjSpace::isinstance(M_BaseObject* obj, M_BaseObject* type)
@@ -550,5 +560,11 @@ M_BaseObject* ObjSpace::isinstance_override(M_BaseObject* obj, M_BaseObject* typ
 	}
 
 	return isinstance(obj, type);
+}
+
+int ObjSpace::i_get_index(M_BaseObject* obj, M_BaseObject* exc, M_BaseObject* descr)
+{
+	throw InterpError(exc, descr);
+	return 0;
 }
 

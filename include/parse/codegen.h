@@ -43,7 +43,7 @@ public:
     mtpython::tree::ASTNode* visit_attribute(mtpython::tree::AttributeNode* node);
     //mtpython::tree::ASTNode* visit_arguments(mtpython::tree::ArgumentsNode* node);
     mtpython::tree::ASTNode* visit_assign(mtpython::tree::AssignNode* node);
-    /*ASTNode* visit_augassign(AugAssignNode* node);*/
+    mtpython::tree::ASTNode* visit_augassign(mtpython::tree::AugAssignNode* node);
     mtpython::tree::ASTNode* visit_binop(mtpython::tree::BinOpNode* node);
     mtpython::tree::ASTNode* visit_break(mtpython::tree::BreakNode* node);
     mtpython::tree::ASTNode* visit_call(mtpython::tree::CallNode* node);

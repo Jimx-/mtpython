@@ -76,16 +76,16 @@ public:
 	virtual interpreter::PyFrame* create_frame(vm::ThreadContext* context, interpreter::Code* code, M_BaseObject* globals, M_BaseObject* outer=nullptr) { throw NotImplementedException("Abstract"); }
 
 	virtual M_BaseObject* get_typeobject(interpreter::Typedef* def) { return typedef_cache->get(def); }
-	virtual M_BaseObject* type(M_BaseObject* obj) { throw NotImplementedException("Abstract"); }
+	virtual M_BaseObject* type(M_BaseObject* obj) { throw NotImplementedException("type()"); }
 	virtual std::string get_type_name(M_BaseObject* obj);
 
-	virtual M_BaseObject* lookup(M_BaseObject* obj, const std::string& name) { throw NotImplementedException("Abstract"); }
-	virtual M_BaseObject* lookup_type_cls(M_BaseObject* obj, const std::string& attr, M_BaseObject*& cls) { throw NotImplementedException("Abstract"); }
-	virtual M_BaseObject* lookup_type_starting_at(M_BaseObject* type, M_BaseObject* start, const std::string& name) { throw NotImplementedException("Abstract"); }
+	virtual M_BaseObject* lookup(M_BaseObject* obj, const std::string& name) { throw NotImplementedException("lookup()"); }
+	virtual M_BaseObject* lookup_type_cls(M_BaseObject* obj, const std::string& attr, M_BaseObject*& cls) { throw NotImplementedException("lookup_type_cls()"); }
+	virtual M_BaseObject* lookup_type_starting_at(M_BaseObject* type, M_BaseObject* start, const std::string& name) { throw NotImplementedException("lookup_type_starting_at()"); }
 	virtual bool i_isinstance(M_BaseObject* obj, M_BaseObject* cls) { throw NotImplementedException("i_isinstance()"); }
-	virtual bool i_issubtype(M_BaseObject* sub, M_BaseObject* type) { throw NotImplementedException("Abstract"); }
+	virtual bool i_issubtype(M_BaseObject* sub, M_BaseObject* type) { throw NotImplementedException("i_issubtype()"); }
 
-	virtual M_BaseObject* get_type_by_name(const std::string& name) { throw NotImplementedException("Abstract"); }
+	virtual M_BaseObject* get_type_by_name(const std::string& name) { throw NotImplementedException("get_type_by_name()"); }
 
 	M_BaseObject* TypeError_type() { return type_TypeError; }
 	M_BaseObject* StopIteration_type() { return type_StopIteration; }
@@ -104,23 +104,23 @@ public:
 	virtual M_BaseObject* wrap(vm::ThreadContext* context, const std::string& x) { return wrap_str(context, x); }
 	virtual M_BaseObject* wrap(vm::ThreadContext* context, M_BaseObject* obj) { return obj; }
 
-	virtual M_BaseObject* wrap_int(vm::ThreadContext* context, int x) { throw NotImplementedException("Abstract"); }
-	virtual M_BaseObject* wrap_int(vm::ThreadContext* context, const std::string& x) { throw NotImplementedException("Abstract"); }
+	virtual M_BaseObject* wrap_int(vm::ThreadContext* context, int x) { throw NotImplementedException("wrap_int()"); }
+	virtual M_BaseObject* wrap_int(vm::ThreadContext* context, const std::string& x) { throw NotImplementedException("wrap_int()"); }
 
-	virtual M_BaseObject* wrap_str(vm::ThreadContext* context, const std::string& x) { throw NotImplementedException("Abstract"); }
+	virtual M_BaseObject* wrap_str(vm::ThreadContext* context, const std::string& x) { throw NotImplementedException("wrap_str()"); }
 
-	virtual M_BaseObject* wrap_None() { throw NotImplementedException("Abstract"); }
-	virtual M_BaseObject* wrap_True() { throw NotImplementedException("Abstract"); }
-	virtual M_BaseObject* wrap_False() { throw NotImplementedException("Abstract"); }
-	virtual M_BaseObject* wrap_NotImplemented() { throw NotImplementedException("Abstract"); }
+	virtual M_BaseObject* wrap_None() { throw NotImplementedException("wrap_None()"); }
+	virtual M_BaseObject* wrap_True() { throw NotImplementedException("wrap_True()"); }
+	virtual M_BaseObject* wrap_False() { throw NotImplementedException("wrap_False()"); }
+	virtual M_BaseObject* wrap_NotImplemented() { throw NotImplementedException("wrap_NotImplemented()"); }
 
 	virtual M_BaseObject* new_bool(bool x) { if (x) return wrap_True(); else return wrap_False(); }
 	virtual M_BaseObject* new_interned_str(const std::string& x);
-	virtual M_BaseObject* new_tuple(vm::ThreadContext* context, std::vector<M_BaseObject*>& items) { throw NotImplementedException("Abstract"); }
-	virtual M_BaseObject* new_list(vm::ThreadContext* context, std::vector<M_BaseObject*>& items) { throw NotImplementedException("Abstract"); }
-	virtual M_BaseObject* new_dict(vm::ThreadContext* context) { throw NotImplementedException("Abstract"); }
-	virtual M_BaseObject* new_set(vm::ThreadContext* context) { throw NotImplementedException("Abstract"); }
-	virtual M_BaseObject* new_seqiter(vm::ThreadContext* context, M_BaseObject* obj) { throw NotImplementedException("Abstract"); }
+	virtual M_BaseObject* new_tuple(vm::ThreadContext* context, const std::vector<M_BaseObject*>& items) { throw NotImplementedException("new_tuple()"); }
+	virtual M_BaseObject* new_list(vm::ThreadContext* context, const std::vector<M_BaseObject*>& items) { throw NotImplementedException("new_list()"); }
+	virtual M_BaseObject* new_dict(vm::ThreadContext* context) { throw NotImplementedException("new_dict()"); }
+	virtual M_BaseObject* new_set(vm::ThreadContext* context) { throw NotImplementedException("new_set()"); }
+	virtual M_BaseObject* new_seqiter(vm::ThreadContext* context, M_BaseObject* obj) { throw NotImplementedException("new_seqiter()"); }
 
 	virtual int unwrap_int(M_BaseObject* obj, bool allow_conversion = true);
 	virtual std::string unwrap_str(M_BaseObject* obj) { return obj->to_string(this); }
@@ -159,6 +159,7 @@ public:
 	bool i_is(M_BaseObject* obj1, M_BaseObject* obj2) { return (!obj2) ? false : obj2->i_is(this, obj1); }
 	bool i_eq(M_BaseObject* obj1, M_BaseObject* obj2);
 	std::size_t i_hash(M_BaseObject* obj);
+	virtual int i_get_index(M_BaseObject* obj, M_BaseObject* exc, M_BaseObject* descr);
 
 	M_BaseObject* str(M_BaseObject* obj);
 	M_BaseObject* repr(M_BaseObject* obj);
@@ -186,6 +187,10 @@ public:
 	M_BaseObject* sub(M_BaseObject* obj1, M_BaseObject* obj2);
 	M_BaseObject* mul(M_BaseObject* obj1, M_BaseObject* obj2);
 	M_BaseObject* _and(M_BaseObject* obj1, M_BaseObject* obj2);
+
+	M_BaseObject* inplace_add(M_BaseObject* obj1, M_BaseObject* obj2);
+	M_BaseObject* inplace_sub(M_BaseObject* obj1, M_BaseObject* obj2);
+	M_BaseObject* inplace_mul(M_BaseObject* obj1, M_BaseObject* obj2);
 
 	M_BaseObject* issubtype(M_BaseObject* sub, M_BaseObject* type);
 	M_BaseObject* issubtype_override(M_BaseObject* sub, M_BaseObject* type);
