@@ -208,7 +208,7 @@ ASTNode* Parser::stmt()
 		node = raise_stmt();
 		break;
 	case TOK_YIELD:
-		node = yield_expr();
+		node = yield_stmt();
 		break;
 	case TOK_PASS:
 		node = pass_stmt();
@@ -1102,6 +1102,15 @@ ASTNode* Parser::parse_number()
 	}
 
 	return node;
+}
+
+ASTNode* Parser::yield_stmt()
+{
+	ASTNode* yexp = yield_expr();
+	ExprNode* expr = new ExprNode(s.get_line());
+	expr->set_value(yexp);
+	
+	return expr;
 }
 
 ASTNode* Parser::yield_expr()

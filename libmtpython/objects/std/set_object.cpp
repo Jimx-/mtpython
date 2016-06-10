@@ -8,6 +8,7 @@
 
 using namespace mtpython::objects;
 using namespace mtpython::interpreter;
+using namespace mtpython::vm;
 
 static Typedef set_typedef("set", {
 	{ "__new__", new InterpFunctionWrapper("__new__", M_StdSetObject::__new__) },
@@ -21,7 +22,7 @@ static Typedef set_typedef("set", {
 	{ "discard", new InterpFunctionWrapper("discard", M_StdSetObject::discard) },
 });
 
-M_BaseObject* M_StdSetObject::_discard(vm::ThreadContext* context, M_BaseObject* item)
+M_BaseObject* M_StdSetObject::_discard(ThreadContext* context, M_BaseObject* item)
 {
 	M_BaseObject* result = nullptr;
 	lock();

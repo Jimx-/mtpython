@@ -77,6 +77,7 @@ namespace mtpython {
 			mtpython::tree::ASTNode* trailer(mtpython::tree::ASTNode* left);
 			mtpython::tree::ASTNode* atom();
 			mtpython::tree::ASTNode* parse_number();
+			mtpython::tree::ASTNode* yield_stmt();
 			mtpython::tree::ASTNode* yield_expr();
 			mtpython::tree::ASTNode* name();
 			mtpython::tree::ASTNode* call(mtpython::tree::ASTNode* callable);

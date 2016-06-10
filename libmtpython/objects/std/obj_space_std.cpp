@@ -77,6 +77,9 @@ mtpython::interpreter::PyFrame* StdObjSpace::create_frame(ThreadContext* context
 
 M_BaseObject* StdObjSpace::lookup(M_BaseObject* obj, const std::string& name)
 {
+	if (name == "__subclasshook__") {
+		int i = 1;
+	}
 	M_StdTypeObject* obj_type = dynamic_cast<M_StdTypeObject*>(type(obj));
 	if (!obj_type) return nullptr;
 	

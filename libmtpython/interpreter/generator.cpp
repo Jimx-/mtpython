@@ -4,6 +4,7 @@
 
 using namespace mtpython::interpreter;
 using namespace mtpython::objects;
+using namespace mtpython::vm;
 
 GeneratorIterator::GeneratorIterator(PyFrame* _frame)
 {
@@ -23,20 +24,20 @@ Typedef* GeneratorIterator::get_typedef()
     return &GeneratorIterator_typedef;
 }
 
-M_BaseObject* GeneratorIterator::__iter__(vm::ThreadContext* context, M_BaseObject* self)
+M_BaseObject* GeneratorIterator::__iter__(ThreadContext* context, M_BaseObject* self)
 {
     ObjSpace* space = context->get_space();
     return space->wrap(context, self);
 }
 
-M_BaseObject* GeneratorIterator::__next__(vm::ThreadContext* context, M_BaseObject* self)
+M_BaseObject* GeneratorIterator::__next__(ThreadContext* context, M_BaseObject* self)
 {
     ObjSpace* space = context->get_space();
     return send(context, self, space->wrap_None());
 }
 
-M_BaseObject* GeneratorIterator::send(vm::ThreadContext* context, objects::M_BaseObject* self,
-                                      objects::M_BaseObject* arg)
+M_BaseObject* GeneratorIterator::send(ThreadContext* context, M_BaseObject* self,
+                                      M_BaseObject* arg)
 {
     GeneratorIterator* gi = static_cast<GeneratorIterator*>(self);
     ObjSpace* space = gi->space;

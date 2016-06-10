@@ -229,11 +229,7 @@ int PyFrame::dispatch_bytecode(ThreadContext* context, std::vector<unsigned char
 			if (unwinder) {
 				FrameBlock* block = unwind_stack(unwinder->why());
 				if (!block) {
-					try {
-						push_value(unwinder->unhandle());
-					} catch (NotImplementedException) {
-						int i = 1;
-					}
+					push_value(unwinder->unhandle());
 					throw ReturnException();
 				} else {
 					next_pc = block->handle(this, unwinder);
