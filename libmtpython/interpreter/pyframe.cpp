@@ -410,6 +410,9 @@ int PyFrame::dispatch_bytecode(ThreadContext* context, std::vector<unsigned char
 		case YIELD_VALUE:
 			yield_value(arg, next_pc);
 			break;
+		case UNPACK_SEQUENCE:
+			unpack_sequence(arg, next_pc);
+			break;
 		}
 	}
 }
@@ -546,6 +549,8 @@ void PyFrame::call_function_common(int arg, M_BaseObject* star, M_BaseObject* st
 	int nargs = arg & 0xff;
 	int nkwargs = (arg >> 8) & 0xff;
 
+	context->push_local_frame();
+
 	std::vector<M_BaseObject*> args;
 
 	std::vector<std::string> keywords;
@@ -571,6 +576,8 @@ void PyFrame::call_function_common(int arg, M_BaseObject* star, M_BaseObject* st
 	Arguments arguments(space, args, keywords, keyword_values);
 	M_BaseObject* func = pop_value_untrack();
 	M_BaseObject* result = space->call_args(context, func, arguments);
+
+	context->pop_local_frame(result);
 	push_value(result);
 }
 
@@ -581,6 +588,7 @@ void PyFrame::call_function(int arg, int next_pc)
 
 void PyFrame::make_function(int arg, int next_pc)
 {
+	context->push_local_frame();
 	M_BaseObject* qualname = pop_value_untrack();
 	M_BaseObject* code_obj = pop_value_untrack();
 
@@ -594,6 +602,8 @@ void PyFrame::make_function(int arg, int next_pc)
 
 	M_BaseObject* func = new Function(space, code, defaults, globals);
 	push_value(space->wrap(context, func));
+
+	context->pop_local_frame(nullptr);
 }
 
 void PyFrame::make_closure(int arg, int next_pc)
@@ -634,12 +644,13 @@ int PyFrame::jump_forward(int arg, int next_pc)
 
 int PyFrame::pop_jump_if_false(int arg, int next_pc)
 {
+	context->push_local_frame();
 	M_BaseObject* value = pop_value_untrack();
 	if (!space->is_true(value)) {
 		next_pc = arg;
 	}
 
-	context->delete_local_ref(value);
+	context->pop_local_frame(nullptr);
 	return next_pc;
 }
 
@@ -660,10 +671,10 @@ void PyFrame::rot_three(int arg, int next_pc)
 
 void PyFrame::compare_op(int arg, int next_pc)
 {
+	context->push_local_frame();
 	M_BaseObject* v2 = pop_value_untrack();
 	M_BaseObject* v1 = pop_value_untrack();
 
-	context->push_local_frame();
 	M_BaseObject* result;
 	switch (arg) {
 	case 0:		/* < */
@@ -702,10 +713,7 @@ void PyFrame::compare_op(int arg, int next_pc)
 		break;
 	}
 	result = context->pop_local_frame(result);
-
 	push_value(result);
-	context->delete_local_ref(v1);
-	context->delete_local_ref(v2);
 }
 
 int PyFrame::jump_if_false_or_pop(int arg, int next_pc)
@@ -733,8 +741,11 @@ void PyFrame::rot_two(int arg, int next_pc)
 void PyFrame::build_tuple(int arg, int next_pc)
 {
 	std::vector<M_BaseObject*> args;
+	context->push_local_frame();
+
 	pop_values_untrack(arg, args);
 	M_BaseObject* tup = space->new_tuple(context, args);
+	tup = context->pop_local_frame(tup);
 	push_value(tup);
 }
 
@@ -746,11 +757,10 @@ void PyFrame::setup_loop(int arg, int next_pc)
 
 void PyFrame::get_iter(int arg, int next_pc)
 {
+	context->push_local_frame();
     M_BaseObject* iterable = pop_value_untrack();
-    context->push_local_frame();
 	M_BaseObject* iterator = context->pop_local_frame(space->iter(iterable));
     push_value(iterator);
-    context->delete_local_ref(iterable);
 }
 
 int PyFrame::for_iter(int arg, int next_pc)
@@ -844,42 +854,38 @@ M_BaseObject* PyFrame::end_finally()
 
 void PyFrame::load_attr(int arg, int next_pc)
 {
+	context->push_local_frame();
 	M_BaseObject* obj = pop_value_untrack();
 	M_BaseObject* attr = get_name(arg);
-	context->push_local_frame();
 	M_BaseObject* value = context->pop_local_frame(space->getattr(obj, attr));
 	push_value(value);
-	context->delete_local_ref(obj);
 }
 void PyFrame::store_attr(int arg, int next_pc)
 {
+	context->push_local_frame();
 	M_BaseObject* obj = pop_value_untrack();
 	M_BaseObject* attr = get_name(arg);
-	context->push_local_frame();
 	M_BaseObject* value = pop_value_untrack();
 	space->setattr(obj, attr, value);
 	context->pop_local_frame(nullptr);
-	context->delete_local_ref(obj);
-	context->delete_local_ref(value);
 }
 
 void PyFrame::delete_attr(int arg, int next_pc)
 {
+	context->push_local_frame();
 	M_BaseObject* obj = pop_value_untrack();
 	M_BaseObject* attr = get_name(arg);
-	context->push_local_frame();
 	space->delattr(obj, attr);
 	context->pop_local_frame(nullptr);
-	context->delete_local_ref(obj);
 }
 
 void PyFrame::import_name(int arg, int next_pc)
 {
+	context->push_local_frame();
 	M_BaseObject* mod_name = get_name(arg);
 	M_BaseObject* from_list = pop_value_untrack();
 	M_BaseObject* level = pop_value_untrack();
 
-	context->push_local_frame();
 	M_BaseObject* import_func = space->get_builtin()->get_dict_value(space, "__import__");
 	if (!import_func) {
 		throw InterpError(space->ImportError_type(), space->wrap_str(context, "__import__ not found"));
@@ -892,29 +898,24 @@ void PyFrame::import_name(int arg, int next_pc)
 	M_BaseObject* obj = context->pop_local_frame(space->call_function(context, import_func, {mod_name, wrapped_globals, wrapped_locals, from_list, level}));
 
 	push_value(obj);
-	context->delete_local_ref(mod_name);
-	context->delete_local_ref(from_list);
-	context->delete_local_ref(level);
 }
 
 void PyFrame::store_global(int arg, int next_pc)
 {
+	context->push_local_frame();
 	M_BaseObject* w_name = get_name(arg);
 	std::string name = space->unwrap_str(w_name);
 	M_BaseObject* value = pop_value_untrack();
-	context->push_local_frame();
 	space->setitem_str(globals, name, value);
 	context->pop_local_frame(nullptr);
-	context->delete_local_ref(value);
 }
 
 void PyFrame::load_name(int arg, int next_pc)
 {
+	context->push_local_frame();
 	M_BaseObject* w_name = get_name(arg);
 	std::string name = space->unwrap_str(w_name);
 	M_BaseObject* value = nullptr;
-
-	context->push_local_frame();
 
 	if (locals != globals) {
 		value = space->finditem_str(locals, name);
@@ -936,20 +937,21 @@ void PyFrame::load_name(int arg, int next_pc)
 
 void PyFrame::store_name(int arg, int next_pc)
 {
+	context->push_local_frame();
 	M_BaseObject* w_name = get_name(arg);
 	std::string name = space->unwrap_str(w_name);
 	M_BaseObject* value = pop_value_untrack();
-	context->push_local_frame();
 	space->setitem_str(locals, name, value);
 	context->pop_local_frame(nullptr);
-	context->delete_local_ref(value);
 }
 
 void PyFrame::build_list(int arg, int next_pc)
 {
 	std::vector<M_BaseObject*> args;
+	context->push_local_frame();
 	pop_values_untrack(arg, args);
 	M_BaseObject* list = space->new_list(context, args);
+	list = context->pop_local_frame(list);
 	push_value(list);
 }
 
@@ -972,12 +974,11 @@ void PyFrame::import_from(int arg, int next_pc)
 
 void PyFrame::import_star(int arg, int next_pc)
 {
+	context->push_local_frame();
 	M_BaseObject* module = pop_value_untrack();
 	M_BaseObject* locals = get_locals();
 	M_BaseObject* dict, *all;
 	bool skip_leading_underscores = false;
-
-	context->push_local_frame();
 
 	try {
 		all = space->getattr_str(module, "__all__");
@@ -1017,18 +1018,14 @@ void PyFrame::import_star(int arg, int next_pc)
 	set_locals(locals);
 
 	context->pop_local_frame(nullptr);
-
-	context->delete_local_ref(iter);
-	context->delete_local_ref(all);
-	context->delete_local_ref(module);
 }
 
 void PyFrame::build_set(int arg, int next_pc)
 {
 	std::vector<M_BaseObject*> args;
+	context->push_local_frame();
 	pop_values_untrack(arg, args);
 	M_BaseObject* set = space->new_set(context);
-	context->push_local_frame();
 	M_BaseObject* add_impl = space->lookup(set, "add");
 	for (auto& item : args) {
 		space->call_function(context, add_impl, { set, item });
@@ -1147,5 +1144,19 @@ void PyFrame::with_cleanup(int arg, int next_pc)
 void PyFrame::yield_value(int arg, int next_pc)
 {
 	throw YieldException();
+}
+
+void PyFrame::unpack_sequence(int arg, int next_pc)
+{
+	context->push_local_frame();
+	M_BaseObject* iterable = pop_value_untrack();
+
+	std::vector<M_BaseObject*> v;
+	space->unwrap_tuple(iterable, v);
+	for (auto it = v.rbegin(); it != v.rend(); it++) {
+		push_value(*it);
+	}
+
+	context->pop_local_frame(nullptr);
 }
 

@@ -31,6 +31,7 @@ public:
 	static M_BaseObject* __getattribute__(vm::ThreadContext* context, M_BaseObject* obj, M_BaseObject* attr);
 	static M_BaseObject* __setattr__(vm::ThreadContext* context, M_BaseObject* obj, M_BaseObject* attr, M_BaseObject* value);
 	static M_BaseObject* __delattr__(vm::ThreadContext* context, M_BaseObject* obj, M_BaseObject* attr);
+	static M_BaseObject* __subclasshook__(vm::ThreadContext* context, const interpreter::Arguments& args);
 
 	static M_BaseObject* __dict__get(mtpython::vm::ThreadContext* context, M_BaseObject* obj);
 	static void __dict__set(vm::ThreadContext* context, M_BaseObject* obj, M_BaseObject* value);

@@ -42,9 +42,9 @@ static M_BaseObject* check_sys_modules(ObjSpace* space, const std::string& mod_n
 static M_BaseObject* lookup_sys_modules(ObjSpace* space, const std::string& mod_name)
 {
 	M_BaseObject* first_mod = nullptr;
-	if (mod_name.find('.') == std::string::npos) {
+	//if (mod_name.find('.') == std::string::npos) {
 		first_mod = check_sys_modules(space, mod_name);
-	}
+	//}
 
 	return first_mod;
 }
@@ -986,8 +986,8 @@ BuiltinsModule::BuiltinsModule(ObjSpace* space, M_BaseObject* name) : BuiltinMod
 	add_def("NotImplemented", space->wrap_NotImplemented());
 
 	/* builtin type */
-	std::vector<std::string> builtin_type_names = { "bool", "bytearray", "dict", "frozenset", "int", "object", "set",
-												"str", "tuple", "list", "type" };
+	std::vector<std::string> builtin_type_names = { "bool", "bytearray", "bytes", "dict", "frozenset", "int", "object", "set",
+												"str", "tuple", "list", "type", "memoryview" };
 	for (const auto& name : builtin_type_names) {
 		add_def(name, space->get_type_by_name(name));
 	}

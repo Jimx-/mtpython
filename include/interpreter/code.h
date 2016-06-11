@@ -17,6 +17,7 @@ public:
 	Code(const std::string& name) : co_name(name) { }
 
 	std::string& get_name() { return co_name; }
+	virtual objects::M_BaseObject* get_docstring(vm::ThreadContext* context) { throw NotImplementedException("get_docstring()"); }
 
 	virtual mtpython::objects::M_BaseObject* funcrun(vm::ThreadContext* context, mtpython::objects::M_BaseObject* func, Arguments&  args)
 	{

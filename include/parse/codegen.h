@@ -63,6 +63,7 @@ public:
     void import_as(mtpython::tree::AliasNode* node);
     mtpython::tree::ASTNode* visit_keyword(mtpython::tree::KeywordNode* node);
     mtpython::tree::ASTNode* visit_list(mtpython::tree::ListNode* node);
+    mtpython::tree::ASTNode* visit_lambda(mtpython::tree::LambdaNode* node);
     mtpython::tree::ASTNode* visit_name(mtpython::tree::NameNode* node);
     mtpython::tree::ASTNode* visit_number(mtpython::tree::NumberNode* node);
     mtpython::tree::ASTNode* visit_string(mtpython::tree::StringNode* node);
@@ -92,13 +93,25 @@ public:
 	ModuleCodeGenerator(mtpython::vm::ThreadContext* context, mtpython::tree::ASTNode* module, SymtableVisitor* symtab, CompileInfo* info);
 };
 
-class FunctionCodeGenerator : public BaseCodeGenerator {
-private:
-    void compile(mtpython::tree::ASTNode* tree);
+class AbstractFunctionCodeGenerator : public BaseCodeGenerator {
 protected:
     int get_code_flags();
 public:
+    AbstractFunctionCodeGenerator(const std::string& name, mtpython::vm::ThreadContext* context, mtpython::tree::ASTNode* tree, SymtableVisitor* symtab, int lineno, CompileInfo* info);
+};
+
+class FunctionCodeGenerator : public AbstractFunctionCodeGenerator {
+private:
+    void compile(mtpython::tree::ASTNode* tree);
+public:
     FunctionCodeGenerator(const std::string& name, mtpython::vm::ThreadContext* context, mtpython::tree::ASTNode* tree, SymtableVisitor* symtab, int lineno, CompileInfo* info);
+};
+
+class LambdaCodeGenerator : public AbstractFunctionCodeGenerator {
+private:
+    void compile(mtpython::tree::ASTNode* tree);
+public:
+    LambdaCodeGenerator(const std::string& name, mtpython::vm::ThreadContext* context, mtpython::tree::ASTNode* tree, SymtableVisitor* symtab, int lineno, CompileInfo* info);
 };
 
 class ClassCodeGenerator : public BaseCodeGenerator {

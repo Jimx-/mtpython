@@ -42,6 +42,19 @@ void PyCode::generate_signature()
 	signature = Signature(argnames, varargname, kwargname, kwonlyargnames);
 }
 
+M_BaseObject* PyCode::get_docstring(ThreadContext* context)
+{
+	ObjSpace* space = context->get_space();
+
+	if (co_consts.size()) {
+		M_BaseObject* first = co_consts[0];
+		if (space->i_isinstance(first, space->get_type_by_name("str"))) {
+			return first;
+		}
+	}
+	return space->wrap_None();
+}
+
 void PyCode::init_arg_cellvars()
 {
 	_args_as_cellvars.clear();

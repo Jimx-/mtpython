@@ -16,6 +16,7 @@ static Typedef object_typedef("object", {
 	{ "__getattribute__", new InterpFunctionWrapper("__getattribute__", M_StdObjectObject::__getattribute__) },
 	{ "__setattr__", new InterpFunctionWrapper("__setattr__", M_StdObjectObject::__setattr__) },
 	{ "__delattr__", new InterpFunctionWrapper("__delattr__", M_StdObjectObject::__setattr__) },
+	{ "__subclasshook__", new InterpFunctionWrapper("__subclasshook__", M_StdObjectObject::__subclasshook__) },
 	{ "__dict__", new GetSetDescriptor(M_StdObjectObject::__dict__get, M_StdObjectObject::__dict__set) },
 	{ "__class__", new GetSetDescriptor(M_StdObjectObject::__class__get) },
 });
@@ -142,3 +143,9 @@ M_BaseObject* M_StdObjectObject::__class__get(mtpython::vm::ThreadContext* conte
 {
 	return context->get_space()->type(obj);
 }
+
+M_BaseObject* M_StdObjectObject::__subclasshook__(mtpython::vm::ThreadContext* context, const Arguments& args)
+{
+	return context->get_space()->wrap_NotImplemented();
+}
+

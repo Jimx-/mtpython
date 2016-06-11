@@ -575,6 +575,27 @@ ASTNode* BaseCodeGenerator::visit_list(ListNode* node)
 	return node;
 }
 
+mtpython::tree::ASTNode* BaseCodeGenerator::visit_lambda(mtpython::tree::LambdaNode* node)
+{
+	set_lineno(node->get_line());
+
+	LambdaCodeGenerator sub_gen("<lambda>", context, node, symtab, node->get_line(), compile_info);
+	PyCode* code = sub_gen.build();
+
+	ArgumentsNode* args = static_cast<ArgumentsNode*>(node->get_args());
+	std::vector<ASTNode*> defaults = args->get_defaults();
+	for (auto& child : defaults) {
+		child->visit(this);
+	}
+
+	int arglength = 0;
+	arglength |= defaults.size();
+
+	make_closure(code, arglength, get_qualname());
+
+	return node;
+}
+
 ASTNode* BaseCodeGenerator::visit_const(ConstNode* node)
 {
 	set_lineno(node->get_line());
@@ -927,23 +948,11 @@ void ModuleCodeGenerator::compile(ASTNode* module)
 	module->visit(this);
 }
 
-FunctionCodeGenerator::FunctionCodeGenerator(const std::string& name, mtpython::vm::ThreadContext* context, mtpython::tree::ASTNode* tree, SymtableVisitor* symtab, int lineno, CompileInfo* info) : BaseCodeGenerator(name, context, tree, symtab, lineno, info)
+AbstractFunctionCodeGenerator::AbstractFunctionCodeGenerator(const std::string& name, mtpython::vm::ThreadContext* context, mtpython::tree::ASTNode* tree, SymtableVisitor* symtab, int lineno, CompileInfo* info) : BaseCodeGenerator(name, context, tree, symtab, lineno, info)
 {
-	compile(tree);
 }
 
-void FunctionCodeGenerator::compile(ASTNode* tree)
-{
-	FunctionDefNode* funcdef = dynamic_cast<FunctionDefNode*>(tree);
-	ArgumentsNode* arguments = dynamic_cast<ArgumentsNode*>(funcdef->get_args());
-
-	set_argcount(arguments->get_args().size());
-	ASTNode* body = funcdef->get_body();
-
-	if (body) visit_sequence(body);
-}
-
-int FunctionCodeGenerator::get_code_flags()
+int AbstractFunctionCodeGenerator::get_code_flags()
 {
 	int flags = 0;
 	if (scope->optimized())	{
@@ -954,6 +963,37 @@ int FunctionCodeGenerator::get_code_flags()
 	}
 
 	return BaseCodeGenerator::get_code_flags() | flags;
+}
+
+FunctionCodeGenerator::FunctionCodeGenerator(const std::string& name, mtpython::vm::ThreadContext* context, mtpython::tree::ASTNode* tree, SymtableVisitor* symtab, int lineno, CompileInfo* info) : AbstractFunctionCodeGenerator(name, context, tree, symtab, lineno, info)
+{
+	compile(tree);
+}
+
+void FunctionCodeGenerator::compile(ASTNode* tree)
+{
+	FunctionDefNode* funcdef = static_cast<FunctionDefNode*>(tree);
+	ArgumentsNode* arguments = static_cast<ArgumentsNode*>(funcdef->get_args());
+
+	set_argcount(arguments->get_args().size());
+	ASTNode* body = funcdef->get_body();
+
+	if (body) visit_sequence(body);
+}
+
+LambdaCodeGenerator::LambdaCodeGenerator(const std::string& name, mtpython::vm::ThreadContext* context, mtpython::tree::ASTNode* tree, SymtableVisitor* symtab, int lineno, CompileInfo* info) : AbstractFunctionCodeGenerator(name, context, tree, symtab, lineno, info)
+{
+	compile(tree);
+}
+
+void LambdaCodeGenerator::compile(ASTNode* tree)
+{
+	LambdaNode* lambda = static_cast<LambdaNode*>(tree);
+	ArgumentsNode* arguments = static_cast<ArgumentsNode*>(lambda->get_args());
+
+	set_argcount(arguments->get_args().size());
+	lambda->get_body()->visit(this);
+	emit_op(RETURN_VALUE);
 }
 
 ClassCodeGenerator::ClassCodeGenerator(const std::string& name, mtpython::vm::ThreadContext* context, mtpython::tree::ASTNode* tree, SymtableVisitor* symtab, int lineno, CompileInfo* info) : BaseCodeGenerator(name, context, tree, symtab, lineno, info)

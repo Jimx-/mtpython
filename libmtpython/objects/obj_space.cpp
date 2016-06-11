@@ -8,6 +8,7 @@
 #include "modules/posix/posixmodule.h"
 #include "modules/sys/sysmodule.h"
 #include "modules/_weakref/weakrefmodule.h"
+#include "modules/errno/errnomodule.h"
 
 #include "macros.h"
 
@@ -67,6 +68,11 @@ void ObjSpace::make_builtins()
 	weakref_mod->install();
 	builtin_names.push_back(wrap_str(current_thread(), "_weakref"));
 
+	M_BaseObject* errno_name = wrap_str(current_thread(), "errno");
+	mtpython::modules::ErrnoModule* errno_mod = new mtpython::modules::ErrnoModule(this, errno_name);
+	errno_mod->install();
+	builtin_names.push_back(wrap_str(current_thread(), "errno"));
+
 	setitem(sys_mod->get_dict(this), wrap_str(current_thread(), "builtin_module_names"), new_tuple(current_thread(), builtin_names));
 }
 
@@ -77,6 +83,7 @@ void ObjSpace::setup_builtin_modules()
 	get_builtin_module("builtins");
 	get_builtin_module("posix");
 	get_builtin_module("_weakref");
+	get_builtin_module("errno");
 }
 
 void ObjSpace::init_builtin_exceptions()
@@ -233,11 +240,21 @@ M_BaseObject* ObjSpace::eq(M_BaseObject* obj1, M_BaseObject* obj2)
 	return result;
 }
 
+M_BaseObject* ObjSpace::ne(M_BaseObject* obj1, M_BaseObject* obj2)
+{
+	M_BaseObject* type1 = type(obj1);
+	M_BaseObject* type2 = type(obj2);
+	M_BaseObject* left_cls;
+	M_BaseObject* left_impl = lookup_type_cls(type1, "__ne__", left_cls);
+	if (!left_impl) return not_(eq(obj1, obj2));
+	M_BaseObject* result = execute_binop(left_impl, obj1, obj2);
+	return result;
+}
+
 DEF_CMP_OPER(lt, __lt__, __lt__, <)
 DEF_CMP_OPER(le, __le__, __le__, <=)
 DEF_CMP_OPER(gt, __gt__, __gt__, >)
 DEF_CMP_OPER(ge, __ge__, __ge__, >=)
-DEF_CMP_OPER(ne, __ne__, __ne__, !=)
 DEF_CMP_OPER(contains, __contains__, __contains__, in)
 
 int ObjSpace::unwrap_int(M_BaseObject* obj, bool allow_conversion)

@@ -18,6 +18,7 @@ private:
 	Code* code;
 	objects::M_BaseObject* func_globals;
 	objects::M_BaseObject* func_dict;
+	objects::M_BaseObject* doc;
 	std::vector<objects::M_BaseObject*> defaults;
 	std::vector<objects::M_BaseObject*> closure;
 public:
@@ -39,6 +40,8 @@ public:
 	objects::M_BaseObject* call_obj_args(vm::ThreadContext* context, objects::M_BaseObject* obj, Arguments& args);
 
 	static objects::M_BaseObject* __get__(vm::ThreadContext* context, objects::M_BaseObject* self, objects::M_BaseObject* obj, objects::M_BaseObject* type);
+	static objects::M_BaseObject* __doc__get(vm::ThreadContext* context, objects::M_BaseObject* self);
+	static void __doc__set(vm::ThreadContext* context, objects::M_BaseObject* obj, objects::M_BaseObject* value);
 };
 
 /* A method is a function bound to an instance */

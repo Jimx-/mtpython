@@ -51,6 +51,8 @@ public:
 	int get_flags() { return co_flags; }
 	int get_argcount() { return co_argcount; }
 	
+	objects::M_BaseObject* get_docstring(vm::ThreadContext* context);
+
 	objects::M_BaseObject* exec_code(vm::ThreadContext* context, objects::M_BaseObject* globals, objects::M_BaseObject* locals,
 									 objects::M_BaseObject* outer=nullptr);
 

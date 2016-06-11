@@ -14,6 +14,8 @@
 #include "objects/std/set_object.h"
 #include "objects/std/tuple_object.h"
 #include "objects/std/bytearray_object.h"
+#include "objects/std/bytes_object.h"
+#include "objects/std/memory_object.h"
 #include "objects/std/frame.h"
 
 #include <string>
@@ -55,16 +57,21 @@ StdObjSpace::StdObjSpace() : ObjSpace()
 	type_obj->set_class(this, type_obj);
 	builtin_types["type"] = type_obj;
 
+	M_BaseObject* object_type = get_typeobject(M_StdObjectObject::_object_typedef());
+	object_type->set_class(this, type_obj);
+	builtin_types["object"] = object_type;
+
 	builtin_types["bool"] = get_typeobject(M_StdBoolObject::_bool_typedef());
 	builtin_types["bytearray"] = get_typeobject(M_StdByteArrayObject::_bytearray_typedef());
 	builtin_types["dict"] = get_typeobject(M_StdDictObject::_dict_typedef());
 	builtin_types["int"] = get_typeobject(M_StdIntObject::_int_typedef());
-	builtin_types["object"] = get_typeobject(M_StdObjectObject::_object_typedef());
 	builtin_types["set"] = get_typeobject(M_StdSetObject::_set_typedef());
 	builtin_types["frozenset"] = get_typeobject(M_StdSetObject::_set_typedef());
 	builtin_types["str"] = get_typeobject(M_StdUnicodeObject::_str_typedef());
 	builtin_types["tuple"] = get_typeobject(M_StdTupleObject::_tuple_typedef());
 	builtin_types["list"] = get_typeobject(M_StdListObject::_list_typedef());
+	builtin_types["bytes"] = get_typeobject(M_StdBytesObject::_bytes_typedef());
+	builtin_types["memoryview"] = get_typeobject(M_StdMemoryViewObject::_memoryview_typedef());
 
 	make_builtins();
 	setup_builtin_modules();
@@ -77,9 +84,6 @@ mtpython::interpreter::PyFrame* StdObjSpace::create_frame(ThreadContext* context
 
 M_BaseObject* StdObjSpace::lookup(M_BaseObject* obj, const std::string& name)
 {
-	if (name == "__subclasshook__") {
-		int i = 1;
-	}
 	M_StdTypeObject* obj_type = dynamic_cast<M_StdTypeObject*>(type(obj));
 	if (!obj_type) return nullptr;
 	

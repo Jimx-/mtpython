@@ -9,12 +9,24 @@ using namespace mtpython::modules;
 using namespace mtpython::objects;
 using namespace mtpython::interpreter;
 
+#ifdef _WIN32_
+#define PLATFORM "win"
+#elif defined(_LINUX_)
+#define PLATFORM "linux2"
+#endif
+
+std::string SysModule::filesystem_encoding = "";
+
 SysModule::SysModule(mtpython::vm::ThreadContext* context, M_BaseObject* name) : BuiltinModule(context->get_space(), name)
 {
 	ObjSpace* space = context->get_space();
 	
     add_def("modules", space->new_dict(context));
 	initstdio(context);
+	initfsencoding(context);
+
+	add_def("platform", space->wrap_str(space->current_thread(), PLATFORM));
+	add_def("getfilesystemencoding", new InterpFunctionWrapper("getfilesystemencoding", SysModule::getfilesystemencoding));
 }
 
 static M_BaseObject* create_stdio(mtpython::vm::ThreadContext* context, M_BaseObject* io, int fd, bool writing, const std::string& name, const std::string& encoding,
@@ -81,3 +93,14 @@ void SysModule::initstdio(mtpython::vm::ThreadContext* context, bool unbuffered)
 	add_def("stderr", _stderr);
 	add_def("__stderr__", _stderr);
 }
+
+void SysModule::initfsencoding(mtpython::vm::ThreadContext* context)
+{
+	filesystem_encoding = "utf-8";
+}
+
+M_BaseObject* SysModule::getfilesystemencoding(mtpython::vm::ThreadContext* context)
+{
+	return context->get_space()->wrap_str(context, filesystem_encoding);
+}
+

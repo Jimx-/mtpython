@@ -24,6 +24,8 @@ SET(LIBMTPYTHON_SRCLIST
 		objects/std/tuple_object.cpp
 		objects/std/type_object.cpp
 		objects/std/set_object.cpp
+		objects/std/bytes_object.cpp
+		objects/std/memory_object.cpp
 		objects/std/obj_space_std.cpp
 		interpreter/arguments.cpp
 		interpreter/pycode.cpp
@@ -45,6 +47,7 @@ SET(LIBMTPYTHON_SRCLIST
 		modules/builtins/bltinmodule.cpp
 		modules/posix/posixmodule.cpp
 		modules/sys/sysmodule.cpp
+		modules/errno/errnomodule.cpp
 		vm/initpath.cpp
 		vm/thread_context.cpp
 		vm/vm.cpp)
