@@ -286,7 +286,7 @@ ASTNode* BaseCodeGenerator::visit_dict(DictNode* node)
 	std::vector<ASTNode*>& keys = node->get_keys();
 	std::vector<ASTNode*>& values = node->get_values();
 
-	for (int i = 0; i < keys.size(); i++) {
+	for (size_t i = 0; i < keys.size(); i++) {
 		values[i]->visit(this);
 		keys[i]->visit(this);
 		emit_op(STORE_MAP);

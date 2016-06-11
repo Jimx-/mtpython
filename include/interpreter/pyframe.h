@@ -229,6 +229,7 @@ protected:
     void with_cleanup(int arg, int next_pc);
     void yield_value(int arg, int next_pc);
     void unpack_sequence(int arg, int next_pc);
+	void store_subscr(int arg, int next_pc);
 
     objects::M_BaseObject* end_finally();
 

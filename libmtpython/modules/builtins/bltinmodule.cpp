@@ -386,7 +386,7 @@ static bool _isinstance(ObjSpace* space, M_BaseObject* obj, M_BaseObject* cls, b
 		}
 
 		return space->is_true(result);
-	} catch (InterpError& e) {
+	} catch (InterpError&) {
 		return false;
 	}
 

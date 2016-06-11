@@ -62,8 +62,8 @@ void PyCode::init_arg_cellvars()
 		int argcount = co_argcount;
 		argcount += co_kwonlyargcount;
 
-		for (int i = 0; i < co_cellvars.size(); i++) {
-			for (int j = 0; j < co_varnames.size(); j++) {
+		for (size_t i = 0; i < co_cellvars.size(); i++) {
+			for (size_t j = 0; j < co_varnames.size(); j++) {
 				if (co_cellvars[i] == co_varnames[j]) {
 					while (_args_as_cellvars.size() <= i) _args_as_cellvars.push_back(-1);
 

@@ -78,7 +78,16 @@ M_BaseObject* M_StdDictObject::__setitem__(mtpython::vm::ThreadContext* context,
 {
 	M_StdDictObject* as_dict = dynamic_cast<M_StdDictObject*>(obj);
 	assert(as_dict);
+	std::string s;
+	try {
+		s = context->get_space()->unwrap_str(value);
+	}
+	catch (...) {
 
+	}
+	if (s == "os.path") {
+		int i = 1;
+	}
 	as_dict->lock();
 	as_dict->setitem(key, value);
 	as_dict->unlock();

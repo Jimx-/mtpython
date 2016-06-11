@@ -413,6 +413,9 @@ int PyFrame::dispatch_bytecode(ThreadContext* context, std::vector<unsigned char
 		case UNPACK_SEQUENCE:
 			unpack_sequence(arg, next_pc);
 			break;
+		case STORE_SUBSCR:
+			store_subscr(arg, next_pc);
+			break;
 		}
 	}
 }
@@ -1159,4 +1162,18 @@ void PyFrame::unpack_sequence(int arg, int next_pc)
 
 	context->pop_local_frame(nullptr);
 }
+
+void PyFrame::store_subscr(int arg, int next_pc)
+{
+	ObjSpace* space = context->get_space();
+	context->push_local_frame();
+
+	M_BaseObject* subscr = pop_value_untrack();
+	M_BaseObject* obj = pop_value_untrack();
+	M_BaseObject* value = pop_value_untrack();
+
+	space->setitem(obj, subscr, value);
+	context->pop_local_frame(nullptr);
+}
+
 
