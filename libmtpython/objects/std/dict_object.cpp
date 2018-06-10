@@ -10,16 +10,6 @@
 using namespace mtpython::objects;
 using namespace mtpython::interpreter;
 
-static mtpython::interpreter::Typedef dict_typedef("dict", {
-	{ "__repr__", new InterpFunctionWrapper("__repr__", M_StdDictObject::__repr__) },
-	{ "__getitem__", new InterpFunctionWrapper("__getitem__", M_StdDictObject::__getitem__) },
-	{ "__setitem__", new InterpFunctionWrapper("__setitem__", M_StdDictObject::__setitem__) },
-	{ "__contains__", new InterpFunctionWrapper("__contains__", M_StdDictObject::__contains__) },
-	{ "keys", new InterpFunctionWrapper("keys", M_StdDictObject::keys) },
-	{ "values", new InterpFunctionWrapper("values", M_StdDictObject::values) },
-	{ "items", new InterpFunctionWrapper("items", M_StdDictObject::items) },
-});
-
 M_BaseObject* M_StdDictObject::getitem(M_BaseObject* key)
 {
 	auto got = dict.find(key);
@@ -76,18 +66,8 @@ M_BaseObject* M_StdDictObject::__getitem__(mtpython::vm::ThreadContext* context,
 
 M_BaseObject* M_StdDictObject::__setitem__(mtpython::vm::ThreadContext* context, M_BaseObject* obj, M_BaseObject* key, M_BaseObject* value)
 {
-	M_StdDictObject* as_dict = dynamic_cast<M_StdDictObject*>(obj);
-	assert(as_dict);
-	std::string s;
-	try {
-		s = context->get_space()->unwrap_str(value);
-	}
-	catch (...) {
+	M_StdDictObject* as_dict = static_cast<M_StdDictObject*>(obj);
 
-	}
-	if (s == "os.path") {
-		int i = 1;
-	}
 	as_dict->lock();
 	as_dict->setitem(key, value);
 	as_dict->unlock();
@@ -97,12 +77,22 @@ M_BaseObject* M_StdDictObject::__setitem__(mtpython::vm::ThreadContext* context,
 
 mtpython::interpreter::Typedef* M_StdDictObject::_dict_typedef()
 {
+	static mtpython::interpreter::Typedef dict_typedef("dict", {
+		{ "__repr__", new InterpFunctionWrapper("__repr__", M_StdDictObject::__repr__) },
+		{ "__getitem__", new InterpFunctionWrapper("__getitem__", M_StdDictObject::__getitem__) },
+		{ "__setitem__", new InterpFunctionWrapper("__setitem__", M_StdDictObject::__setitem__) },
+		{ "__contains__", new InterpFunctionWrapper("__contains__", M_StdDictObject::__contains__) },
+		{ "keys", new InterpFunctionWrapper("keys", M_StdDictObject::keys) },
+		{ "values", new InterpFunctionWrapper("values", M_StdDictObject::values) },
+		{ "items", new InterpFunctionWrapper("items", M_StdDictObject::items) },
+	});
+
 	return &dict_typedef;
 }
 
 mtpython::interpreter::Typedef* M_StdDictObject::get_typedef()
 {
-	return &dict_typedef;
+	return _dict_typedef();
 }
 
 M_BaseObject* M_StdDictObject::__contains__(mtpython::vm::ThreadContext* context, M_BaseObject* self, M_BaseObject* obj)

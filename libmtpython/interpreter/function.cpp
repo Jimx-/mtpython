@@ -5,11 +5,6 @@
 using namespace mtpython::objects;
 using namespace mtpython::interpreter;
 
-static Typedef Function_typedef("function", {
-	{ "__get__", new InterpFunctionWrapper("__get__", Function::__get__) },
-	{ "__doc__", new GetSetDescriptor(Function::__doc__get, Function::__doc__set) },
-});
-
 Function::Function(ObjSpace* space, Code* code, const std::vector<M_BaseObject*>& defaults, M_BaseObject* globals)
 	: space(space), name(code->get_name()), code(code), func_globals(globals), defaults(defaults)
 {
@@ -19,6 +14,11 @@ Function::Function(ObjSpace* space, Code* code, const std::vector<M_BaseObject*>
 
 Typedef* Function::get_typedef()
 {
+	static Typedef Function_typedef("function", {
+		{ "__get__", new InterpFunctionWrapper("__get__", Function::__get__) },
+		{ "__doc__", new GetSetDescriptor(Function::__doc__get, Function::__doc__set) },
+	});
+
 	return &Function_typedef;
 }
 
@@ -47,7 +47,7 @@ M_BaseObject* Function::__get__(mtpython::vm::ThreadContext* context, M_BaseObje
 	if (!obj || space->i_is(obj, space->wrap_None())) return self;
 
 	Function* as_func = dynamic_cast<Function*>(self);
-	return space->wrap(context, new Method(space, as_func, obj));
+	return space->wrap(context, new(context) Method(space, as_func, obj));
 }
 
 M_BaseObject* Function::__doc__get(mtpython::vm::ThreadContext* context, M_BaseObject* self)
@@ -70,14 +70,9 @@ M_BaseObject* Method::call_args(mtpython::vm::ThreadContext* context, Arguments&
 	return space->call_obj_args(context, func, instance, args);
 }
 
-static Typedef StaticMethod_typedef("staticmethod", {
-	{ "__new__", new InterpFunctionWrapper("__new__", StaticMethod::__new__) },
-	{ "__get__", new InterpFunctionWrapper("__get__", StaticMethod::__get__) },
-});
-
 M_BaseObject* StaticMethod::__new__(mtpython::vm::ThreadContext* context, M_BaseObject* type, M_BaseObject* func)
 {
-	StaticMethod* static_met = new StaticMethod(func);
+	StaticMethod* static_met = new(context) StaticMethod(func);
 	return context->get_space()->wrap(context, static_met);
 }
 
@@ -96,22 +91,22 @@ M_BaseObject* StaticMethod::__get__(mtpython::vm::ThreadContext* context, const 
 
 Typedef* StaticMethod::get_typedef()
 {
-	return &StaticMethod_typedef;
+	return _staticmethod_typedef();
 }
 
 Typedef* StaticMethod::_staticmethod_typedef()
 {
+	static Typedef StaticMethod_typedef("staticmethod", {
+		{ "__new__", new InterpFunctionWrapper("__new__", StaticMethod::__new__) },
+		{ "__get__", new InterpFunctionWrapper("__get__", StaticMethod::__get__) },
+	});
+
 	return &StaticMethod_typedef;
 }
 
-static Typedef ClassMethod_typedef("classmethod", {
-	{ "__new__", new InterpFunctionWrapper("__new__", ClassMethod::__new__) },
-	{ "__get__", new InterpFunctionWrapper("__get__", ClassMethod::__get__) },
-});
-
 M_BaseObject* ClassMethod::__new__(mtpython::vm::ThreadContext* context, M_BaseObject* type, M_BaseObject* func)
 {
-	ClassMethod* cls_met = new ClassMethod(func);
+	ClassMethod* cls_met = new(context) ClassMethod(func);
 	return context->get_space()->wrap(context, cls_met);
 }
 
@@ -131,16 +126,21 @@ M_BaseObject* ClassMethod::__get__(mtpython::vm::ThreadContext* context, const A
 		cls = space->type(obj);
 	}
 
-	return space->wrap(context, new Method(space, self->func, cls));
+	return space->wrap(context, new(context) Method(space, self->func, cls));
 }
 
 Typedef* ClassMethod::get_typedef()
 {
-	return &ClassMethod_typedef;
+	return _classmethod_typedef();
 }
 
 Typedef* ClassMethod::_classmethod_typedef()
 {
+	static Typedef ClassMethod_typedef("classmethod", {
+		{ "__new__", new InterpFunctionWrapper("__new__", ClassMethod::__new__) },
+		{ "__get__", new InterpFunctionWrapper("__get__", ClassMethod::__get__) },
+	});
+
 	return &ClassMethod_typedef;
 }
 

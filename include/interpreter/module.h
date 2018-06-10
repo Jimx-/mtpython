@@ -41,6 +41,8 @@ public:
 class BuiltinModule : public Module {
 public:
 	BuiltinModule(objects::ObjSpace* space, objects::M_BaseObject* name, objects::M_BaseObject* dict=nullptr) : Module(space, name, dict) { }
+
+	void* operator new(size_t size) { return ::operator new(size); }
 };
 
 }

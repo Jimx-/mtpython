@@ -5,12 +5,12 @@
 using namespace mtpython::interpreter;
 using namespace mtpython::objects;
 
-Typedef NoneType_typedef("NoneType", {
-    { "__repr__", new InterpFunctionWrapper("__repr__", M_StdNoneObject::__repr__) },
-});
-
 Typedef* M_StdNoneObject::get_typedef()
 {
+    static Typedef NoneType_typedef("NoneType", {
+        { "__repr__", new InterpFunctionWrapper("__repr__", M_StdNoneObject::__repr__) },
+    });
+
     return &NoneType_typedef;
 }
 

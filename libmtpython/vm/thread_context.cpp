@@ -5,6 +5,7 @@
 
 using namespace mtpython::vm;
 using namespace mtpython::objects;
+using namespace mtpython::gc;
 
 void LocalFrame::new_local_ref(M_BaseObject* obj)
 {
@@ -38,13 +39,6 @@ void ThreadContext::enter(mtpython::interpreter::PyFrame* frame)
 void ThreadContext::leave(mtpython::interpreter::PyFrame* frame)
 {
 	frame_stack.pop();
-}
-
-M_BaseObject* ThreadContext::new_object(M_BaseObject* obj)
-{
-	new_local_ref(obj);
-
-	return obj;
 }
 
 void ThreadContext::new_local_ref(M_BaseObject* obj)

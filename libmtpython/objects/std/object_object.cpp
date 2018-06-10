@@ -8,26 +8,25 @@
 using namespace mtpython::objects;
 using namespace mtpython::interpreter;
 
-static Typedef object_typedef("object", {
-	{ "__new__", new InterpFunctionWrapper("__new__", M_StdObjectObject::__new__) },
-	{ "__init__", new InterpFunctionWrapper("__init__", M_StdObjectObject::__init__) },
-	{ "__str__", new InterpFunctionWrapper("__str__", M_StdObjectObject::__str__) },
-	{ "__repr__", new InterpFunctionWrapper("__repr__", M_StdObjectObject::__repr__) },
-	{ "__getattribute__", new InterpFunctionWrapper("__getattribute__", M_StdObjectObject::__getattribute__) },
-	{ "__setattr__", new InterpFunctionWrapper("__setattr__", M_StdObjectObject::__setattr__) },
-	{ "__delattr__", new InterpFunctionWrapper("__delattr__", M_StdObjectObject::__setattr__) },
-	{ "__subclasshook__", new InterpFunctionWrapper("__subclasshook__", M_StdObjectObject::__subclasshook__) },
-	{ "__dict__", new GetSetDescriptor(M_StdObjectObject::__dict__get, M_StdObjectObject::__dict__set) },
-	{ "__class__", new GetSetDescriptor(M_StdObjectObject::__class__get) },
-});
-
 Typedef* M_StdObjectObject::get_typedef()
 {
-	return &object_typedef;
+	return _object_typedef();
 }
 
 Typedef* M_StdObjectObject::_object_typedef()
 {
+	static Typedef object_typedef("object", {
+		{ "__new__", new InterpFunctionWrapper("__new__", M_StdObjectObject::__new__) },
+		{ "__init__", new InterpFunctionWrapper("__init__", M_StdObjectObject::__init__) },
+		{ "__str__", new InterpFunctionWrapper("__str__", M_StdObjectObject::__str__) },
+		{ "__repr__", new InterpFunctionWrapper("__repr__", M_StdObjectObject::__repr__) },
+		{ "__getattribute__", new InterpFunctionWrapper("__getattribute__", M_StdObjectObject::__getattribute__) },
+		{ "__setattr__", new InterpFunctionWrapper("__setattr__", M_StdObjectObject::__setattr__) },
+		{ "__delattr__", new InterpFunctionWrapper("__delattr__", M_StdObjectObject::__setattr__) },
+		{ "__subclasshook__", new InterpFunctionWrapper("__subclasshook__", M_StdObjectObject::__subclasshook__) },
+		{ "__dict__", new GetSetDescriptor(M_StdObjectObject::__dict__get, M_StdObjectObject::__dict__set) },
+		{ "__class__", new GetSetDescriptor(M_StdObjectObject::__class__get) },
+	});
 	return &object_typedef;
 }
 
@@ -40,7 +39,7 @@ M_BaseObject* M_StdObjectObject::__new__(mtpython::vm::ThreadContext* context, c
 	args.parse("__new__", nullptr, new_signature, scope);
 	M_BaseObject* wrapped_type = scope[0];
 
-	M_StdObjectObject* instance = new M_StdObjectObject(wrapped_type);
+	M_StdObjectObject* instance = new(context) M_StdObjectObject(wrapped_type);
 
 	M_StdTypeObject* type_obj = dynamic_cast<M_StdTypeObject*>(wrapped_type);
 	if (!type_obj)

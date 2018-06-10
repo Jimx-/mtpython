@@ -34,12 +34,12 @@ public:
 	virtual Typedef* get_typedef();
 };
 
-static Typedef NotImplemented_typedef = { "NotImplemented", {
-	{ "__repr__", new InterpFunctionWrapper("__repr__", M_StdTypeObject::__repr__) },
-}};
-
 Typedef* M_NotImplemented::get_typedef()
 {
+	static Typedef NotImplemented_typedef = { "NotImplemented", {
+		{ "__repr__", new InterpFunctionWrapper("__repr__", M_StdTypeObject::__repr__) },
+	}};
+
 	return &NotImplemented_typedef;
 }
 
@@ -47,10 +47,10 @@ StdObjSpace::StdObjSpace() : ObjSpace()
 {
 	typedef_cache = new StdTypedefCache(this);
 
-	wrapped_None = new M_StdNoneObject();
-	wrapped_True = new M_StdBoolObject(true);
-	wrapped_False = new M_StdBoolObject(false);
-	wrapped_NotImplemented = new M_NotImplemented();
+	wrapped_None = new(current_thread()) M_StdNoneObject();
+	wrapped_True = new(current_thread()) M_StdBoolObject(true);
+	wrapped_False = new(current_thread()) M_StdBoolObject(false);
+	wrapped_NotImplemented = new(current_thread()) M_NotImplemented();
 
 	/* type of all types */
 	M_BaseObject* type_obj = get_typeobject(M_StdTypeObject::_type_typedef());
@@ -79,7 +79,7 @@ StdObjSpace::StdObjSpace() : ObjSpace()
 
 mtpython::interpreter::PyFrame* StdObjSpace::create_frame(ThreadContext* context, mtpython::interpreter::Code* code, M_BaseObject* globals, M_BaseObject* outer)
 {
-	return new StdFrame(context, code, globals, outer);
+	return new(context) StdFrame(context, code, globals, outer);
 }
 
 M_BaseObject* StdObjSpace::lookup(M_BaseObject* obj, const std::string& name)
@@ -146,42 +146,42 @@ std::string StdObjSpace::get_type_name(M_BaseObject* obj)
 
 M_BaseObject* StdObjSpace::wrap_int(ThreadContext* context, int x)
 {
-	return context->new_object(new M_StdIntObject(x));
+	return new(context) M_StdIntObject(x);
 }
 
 M_BaseObject* StdObjSpace::wrap_int(ThreadContext* context, const std::string& x)
 {
-	return context->new_object(new M_StdIntObject(x));
+	return new(context) M_StdIntObject(x);
 }
 
 M_BaseObject* StdObjSpace::wrap_str(ThreadContext* context, const std::string& x)
 {
-	return context->new_object(new M_StdUnicodeObject(x));
+	return new(context) M_StdUnicodeObject(x);
 }
 
 M_BaseObject* StdObjSpace::new_tuple(ThreadContext* context, const std::vector<M_BaseObject*>& items)
 {
-	return context->new_object(new M_StdTupleObject(items));
+	return new(context) M_StdTupleObject(items);
 }
 
 M_BaseObject* StdObjSpace::new_list(ThreadContext* context, const std::vector<M_BaseObject*>& items)
 {
-	return context->new_object(new M_StdListObject(items));
+	return new(context)  M_StdListObject(items);
 }
 
 M_BaseObject* StdObjSpace::new_dict(ThreadContext* context)
 {
-	return context->new_object(new M_StdDictObject(this));
+	return new(context)  M_StdDictObject(this);
 }
 
 M_BaseObject* StdObjSpace::new_set(ThreadContext* context)
 {
-	return context->new_object(new M_StdSetObject(this));
+	return new(context)  M_StdSetObject(this);
 }
 
 M_BaseObject* StdObjSpace::new_seqiter(ThreadContext* context, M_BaseObject* obj)
 {
-	return context->new_object(new M_StdSeqIterObject(obj));
+	return new(context)  M_StdSeqIterObject(obj);
 }
 
 void StdObjSpace::unwrap_tuple(M_BaseObject* obj, std::vector<M_BaseObject*>& list)

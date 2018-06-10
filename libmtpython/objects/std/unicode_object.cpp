@@ -11,14 +11,6 @@
 using namespace mtpython::objects;
 using namespace mtpython::interpreter;
 
-static mtpython::interpreter::Typedef str_typedef("str", {
-	{ "__repr__", new InterpFunctionWrapper("__repr__", M_StdUnicodeObject::__repr__) },
-	{ "__str__", new InterpFunctionWrapper("__str__", M_StdUnicodeObject::__str__) },
-	{ "__hash__", new InterpFunctionWrapper("__hash__", M_StdUnicodeObject::__hash__) },
-	{ "__eq__", new InterpFunctionWrapper("__eq__", M_StdUnicodeObject::__eq__) },
-	{ "__iter__", new InterpFunctionWrapper("__iter__", M_StdUnicodeObject::__iter__) },
-});
-
 M_StdUnicodeObject::M_StdUnicodeObject(const std::string& s)
 {
 	value = s;
@@ -26,12 +18,20 @@ M_StdUnicodeObject::M_StdUnicodeObject(const std::string& s)
 
 Typedef* M_StdUnicodeObject::_str_typedef()
 {
+	static mtpython::interpreter::Typedef str_typedef("str", {
+		{ "__repr__", new InterpFunctionWrapper("__repr__", M_StdUnicodeObject::__repr__) },
+		{ "__str__", new InterpFunctionWrapper("__str__", M_StdUnicodeObject::__str__) },
+		{ "__hash__", new InterpFunctionWrapper("__hash__", M_StdUnicodeObject::__hash__) },
+		{ "__eq__", new InterpFunctionWrapper("__eq__", M_StdUnicodeObject::__eq__) },
+		{ "__iter__", new InterpFunctionWrapper("__iter__", M_StdUnicodeObject::__iter__) },
+	});
+
 	return &str_typedef;
 }
 
 Typedef* M_StdUnicodeObject::get_typedef()
 {
-	return &str_typedef;
+	return _str_typedef();
 }
 
 bool M_StdUnicodeObject::i_is(ObjSpace* space, M_BaseObject* other)

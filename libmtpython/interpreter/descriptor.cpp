@@ -5,13 +5,12 @@
 using namespace mtpython::interpreter;
 using namespace mtpython::objects;
 
-Typedef GetSetDescriptor_typedef("getset_descriptor", {
-    { "__get__", new InterpFunctionWrapper("__get__", GetSetDescriptor::__get__) },
-    { "__set__", new InterpFunctionWrapper("__set__", GetSetDescriptor::__set__) },
-});
-
 Typedef* GetSetDescriptor::get_typedef()
 {
+    static Typedef GetSetDescriptor_typedef("getset_descriptor", {
+        { "__get__", new InterpFunctionWrapper("__get__", GetSetDescriptor::__get__) },
+        { "__set__", new InterpFunctionWrapper("__set__", GetSetDescriptor::__set__) },
+    });
     return &GetSetDescriptor_typedef;
 }
 

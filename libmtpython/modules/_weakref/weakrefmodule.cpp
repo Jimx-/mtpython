@@ -30,7 +30,7 @@ public:
 
         M_BaseObject* obj = scope[1];
         M_BaseObject* callback = scope[2];
-        M_BaseObject* ref = new M_Ref(space, obj, callback);
+        M_BaseObject* ref = new(context) M_Ref(space, obj, callback);
 
         return space->wrap(context, ref);
     }
@@ -46,22 +46,24 @@ public:
         return ref->obj;
     }
 
-    Typedef* get_typedef();
+    static Typedef* _ref_typedef()
+    {
+        static Typedef ref_typedef("weakref", {
+            {"__new__",  new InterpFunctionWrapper("__new__", M_Ref::__new__)},
+            {"__init__", new InterpFunctionWrapper("__init__", M_Ref::__init__)},
+            {"__call__", new InterpFunctionWrapper("__call__", M_Ref::__call__)},
+        });
+        return &ref_typedef;
+    }
+
+    Typedef* get_typedef()
+    {
+        return _ref_typedef();
+    }
 };
-
-static Typedef ref_typedef("weakref", {
-    {"__new__",  new InterpFunctionWrapper("__new__", M_Ref::__new__)},
-    {"__init__", new InterpFunctionWrapper("__init__", M_Ref::__init__)},
-    {"__call__", new InterpFunctionWrapper("__call__", M_Ref::__call__)},
-});
-
-Typedef* M_Ref::get_typedef()
-{
-    return &ref_typedef;
-}
 
 WeakrefModule::WeakrefModule(mtpython::objects::ObjSpace* space, M_BaseObject* name) : BuiltinModule(space, name)
 {
-    add_def("ref", space->get_typeobject(&ref_typedef));
+    add_def("ref", space->get_typeobject(M_Ref::_ref_typedef()));
 }
 

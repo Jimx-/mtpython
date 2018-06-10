@@ -10,26 +10,26 @@
 using namespace mtpython::objects;
 using namespace mtpython::interpreter;
 
-static mtpython::interpreter::Typedef list_typedef("list", {
-	{ "__repr__", new InterpFunctionWrapper("__repr__", M_StdListObject::__repr__) },
-	{ "__len__", new InterpFunctionWrapper("__len__", M_StdListObject::__len__) },
-	{ "__contains__", new InterpFunctionWrapper("__contains__", M_StdListObject::__contains__) },
-	{ "__iter__", new InterpFunctionWrapper("__iter__", M_StdListObject::__iter__) },
-	{ "__getitem__", new InterpFunctionWrapper("__getitem__", M_StdListObject::__getitem__) },
-
-	{ "append", new InterpFunctionWrapper("append", M_StdListObject::append) },
-	{ "extend", new InterpFunctionWrapper("extend", M_StdListObject::extend) },
-	{ "pop", new InterpFunctionWrapper("pop", M_StdListObject::pop) },
-});
-
 mtpython::interpreter::Typedef* M_StdListObject::_list_typedef()
 {
+	static mtpython::interpreter::Typedef list_typedef("list", {
+		{ "__repr__", new InterpFunctionWrapper("__repr__", M_StdListObject::__repr__) },
+		{ "__len__", new InterpFunctionWrapper("__len__", M_StdListObject::__len__) },
+		{ "__contains__", new InterpFunctionWrapper("__contains__", M_StdListObject::__contains__) },
+		{ "__iter__", new InterpFunctionWrapper("__iter__", M_StdListObject::__iter__) },
+		{ "__getitem__", new InterpFunctionWrapper("__getitem__", M_StdListObject::__getitem__) },
+
+		{ "append", new InterpFunctionWrapper("append", M_StdListObject::append) },
+		{ "extend", new InterpFunctionWrapper("extend", M_StdListObject::extend) },
+		{ "pop", new InterpFunctionWrapper("pop", M_StdListObject::pop) },
+	});
+
 	return &list_typedef;
 }
 
 mtpython::interpreter::Typedef* M_StdListObject::get_typedef()
 {
-	return &list_typedef;
+	return _list_typedef();
 }
 
 M_BaseObject* M_StdListObject::__len__(mtpython::vm::ThreadContext* context, M_BaseObject* self)

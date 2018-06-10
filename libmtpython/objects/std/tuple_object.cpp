@@ -11,22 +11,22 @@
 using namespace mtpython::objects;
 using namespace mtpython::interpreter;
 
-static mtpython::interpreter::Typedef tuple_typedef("tuple", {
-	{ "__repr__", new InterpFunctionWrapper("__repr__", M_StdTupleObject::__repr__) },
-	{ "__iter__", new InterpFunctionWrapper("__iter__", M_StdTupleObject::__iter__) },
-	{ "__len__", new InterpFunctionWrapper("__len__", M_StdTupleObject::__len__) },
-	{ "__getitem__", new InterpFunctionWrapper("__getitem__", M_StdTupleObject::__getitem__) },
-	{ "__contains__", new InterpFunctionWrapper("__contains__", M_StdTupleObject::__contains__) },
-});
-
 mtpython::interpreter::Typedef* M_StdTupleObject::_tuple_typedef()
 {
+	static mtpython::interpreter::Typedef tuple_typedef("tuple", {
+		{ "__repr__", new InterpFunctionWrapper("__repr__", M_StdTupleObject::__repr__) },
+		{ "__iter__", new InterpFunctionWrapper("__iter__", M_StdTupleObject::__iter__) },
+		{ "__len__", new InterpFunctionWrapper("__len__", M_StdTupleObject::__len__) },
+		{ "__getitem__", new InterpFunctionWrapper("__getitem__", M_StdTupleObject::__getitem__) },
+		{ "__contains__", new InterpFunctionWrapper("__contains__", M_StdTupleObject::__contains__) },
+	});
+
 	return &tuple_typedef;
 }
 
 mtpython::interpreter::Typedef* M_StdTupleObject::get_typedef()
 {
-	return &tuple_typedef;
+	return _tuple_typedef();
 }
 
 M_BaseObject* M_StdTupleObject::__iter__(mtpython::vm::ThreadContext* context, M_BaseObject* self)
@@ -35,7 +35,7 @@ M_BaseObject* M_StdTupleObject::__iter__(mtpython::vm::ThreadContext* context, M
 	M_StdTupleObject* as_tuple = M_STDTUPLEOBJECT(self);
 	assert(as_tuple);
 
-	return new M_StdTupleIterObject(as_tuple->items);
+	return new(context) M_StdTupleIterObject(as_tuple->items);
 }
 
 M_BaseObject* M_StdTupleObject::__len__(mtpython::vm::ThreadContext* context, M_BaseObject* self)

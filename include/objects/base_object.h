@@ -11,6 +11,10 @@ namespace interpreter {
 class Typedef;
 }
 
+namespace vm {
+class ThreadContext;
+}
+
 namespace objects {
 
 class ObjSpace;
@@ -19,6 +23,8 @@ class ObjSpace;
 class M_BaseObject {
 public:
 	virtual ~M_BaseObject() { }
+
+	void* operator new(size_t size, vm::ThreadContext* context);
 
 	virtual M_BaseObject* get_class(ObjSpace* space);
 	virtual void set_class(ObjSpace* space, M_BaseObject* type) { throw NotImplementedException("set_class()"); }

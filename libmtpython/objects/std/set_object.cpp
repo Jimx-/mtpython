@@ -10,18 +10,6 @@ using namespace mtpython::objects;
 using namespace mtpython::interpreter;
 using namespace mtpython::vm;
 
-static Typedef set_typedef("set", {
-	{ "__new__", new InterpFunctionWrapper("__new__", M_StdSetObject::__new__) },
-	{ "__init__", new InterpFunctionWrapper("__init__", M_StdSetObject::__init__) },
-	{ "__repr__", new InterpFunctionWrapper("__repr__", M_StdSetObject::__repr__) },
-	{ "__contains__", new InterpFunctionWrapper("__contains__", M_StdSetObject::__contains__) },
-	{ "__le__", new InterpFunctionWrapper("__le__", M_StdSetObject::__le__) },
-	{ "__iter__", new InterpFunctionWrapper("__iter__", M_StdSetObject::__iter__) },
-	{ "add", new InterpFunctionWrapper("add", M_StdSetObject::add) },
-	{ "remove", new InterpFunctionWrapper("remove", M_StdSetObject::remove) },
-	{ "discard", new InterpFunctionWrapper("discard", M_StdSetObject::discard) },
-});
-
 M_BaseObject* M_StdSetObject::_discard(ThreadContext* context, M_BaseObject* item)
 {
 	M_BaseObject* result = nullptr;
@@ -49,7 +37,7 @@ bool M_StdSetObject::i_issubset(M_StdSetObject * other)
 M_BaseObject* M_StdSetObject::__new__(mtpython::vm::ThreadContext* context, const Arguments& args)
 {
 	ObjSpace* space = context->get_space();
-	M_BaseObject* instance = new M_StdSetObject(space);
+	M_BaseObject* instance = new(context) M_StdSetObject(space);
 	return space->wrap(context, instance);
 }
 
@@ -107,17 +95,29 @@ M_BaseObject* M_StdSetObject::__le__(mtpython::vm::ThreadContext * context, M_Ba
 M_BaseObject* M_StdSetObject::__iter__(mtpython::vm::ThreadContext* context, M_BaseObject* self)
 {
 	M_StdSetObject* as_set = static_cast<M_StdSetObject*>(self);
-	return new M_StdSetIterObject(as_set);
+	return new(context) M_StdSetIterObject(as_set);
 }
 
 Typedef* M_StdSetObject::_set_typedef()
 {
+	static Typedef set_typedef("set", {
+		{ "__new__", new InterpFunctionWrapper("__new__", M_StdSetObject::__new__) },
+		{ "__init__", new InterpFunctionWrapper("__init__", M_StdSetObject::__init__) },
+		{ "__repr__", new InterpFunctionWrapper("__repr__", M_StdSetObject::__repr__) },
+		{ "__contains__", new InterpFunctionWrapper("__contains__", M_StdSetObject::__contains__) },
+		{ "__le__", new InterpFunctionWrapper("__le__", M_StdSetObject::__le__) },
+		{ "__iter__", new InterpFunctionWrapper("__iter__", M_StdSetObject::__iter__) },
+		{ "add", new InterpFunctionWrapper("add", M_StdSetObject::add) },
+		{ "remove", new InterpFunctionWrapper("remove", M_StdSetObject::remove) },
+		{ "discard", new InterpFunctionWrapper("discard", M_StdSetObject::discard) },
+	});
+
 	return &set_typedef;
 }
 
 Typedef* M_StdSetObject::get_typedef()
 {
-	return &set_typedef;
+	return _set_typedef();
 }
 
 M_BaseObject* M_StdSetObject::add(mtpython::vm::ThreadContext* context, M_BaseObject* self, M_BaseObject* item)

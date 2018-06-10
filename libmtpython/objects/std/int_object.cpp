@@ -10,24 +10,6 @@
 using namespace mtpython::objects;
 using namespace mtpython::interpreter;
 
-static mtpython::interpreter::Typedef int_typedef("int", {
-	{ "__repr__", new InterpFunctionWrapper("__repr__", M_StdIntObject::__repr__) },
-	{ "__str__", new InterpFunctionWrapper("__str__", M_StdIntObject::__repr__) },
-	{ "__bool__", new InterpFunctionWrapper("__bool__", M_StdIntObject::__bool__) },
-	{ "__add__", new InterpFunctionWrapper("__add__", M_StdIntObject::__add__) },
-	{ "__sub__", new InterpFunctionWrapper("__sub__", M_StdIntObject::__sub__) },
-	{ "__mul__", new InterpFunctionWrapper("__mul__", M_StdIntObject::__mul__) },
-	{ "__and__", new InterpFunctionWrapper("__and__", M_StdIntObject::__and__) },
-	{ "__eq__", new InterpFunctionWrapper("__eq__", M_StdIntObject::__eq__) },
-	{ "__ne__", new InterpFunctionWrapper("__ne__", M_StdIntObject::__ne__) },
-	{ "__lt__", new InterpFunctionWrapper("__lt__", M_StdIntObject::__lt__) },
-	{ "__le__", new InterpFunctionWrapper("__le__", M_StdIntObject::__le__) },
-	{ "__gt__", new InterpFunctionWrapper("__gt__", M_StdIntObject::__gt__) },
-	{ "__ge__", new InterpFunctionWrapper("__ge__", M_StdIntObject::__ge__) },
-	{ "__abs__", new InterpFunctionWrapper("__abs__", M_StdIntObject::__abs__) },
-	{ "__neg__", new InterpFunctionWrapper("__neg__", M_StdIntObject::__neg__) },
-});
-
 M_StdIntObject::M_StdIntObject(int x)
 {
 	intval = x;
@@ -45,12 +27,30 @@ M_StdIntObject::M_StdIntObject(const std::string& x)
 
 mtpython::interpreter::Typedef* M_StdIntObject::_int_typedef()
 {
+	static mtpython::interpreter::Typedef int_typedef("int", {
+		{ "__repr__", new InterpFunctionWrapper("__repr__", M_StdIntObject::__repr__) },
+		{ "__str__", new InterpFunctionWrapper("__str__", M_StdIntObject::__repr__) },
+		{ "__bool__", new InterpFunctionWrapper("__bool__", M_StdIntObject::__bool__) },
+		{ "__add__", new InterpFunctionWrapper("__add__", M_StdIntObject::__add__) },
+		{ "__sub__", new InterpFunctionWrapper("__sub__", M_StdIntObject::__sub__) },
+		{ "__mul__", new InterpFunctionWrapper("__mul__", M_StdIntObject::__mul__) },
+		{ "__and__", new InterpFunctionWrapper("__and__", M_StdIntObject::__and__) },
+		{ "__eq__", new InterpFunctionWrapper("__eq__", M_StdIntObject::__eq__) },
+		{ "__ne__", new InterpFunctionWrapper("__ne__", M_StdIntObject::__ne__) },
+		{ "__lt__", new InterpFunctionWrapper("__lt__", M_StdIntObject::__lt__) },
+		{ "__le__", new InterpFunctionWrapper("__le__", M_StdIntObject::__le__) },
+		{ "__gt__", new InterpFunctionWrapper("__gt__", M_StdIntObject::__gt__) },
+		{ "__ge__", new InterpFunctionWrapper("__ge__", M_StdIntObject::__ge__) },
+		{ "__abs__", new InterpFunctionWrapper("__abs__", M_StdIntObject::__abs__) },
+		{ "__neg__", new InterpFunctionWrapper("__neg__", M_StdIntObject::__neg__) },
+	});
+
 	return &int_typedef;
 }
 
 mtpython::interpreter::Typedef* M_StdIntObject::get_typedef()
 {
-	return &int_typedef;
+	return _int_typedef();
 }
 
 void M_StdIntObject::dbg_print()

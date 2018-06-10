@@ -31,6 +31,8 @@ private:
 public:
 	BuiltinCode(const std::string& name, InterpFunction f, const Signature& sig) : Code(name), sig(sig) { func = f; }
 
+	void* operator new(size_t size) { return ::operator new(size); }
+
 	mtpython::objects::M_BaseObject* funcrun(vm::ThreadContext* context, mtpython::objects::M_BaseObject* func, Arguments& args)
 	{
 		return funcrun_obj(context, func, nullptr, args);
@@ -44,6 +46,8 @@ private:
 	InterpFunctionRaw func;
 public:
 	BuiltinCodeRaw(const std::string& name, InterpFunctionRaw f) : Code(name) { func = f; }
+
+	void* operator new(size_t size) { return ::operator new(size); }
 
 	mtpython::objects::M_BaseObject* funcrun(vm::ThreadContext* context, mtpython::objects::M_BaseObject* func, Arguments& args)
 	{
@@ -59,6 +63,8 @@ private:
 	Signature sig;
 public:
 	BuiltinCode0(const std::string& name, InterpFunction0 f) : Code(name), sig({}) { func = f; }
+
+	void* operator new(size_t size) { return ::operator new(size); }
 
 	mtpython::objects::M_BaseObject* funcrun(vm::ThreadContext* context, mtpython::objects::M_BaseObject* func, Arguments& args)
 	{
@@ -76,6 +82,8 @@ public:
 	BuiltinCode1(const std::string& name, InterpFunction1 f) : Code(name), sig({"arg0"}) { func = f; }
 	BuiltinCode1(const std::string& name, InterpFunction1 f, const Signature& sig) : Code(name), sig(sig) { func = f; }
 
+	void* operator new(size_t size) { return ::operator new(size); }
+
 	mtpython::objects::M_BaseObject* funcrun(vm::ThreadContext* context, mtpython::objects::M_BaseObject* func, Arguments& args)
 	{
 		return funcrun_obj(context, func, nullptr, args);
@@ -91,6 +99,8 @@ private:
 public:
 	BuiltinCode2(const std::string& name, InterpFunction2 f) : Code(name), sig({"arg0", "arg1"}) { func = f; }
 	BuiltinCode2(const std::string& name, InterpFunction2 f, const Signature& sig) : Code(name), sig(sig) { func = f; }
+
+	void* operator new(size_t size) { return ::operator new(size); }
 
 	mtpython::objects::M_BaseObject* funcrun(vm::ThreadContext* context, mtpython::objects::M_BaseObject* func, Arguments& args)
 	{
@@ -108,6 +118,8 @@ public:
 	BuiltinCode3(const std::string& name, InterpFunction3 f) : Code(name), sig({"arg0", "arg1", "arg2"}) { func = f; }
 	BuiltinCode3(const std::string& name, InterpFunction3 f, const Signature& sig) : Code(name), sig(sig) { func = f; }
 
+	void* operator new(size_t size) { return ::operator new(size); }
+
 	mtpython::objects::M_BaseObject* funcrun(vm::ThreadContext* context, mtpython::objects::M_BaseObject* func, Arguments& args)
 	{
 		return funcrun_obj(context, func, nullptr, args);
@@ -123,6 +135,8 @@ private:
 public:
 	BuiltinCode4(const std::string& name, InterpFunction4 f) : Code(name), sig({"arg0", "arg1", "arg2", "arg3"}) { func = f; }
 	BuiltinCode4(const std::string& name, InterpFunction4 f, const Signature& sig) : Code(name), sig(sig) { func = f; }
+
+	void* operator new(size_t size) { return ::operator new(size); }
 
 	mtpython::objects::M_BaseObject* funcrun(vm::ThreadContext* context, mtpython::objects::M_BaseObject* func, Arguments& args)
 	{
@@ -147,7 +161,8 @@ public:
 	InterpFunctionWrapper(const std::string& name, InterpFunction3 f, const Signature& sig);
 	InterpFunctionWrapper(const std::string& name, InterpFunction4 f);
 	InterpFunctionWrapper(const std::string& name, InterpFunction4 f, const Signature& sig);
-	~InterpFunctionWrapper() { SAFE_DELETE(code); }
+
+	void* operator new(size_t size) { return ::operator new(size); }
 
 	objects::M_BaseObject* bind_space(objects::ObjSpace* space) { return space->get_gateway_cache(this); }
 
@@ -160,6 +175,8 @@ private:
 	std::string doc;
 public:
 	InterpDocstringWrapper(const std::string& doc) : doc(doc) { }
+
+	void* operator new(size_t size) { return ::operator new(size); }
 
 	objects::M_BaseObject* bind_space(objects::ObjSpace* space) { return space->wrap_str(space->current_thread(), doc); }
 };

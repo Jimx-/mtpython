@@ -1,11 +1,13 @@
 #ifndef _VM_VM_H_
 #define _VM_VM_H_
 
+#include "objects/obj_space.h"
+#include "gc/heap.h"
+
 #include <stack>
 #include <vector>
 #include <unordered_set>
-
-#include "objects/obj_space.h"
+#include <functional>
 
 namespace mtpython {
 
@@ -43,6 +45,7 @@ public:
 
 	interpreter::BaseCompiler* get_compiler() { return compiler; }
 	objects::ObjSpace* get_space() { return space; }
+	gc::Heap* heap();
 
 	void enter(interpreter::PyFrame* frame);
 	void leave(interpreter::PyFrame* frame);
@@ -50,8 +53,6 @@ public:
 
 	void push_local_frame();
 	objects::M_BaseObject* pop_local_frame(objects::M_BaseObject* result);
-
-	objects::M_BaseObject* new_object(objects::M_BaseObject* obj);
 
 	void new_local_ref(objects::M_BaseObject* obj);
 	void delete_local_ref(objects::M_BaseObject* obj);
@@ -62,7 +63,8 @@ public:
 
 class PyVM {
 private:
-	mtpython::objects::ObjSpace* space;
+	objects::ObjSpace* space;
+	gc::Heap* heap;
 
 	ThreadContext main_thread;
 
@@ -76,11 +78,20 @@ public:
 
 	/* we have only one thread now */
 	ThreadContext* current_thread() { return &main_thread; }
+	gc::Heap* get_heap() { return heap; }
 
 	void init_bootstrap_path(const std::string& executable);
-
 	void run_file(const std::string& filename);
+	void run_toplevel(std::function<void()> f);
 };
+
+inline gc::Heap* ThreadContext::heap()
+{
+	if (vm)
+		return vm->get_heap();
+
+	return nullptr;
+}
 
 }
 }

@@ -461,7 +461,7 @@ mtpython::interpreter::PyCode* CodeBuilder::build()
 		block->get_code(code);
 	}
 
-	return new mtpython::interpreter::PyCode(
+	return new(space->current_thread()) mtpython::interpreter::PyCode(
 		space,
 		argcount,
 		kwonlyargcount,

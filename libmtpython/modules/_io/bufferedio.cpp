@@ -20,7 +20,7 @@ M_BaseObject* BufferedBase::name_get(mtpython::vm::ThreadContext* context, M_Bas
 M_BaseObject* M_BufferedReader::__new__(mtpython::vm::ThreadContext* context, const Arguments& args)
 {
 	ObjSpace* space = context->get_space();
-	M_BaseObject* instance = new M_BufferedReader(space);
+	M_BaseObject* instance = new(context) M_BufferedReader(space);
 	return space->wrap(context, instance);
 }
 
@@ -44,7 +44,7 @@ M_BaseObject* M_BufferedReader::__init__(mtpython::vm::ThreadContext* context, c
 M_BaseObject* M_BufferedWriter::__new__(mtpython::vm::ThreadContext* context, const Arguments& args)
 {
 	ObjSpace* space = context->get_space();
-	M_BaseObject* instance = new M_BufferedWriter(space);
+	M_BaseObject* instance = new(context) M_BufferedWriter(space);
 	return space->wrap(context, instance);
 }
 

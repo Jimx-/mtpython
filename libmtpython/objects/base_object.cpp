@@ -3,8 +3,27 @@
 #include "objects/base_object.h"
 #include "macros.h"
 #include "interpreter/error.h"
+#include "gc/heap.h"
+#include "vm/vm.h"
+#include <iostream>
 
 using namespace mtpython::objects;
+
+void* M_BaseObject::operator new(size_t size, mtpython::vm::ThreadContext* context)
+{
+	gc::Heap* heap = context->heap();
+
+	M_BaseObject* obj;
+	if (heap) {
+        obj = (M_BaseObject*) context->heap()->allocate_mem(size);
+        context->new_local_ref(obj);
+        context->heap()->post_allocate_obj(obj);
+	} else {
+		obj = (M_BaseObject*) ::operator new(size);
+	}
+
+	return obj;
+}
 
 M_BaseObject* M_BaseObject::get_class(ObjSpace* space)
 {

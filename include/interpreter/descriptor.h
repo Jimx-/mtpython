@@ -24,6 +24,7 @@ public:
         this->setter = setter;
     }
 
+    void* operator new(size_t size) { return ::operator new(size); }
     Typedef* get_typedef();
 
     static objects::M_BaseObject* __get__(vm::ThreadContext* context, objects::M_BaseObject* self, objects::M_BaseObject* obj, objects::M_BaseObject* cls);

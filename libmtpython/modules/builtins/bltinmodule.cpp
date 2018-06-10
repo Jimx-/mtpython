@@ -119,7 +119,7 @@ static M_BaseObject* load_module(mtpython::vm::ThreadContext* context, M_BaseObj
 		} catch (InterpError& exc) {
 			if (!exc.match(space, space->KeyError_type())) throw exc;
 		}
-		if (!module) module = space->wrap(context, new Module(space, w_modulename));
+		if (!module) module = space->wrap(context, new(context) Module(space, w_modulename));
 
 		std::string filename = spec->get_filename();
 		std::ifstream file;
@@ -522,12 +522,12 @@ public:
 	}
 };
 
-static Typedef range_iterator_typedef("range_iterator", {
-	{ "__next__", new InterpFunctionWrapper("__next__", M_RangeIter::__next__) },
-});
-
 Typedef* M_RangeIter::get_typedef()
 {
+	static Typedef range_iterator_typedef("range_iterator", {
+		{ "__next__", new InterpFunctionWrapper("__next__", M_RangeIter::__next__) },
+	});
+
 	return &range_iterator_typedef;
 }
 
@@ -587,7 +587,7 @@ public:
 			i_length = diff / i_step + 1;
 		}
 
-		M_BaseObject* range = new M_Range(start, stop, step, space->wrap_int(context, i_length));
+		M_BaseObject* range = new(context) M_Range(start, stop, step, space->wrap_int(context, i_length));
 
 		return space->wrap(context, range);
 	}
@@ -602,7 +602,7 @@ public:
 		int length = space->unwrap_int(range->length);
 		int step = space->unwrap_int(range->step);
 
-		M_RangeIter* iter = new M_RangeIter(space, start, length, step);
+		M_RangeIter* iter = new(context) M_RangeIter(space, start, length, step);
 
 		return iter;
 	}
@@ -629,19 +629,22 @@ public:
 		return space->wrap_int(context, start + i * step);
 	}
 
-	Typedef* get_typedef();
+	static Typedef* _range_typedef()
+	{
+		static Typedef Range_typedef("range", {
+			{ "__new__", new InterpFunctionWrapper("__new__", M_Range::__new__) },
+			{ "__iter__", new InterpFunctionWrapper("__iter__", M_Range::__iter__) },
+			{ "__getitem__", new InterpFunctionWrapper("__getitem__", M_Range::__getitem__) },
+		});
+
+		return &Range_typedef;
+	}
+
+	Typedef* get_typedef()
+	{
+		return _range_typedef();
+	}
 };
-
-static Typedef Range_typedef("range", {
-	{ "__new__", new InterpFunctionWrapper("__new__", M_Range::__new__) },
-	{ "__iter__", new InterpFunctionWrapper("__iter__", M_Range::__iter__) },
-	{ "__getitem__", new InterpFunctionWrapper("__getitem__", M_Range::__getitem__) },
-});
-
-Typedef* M_Range::get_typedef()
-{
-	return &Range_typedef;
-}
 
 /*
  * Reversed iterator
@@ -699,13 +702,13 @@ public:
 
 };
 
-static Typedef reversed_iter_typedef("reverseiterator", {
-	{ "__next__", new InterpFunctionWrapper("__next__", M_ReversedIterObject::__next__) },
-	{ "__iter__", new InterpFunctionWrapper("__iter__", M_ReversedIterObject::__iter__) },
-});
-
 Typedef* M_ReversedIterObject::get_typedef()
 {
+	static Typedef reversed_iter_typedef("reverseiterator", {
+		{ "__next__", new InterpFunctionWrapper("__next__", M_ReversedIterObject::__next__) },
+		{ "__iter__", new InterpFunctionWrapper("__iter__", M_ReversedIterObject::__iter__) },
+	});
+
 	return &reversed_iter_typedef;
 }
 
@@ -719,7 +722,7 @@ static M_BaseObject* builtin_reversed(mtpython::vm::ThreadContext* context, M_Ba
 		return space->call_function(context, reversed_impl,{});
 	}
 
-	return new M_ReversedIterObject(context, seq);
+	return new(context) M_ReversedIterObject(context, seq);
 }
 
 /*
@@ -749,7 +752,7 @@ public:
 		std::vector<M_BaseObject*> scope;
 		args.parse("__new__", nullptr, new_signature, scope, { space->wrap_None(), space->wrap_None(), space->wrap_None(), space->wrap_None() });
 
-		M_Property* instance = new M_Property(space, scope[1], scope[2], scope[3], scope[4]);
+		M_Property* instance = new(context) M_Property(space, scope[1], scope[2], scope[3], scope[4]);
 		return space->wrap(context, instance);
 	}
 
@@ -804,14 +807,23 @@ public:
 		M_BaseObject* type = self->get_class(space);
 		return space->call_function(context, type, { getter, setter, deleter, doc });
 	}
-};
 
-Typedef Property_typedef("property", {
-	{ "__new__", new InterpFunctionWrapper("__new__", M_Property::__new__) },
-	{ "__get__", new InterpFunctionWrapper("__get__", M_Property::__get__) },
-	{ "__set__", new InterpFunctionWrapper("__set__", M_Property::__set__) },
-	{ "setter", new InterpFunctionWrapper("setter", M_Property::setter) },
-});
+	static Typedef* _property_typedef()
+	{
+		static Typedef Property_typedef("property", {
+			{ "__new__", new InterpFunctionWrapper("__new__", M_Property::__new__) },
+			{ "__get__", new InterpFunctionWrapper("__get__", M_Property::__get__) },
+			{ "__set__", new InterpFunctionWrapper("__set__", M_Property::__set__) },
+			{ "setter", new InterpFunctionWrapper("setter", M_Property::setter) },
+		});
+		return &Property_typedef;
+	}
+
+	Typedef* get_typedef()
+	{
+		return _property_typedef();
+	}
+};
 
 /* Super */
 class M_Super : public M_BaseObject {
@@ -887,7 +899,7 @@ public:
 			}
 		}
 
-		M_Super* instance = new M_Super(w_starttype, w_type, obj_type);
+		M_Super* instance = new(context) M_Super(w_starttype, w_type, obj_type);
 		return space->wrap(context, instance);
 	}
 
@@ -921,18 +933,21 @@ public:
 		return nullptr;
 	}
 
-	Typedef* get_typedef();
+	static Typedef* _super_typedef()
+	{
+		static Typedef Super_typedef("super", {
+			{ "__new__", new InterpFunctionWrapper("__new__", M_Super::__new__) },
+			{ "__getattribute__", new InterpFunctionWrapper("__getattribute__", M_Super::__getattribute__) },
+		});
+		return &Super_typedef;
+	}
+
+	Typedef* get_typedef()
+	{
+		return _super_typedef();
+	}
 };
 
-Typedef Super_typedef("super", {
-	{ "__new__", new InterpFunctionWrapper("__new__", M_Super::__new__) },
-	{ "__getattribute__", new InterpFunctionWrapper("__getattribute__", M_Super::__getattribute__) },
-});
-
-Typedef* M_Super::get_typedef()
-{
-	return &Super_typedef;
-}
 
 class M_Zip : public M_BaseObject {
 public:
@@ -946,7 +961,7 @@ public:
 		std::vector<M_BaseObject*> scope;
 		args.parse("__new__", nullptr, new_signature, scope);
 
-		M_Zip* instance = new M_Zip(space);
+		M_Zip* instance = new(context) M_Zip(space);
 		return space->wrap(context, instance);
 	}
 
@@ -963,19 +978,22 @@ public:
 
 	}
 
-	Typedef* get_typedef();
+	static Typedef* _zip_typedef()
+	{
+		static Typedef Zip_typedef("zip", {
+			{ "__new__", new InterpFunctionWrapper("__new__", M_Zip::__new__) },
+			{ "__iter__", new InterpFunctionWrapper("__iter__", M_Zip::__iter__) },
+			{ "__next__", new InterpFunctionWrapper("__next__", M_Zip::__next__) },
+		});
+
+		return &Zip_typedef;
+	}
+
+	Typedef* get_typedef()
+	{
+		return _zip_typedef();
+	}
 };
-
-Typedef Zip_typedef("zip", {
-	{ "__new__", new InterpFunctionWrapper("__new__", M_Zip::__new__) },
-	{ "__iter__", new InterpFunctionWrapper("__iter__", M_Zip::__iter__) },
-	{ "__next__", new InterpFunctionWrapper("__next__", M_Zip::__next__) },
-});
-
-Typedef* M_Zip::get_typedef()
-{
-	return &Zip_typedef;
-}
 
 BuiltinsModule::BuiltinsModule(ObjSpace* space, M_BaseObject* name) : BuiltinModule(space, name)
 {
@@ -1024,11 +1042,11 @@ BuiltinsModule::BuiltinsModule(ObjSpace* space, M_BaseObject* name) : BuiltinMod
 	add_def("len", new InterpFunctionWrapper("len", builtin_len));
 	add_def("open", space->getattr_str(space->get__io(), "open"));
 	add_def("print", new InterpFunctionWrapper("print", builtin_print, Signature("args", "kwargs")));
-	add_def("property", space->get_typeobject(&Property_typedef));
-	add_def("range", space->get_typeobject(&Range_typedef));
+	add_def("property", space->get_typeobject(M_Property::_property_typedef()));
+	add_def("range", space->get_typeobject(M_Range::_range_typedef()));
 	add_def("reversed", new InterpFunctionWrapper("reversed", builtin_reversed));
 	add_def("staticmethod", space->get_typeobject(StaticMethod::_staticmethod_typedef()));
-	add_def("super", space->get_typeobject(&Super_typedef));
-	add_def("zip", space->get_typeobject(&Zip_typedef));
+	add_def("super", space->get_typeobject(M_Super::_super_typedef()));
+	add_def("zip", space->get_typeobject(M_Zip::_zip_typedef()));
 }
 

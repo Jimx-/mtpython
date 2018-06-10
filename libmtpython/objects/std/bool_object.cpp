@@ -10,13 +10,6 @@
 using namespace mtpython::objects;
 using namespace mtpython::interpreter;
 
-static mtpython::interpreter::Typedef bool_typedef("bool", {
-	{ "__bool__", new InterpFunctionWrapper("__bool__", M_StdBoolObject::__bool__) },
-	{ "__repr__", new InterpFunctionWrapper("__repr__", M_StdBoolObject::__repr__) },
-	{ "__str__", new InterpFunctionWrapper("__str__", M_StdBoolObject::__str__) },
-	{ "__and__", new InterpFunctionWrapper("__and__", M_StdBoolObject::__and__) },
-});
-
 M_StdBoolObject::M_StdBoolObject(bool x) : M_StdIntObject(x ? 1 : 0)
 {
 }
@@ -47,12 +40,19 @@ bool M_StdBoolObject::i_is(ObjSpace* space, M_BaseObject* other)
 
 mtpython::interpreter::Typedef* M_StdBoolObject::_bool_typedef()
 {
+	static mtpython::interpreter::Typedef bool_typedef("bool", {
+		{ "__bool__", new InterpFunctionWrapper("__bool__", M_StdBoolObject::__bool__) },
+		{ "__repr__", new InterpFunctionWrapper("__repr__", M_StdBoolObject::__repr__) },
+		{ "__str__", new InterpFunctionWrapper("__str__", M_StdBoolObject::__str__) },
+		{ "__and__", new InterpFunctionWrapper("__and__", M_StdBoolObject::__and__) },
+	});
+
 	return &bool_typedef;
 }
 
 mtpython::interpreter::Typedef* M_StdBoolObject::get_typedef()
 {
-	return &bool_typedef;
+	return _bool_typedef();
 }
 
 M_BaseObject* M_StdBoolObject::__bool__(mtpython::vm::ThreadContext* context, M_BaseObject* self)

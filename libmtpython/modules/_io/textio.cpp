@@ -13,7 +13,7 @@ using namespace mtpython::interpreter;
 M_BaseObject* M_TextIOWrapper::__new__(mtpython::vm::ThreadContext* context, const Arguments& args)
 {
 	ObjSpace* space = context->get_space();
-	M_BaseObject* instance = new M_TextIOWrapper(space);
+	M_BaseObject* instance = new(context) M_TextIOWrapper(space);
 	return space->wrap(context, instance);
 }
 

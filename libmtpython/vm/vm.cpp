@@ -4,16 +4,20 @@
 #include "interpreter/compiler.h"
 #include "interpreter/pycode.h"
 #include "interpreter/module.h"
+#include "gc/collected_heap.h"
 
 using namespace mtpython::vm;
 using namespace mtpython::objects;
 using namespace mtpython::parse;
 using namespace mtpython::interpreter;
+using namespace mtpython::gc;
 
 PyVM::PyVM(ObjSpace* space, const std::string& executable) : main_thread(this, space)
 {
 	this->space = space;
 	space->set_vm(this);
+	heap = new CollectedHeap();
+
 	init_bootstrap_path(executable);
 }
 
@@ -22,7 +26,7 @@ Module* PyVM::init_main_module(ThreadContext* context)
 	ObjSpace* space = context->get_space();
 	M_BaseObject* main_name = space->wrap_str(context, "__main__");
 
-	Module* module = new Module(space, main_name);
+	Module* module = new(context) Module(space, main_name);
 	return module;
 }
 
@@ -75,5 +79,10 @@ mtpython::interpreter::Code* PyVM::compile_code(ThreadContext* context, const st
 
 	mtpython::interpreter::PyCode* code = dynamic_cast<mtpython::interpreter::PyCode*>(code_obj);
 	return code;
+}
+
+void PyVM::run_toplevel(std::function<void()> f)
+{
+	f();
 }
 

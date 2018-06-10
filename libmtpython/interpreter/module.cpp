@@ -6,11 +6,6 @@
 using namespace mtpython::interpreter;
 using namespace mtpython::objects;
 
-static Typedef Module_typedef("module", {
-	{ "__repr__", new InterpFunctionWrapper("__repr__", Module::__repr__) },
-	{ "__dict__", new GetSetDescriptor(Module::__dict__get )},
-});
-
 Module::Module(ObjSpace* space, M_BaseObject* name, M_BaseObject* dict)
 {
 	this->space = space;
@@ -25,6 +20,11 @@ Module::Module(ObjSpace* space, M_BaseObject* name, M_BaseObject* dict)
 
 Typedef* Module::get_typedef()
 {
+	static Typedef Module_typedef("module", {
+		{ "__repr__", new InterpFunctionWrapper("__repr__", Module::__repr__) },
+		{ "__dict__", new GetSetDescriptor(Module::__dict__get )},
+	});
+
 	return &Module_typedef;
 }
 

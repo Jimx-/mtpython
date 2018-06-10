@@ -21,7 +21,7 @@ using namespace mtpython::interpreter;
 M_BaseObject* M_FileIO::__new__(mtpython::vm::ThreadContext* context, const Arguments& args)
 {
 	ObjSpace* space = context->get_space();
-	M_BaseObject* instance = new M_FileIO(space);
+	M_BaseObject* instance = new(context) M_FileIO(space);
 	return space->wrap(context, instance);
 }
 

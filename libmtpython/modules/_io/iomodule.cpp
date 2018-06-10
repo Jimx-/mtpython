@@ -23,42 +23,72 @@ static Typedef _IOBase_typedef("_io._IOBase", {
 static Typedef _RawIOBase_typedef("_io._RawIOBase", { &_IOBase_typedef }, {
 });
 
-static Typedef FileIO_typedef("_io.FileIO", { &_RawIOBase_typedef }, {
-	{ "__new__", new InterpFunctionWrapper("__new__", M_FileIO::__new__) },
-	{ "__init__", new InterpFunctionWrapper("__init__", M_FileIO::__init__) },
-	{ "name", new GetSetDescriptor(M_FileIO::name_get, M_FileIO::name_set) },
-});
-Typedef* M_FileIO::get_typedef() { return &FileIO_typedef; }
+static Typedef* _fileio_typedef()
+{
+	static Typedef FileIO_typedef("_io.FileIO", { &_RawIOBase_typedef }, {
+		{ "__new__", new InterpFunctionWrapper("__new__", M_FileIO::__new__) },
+		{ "__init__", new InterpFunctionWrapper("__init__", M_FileIO::__init__) },
+		{ "name", new GetSetDescriptor(M_FileIO::name_get, M_FileIO::name_set) },
+	});
+	return &FileIO_typedef;
+}
+Typedef* M_FileIO::get_typedef()
+{
+	return _fileio_typedef();
+}
 
 static Typedef _BufferedIOBase_typedef("_io._BufferedIOBase", { &_IOBase_typedef }, {
 });
 Typedef* M_BufferedIOBase::get_typedef() { return &_BufferedIOBase_typedef; }
 
-static Typedef BufferedReader_typedef("_io.BufferedReader", { &_BufferedIOBase_typedef }, {
-	{ "__new__", new InterpFunctionWrapper("__new__", M_BufferedReader::__new__) },
-	{ "__init__", new InterpFunctionWrapper("__init__", M_BufferedReader::__init__) },
-	{ "name", new GetSetDescriptor(M_BufferedReader::name_get) },
-});
-Typedef* M_BufferedReader::get_typedef() { return &BufferedReader_typedef; }
+static Typedef* _bufferedreader_typedef()
+{
+	static Typedef BufferedReader_typedef("_io.BufferedReader", { &_BufferedIOBase_typedef }, {
+		{ "__new__", new InterpFunctionWrapper("__new__", M_BufferedReader::__new__) },
+		{ "__init__", new InterpFunctionWrapper("__init__", M_BufferedReader::__init__) },
+		{ "name", new GetSetDescriptor(M_BufferedReader::name_get) },
+	});
+	return &BufferedReader_typedef;
+}
+Typedef* M_BufferedReader::get_typedef()
+{
+	return _bufferedreader_typedef();
+}
 
-static Typedef BufferedWriter_typedef("_io.BufferedWriter", { &_BufferedIOBase_typedef }, {
-	{ "__new__", new InterpFunctionWrapper("__new__", M_BufferedWriter::__new__) },
-	{ "__init__", new InterpFunctionWrapper("__init__", M_BufferedWriter::__init__) },
-	{ "name", new GetSetDescriptor(M_BufferedWriter::name_get) },
-});
-Typedef* M_BufferedWriter::get_typedef() { return &BufferedWriter_typedef; }
+static Typedef* _bufferwriter_typedef()
+{
+	static Typedef BufferedWriter_typedef("_io.BufferedWriter", { &_BufferedIOBase_typedef }, {
+		{ "__new__", new InterpFunctionWrapper("__new__", M_BufferedWriter::__new__) },
+		{ "__init__", new InterpFunctionWrapper("__init__", M_BufferedWriter::__init__) },
+		{ "name", new GetSetDescriptor(M_BufferedWriter::name_get) },
+	});
+	return &BufferedWriter_typedef;
+}
+Typedef* M_BufferedWriter::get_typedef()
+{
+	return _bufferwriter_typedef();
+}
 
 static Typedef _TextIOBase_typedef("_io._TextIOBase", { &_IOBase_typedef }, {
 });
 
-static Typedef TextIOWrapper_typedef("_io.TextIOWrapper", { &_TextIOBase_typedef }, {
-	{ "__new__", new InterpFunctionWrapper("__new__", M_TextIOWrapper::__new__) },
-	{ "__init__", new InterpFunctionWrapper("__init__", M_TextIOWrapper::__init__) },
-	{ "__repr__", new InterpFunctionWrapper("__repr__", M_TextIOWrapper::__repr__) },
-	{ "name", new GetSetDescriptor(M_TextIOWrapper::name_get) },
-	{ "buffer", new GetSetDescriptor(M_TextIOWrapper::buffer_get) },
-});
-Typedef* M_TextIOWrapper::get_typedef() { return &TextIOWrapper_typedef; }
+static Typedef* _textiowrapper_typedef()
+{
+	static Typedef TextIOWrapper_typedef("_io.TextIOWrapper", { &_TextIOBase_typedef }, {
+		{ "__new__", new InterpFunctionWrapper("__new__", M_TextIOWrapper::__new__) },
+		{ "__init__", new InterpFunctionWrapper("__init__", M_TextIOWrapper::__init__) },
+		{ "__repr__", new InterpFunctionWrapper("__repr__", M_TextIOWrapper::__repr__) },
+		{ "name", new GetSetDescriptor(M_TextIOWrapper::name_get) },
+		{ "buffer", new GetSetDescriptor(M_TextIOWrapper::buffer_get) },
+	});
+
+	return &TextIOWrapper_typedef;
+}
+
+Typedef* M_TextIOWrapper::get_typedef()
+{
+	return _textiowrapper_typedef();
+}
 
 static M_BaseObject* io_open(mtpython::vm::ThreadContext* context, const Arguments& args)
 {
@@ -102,7 +132,7 @@ static M_BaseObject* io_open(mtpython::vm::ThreadContext* context, const Argumen
 		}
 	}
 
-	M_BaseObject* raw = space->call_function(context, space->get_typeobject(&FileIO_typedef), {file, wrapped_mode, wrapped_closefd});
+	M_BaseObject* raw = space->call_function(context, space->get_typeobject(_fileio_typedef()), {file, wrapped_mode, wrapped_closefd});
 	
 	bool line_buffering = false;
 	if (buffering < 0) buffering = DEFAULT_BUFFER_SIZE;
@@ -111,9 +141,9 @@ static M_BaseObject* io_open(mtpython::vm::ThreadContext* context, const Argumen
 	if (updating) {
 
 	} else if (writing || appending) {
-		buffer_cls = space->get_typeobject(&BufferedWriter_typedef);
+		buffer_cls = space->get_typeobject(_bufferwriter_typedef());
 	} else {
-		buffer_cls = space->get_typeobject(&BufferedReader_typedef);
+		buffer_cls = space->get_typeobject(_bufferedreader_typedef());
 	}
 
 	M_BaseObject* buffer = space->call_function(context, buffer_cls, {raw, space->wrap_int(context, buffering)});
@@ -122,7 +152,7 @@ static M_BaseObject* io_open(mtpython::vm::ThreadContext* context, const Argumen
 	if (binary) {
 		wrapper = buffer;
 	} else {
-		wrapper = space->call_function(context, space->get_typeobject(&TextIOWrapper_typedef), { buffer,
+		wrapper = space->call_function(context, space->get_typeobject(&_TextIOBase_typedef), { buffer,
 			wrapped_encoding, wrapped_errors, wrapped_newline, space->new_bool(line_buffering) });
 		space->setattr(wrapper, space->wrap_str(context, "mode"), wrapped_mode);
 	}
@@ -139,10 +169,10 @@ IOModule::IOModule(ObjSpace* space, M_BaseObject* name) : BuiltinModule(space, n
 	add_def("_TextIOBase", space->get_typeobject(&_TextIOBase_typedef));
 	add_def("_BufferedIOBase", space->get_typeobject(&_BufferedIOBase_typedef));
 
-	add_def("BufferedReader", space->get_typeobject(&BufferedReader_typedef));
+	add_def("BufferedReader", space->get_typeobject(_bufferedreader_typedef()));
 
-	add_def("FileIO", space->get_typeobject(&FileIO_typedef));
-	add_def("TextIOWrapper", space->get_typeobject(&TextIOWrapper_typedef));
+	add_def("FileIO", space->get_typeobject(_fileio_typedef()));
+	add_def("TextIOWrapper", space->get_typeobject(_textiowrapper_typedef()));
 	
 	add_def("open", new InterpFunctionWrapper("open", io_open));
 }

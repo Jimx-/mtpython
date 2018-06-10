@@ -48,6 +48,7 @@ SET(LIBMTPYTHON_SRCLIST
 		modules/posix/posixmodule.cpp
 		modules/sys/sysmodule.cpp
 		modules/errno/errnomodule.cpp
+		gc/collected_heap.cpp
 		vm/initpath.cpp
 		vm/thread_context.cpp
 		vm/vm.cpp)

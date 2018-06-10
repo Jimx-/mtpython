@@ -13,14 +13,14 @@ GeneratorIterator::GeneratorIterator(PyFrame* _frame)
     running = false;
 }
 
-Typedef GeneratorIterator_typedef("generator", {
-    { "__iter__", new InterpFunctionWrapper("__iter__", GeneratorIterator::__iter__) },
-    { "__next__", new InterpFunctionWrapper("__next__", GeneratorIterator::__next__) },
-    { "send", new InterpFunctionWrapper("send", GeneratorIterator::send) },
-});
-
 Typedef* GeneratorIterator::get_typedef()
 {
+    static Typedef GeneratorIterator_typedef("generator", {
+        { "__iter__", new InterpFunctionWrapper("__iter__", GeneratorIterator::__iter__) },
+        { "__next__", new InterpFunctionWrapper("__next__", GeneratorIterator::__next__) },
+        { "send", new InterpFunctionWrapper("send", GeneratorIterator::send) },
+    });
+
     return &GeneratorIterator_typedef;
 }
 

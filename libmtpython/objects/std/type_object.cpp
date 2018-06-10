@@ -9,16 +9,6 @@
 using namespace mtpython::objects;
 using namespace mtpython::interpreter;
 
-static mtpython::interpreter::Typedef type_typedef("type", {
-	{ "__new__", new InterpFunctionWrapper("__new__", M_StdTypeObject::__new__) },
-	{ "__call__", new InterpFunctionWrapper("__call__", M_StdTypeObject::__call__) },
-	{ "__getattribute__", new InterpFunctionWrapper("__getattribute__", M_StdTypeObject::__getattribute__) },
-	{ "__repr__", new InterpFunctionWrapper("__repr__", M_StdTypeObject::__repr__) },
-	{ "__subclasscheck__", new InterpFunctionWrapper("__subclasscheck__", M_StdTypeObject::__subclasscheck__) },
-	{ "__mro__", new GetSetDescriptor(M_StdTypeObject::__mro__get) },
-	{ "__subclasses__", new InterpFunctionWrapper("__subclasses__", M_StdTypeObject::__subclasses__) },
-});
-
 M_StdTypeObject::M_StdTypeObject(ObjSpace* space, M_BaseObject* cls, std::string& name, const std::vector<M_BaseObject*>& bases, const std::unordered_map<std::string, M_BaseObject*>& dict) :
 			space(space), cls(cls), name(name), bases(bases), dict(dict)
 {
@@ -29,11 +19,21 @@ M_StdTypeObject::M_StdTypeObject(ObjSpace* space, M_BaseObject* cls, std::string
 
 mtpython::interpreter::Typedef* M_StdTypeObject::get_typedef()
 {
-	return &type_typedef;
+	return _type_typedef();
 }
 
 mtpython::interpreter::Typedef* M_StdTypeObject::_type_typedef()
 {
+	static mtpython::interpreter::Typedef type_typedef("type", {
+		{ "__new__", new InterpFunctionWrapper("__new__", M_StdTypeObject::__new__) },
+		{ "__call__", new InterpFunctionWrapper("__call__", M_StdTypeObject::__call__) },
+		{ "__getattribute__", new InterpFunctionWrapper("__getattribute__", M_StdTypeObject::__getattribute__) },
+		{ "__repr__", new InterpFunctionWrapper("__repr__", M_StdTypeObject::__repr__) },
+		{ "__subclasscheck__", new InterpFunctionWrapper("__subclasscheck__", M_StdTypeObject::__subclasscheck__) },
+		{ "__mro__", new GetSetDescriptor(M_StdTypeObject::__mro__get) },
+		{ "__subclasses__", new InterpFunctionWrapper("__subclasses__", M_StdTypeObject::__subclasses__) },
+	});
+
 	return &type_typedef;
 }
 
@@ -184,7 +184,7 @@ M_BaseObject* StdTypedefCache::build(mtpython::interpreter::Typedef* key)
 		wrapped_dict[it->first] = space->wrap(space->current_thread(), it->second);
 	}
 
-	M_StdTypeObject* wrapped_type = new M_StdTypeObject(space, space->get_type_by_name("type"), key->get_name(),
+	M_StdTypeObject* wrapped_type = new(space->current_thread()) M_StdTypeObject(space, space->get_type_by_name("type"), key->get_name(),
 														wrapped_bases, wrapped_dict);
 
 	return wrapped_type;
@@ -242,7 +242,7 @@ M_BaseObject* M_StdTypeObject::__new__(mtpython::vm::ThreadContext* context, con
 	/* TODO: handle __slots__ */
 	int add_dict = 1;
 
-	M_StdTypeObject* cls = new M_StdTypeObject(space, wrapped_type, name, bases, dict);
+	M_StdTypeObject* cls = new(context) M_StdTypeObject(space, wrapped_type, name, bases, dict);
 	cls->set_has_dict(add_dict > 0);
 	cls->ready();
 	return space->wrap(context, cls);

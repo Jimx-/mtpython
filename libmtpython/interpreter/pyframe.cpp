@@ -100,7 +100,7 @@ void PyFrame::init_cells(M_BaseObject* outer, PyCode* code)
 
 	cells.resize(ncellvars + nfreevars);
 	for (int i = 0; i < ncellvars; i++) {
-		cells[i] = new Cell();
+		cells[i] = new(context) Cell();
 	}
 	for (int i = 0; i < nfreevars; i++) {
 		cells[i + ncellvars] = static_cast<Cell*>(closure[i]);
@@ -110,7 +110,7 @@ void PyFrame::init_cells(M_BaseObject* outer, PyCode* code)
 M_BaseObject* PyFrame::exec()
 {
 	if (pycode->get_flags() & CO_GENERATOR) {
-		return space->wrap(context, new GeneratorIterator(this));
+		return space->wrap(context, new(context) GeneratorIterator(this));
 	}
 
 	return execute_frame();
@@ -178,7 +178,7 @@ int PyFrame::handle_interp_error(InterpError& exc)
 		throw exc;
 	}
 
-	ExceptionUnwinder* unwinder = new ExceptionUnwinder(exc);
+	ExceptionUnwinder* unwinder = new(context) ExceptionUnwinder(exc);
 	int next_pc = block->handle(this, unwinder);
 
 	return next_pc;
@@ -217,7 +217,7 @@ int PyFrame::dispatch_bytecode(ThreadContext* context, std::vector<unsigned char
 				context->pop_local_frame(nullptr);
 				throw ReturnException();
 			} else {
-				StackUnwinder* unwinder = new ReturnUnwinder(result);
+				StackUnwinder* unwinder = new(context) ReturnUnwinder(result);
 				next_pc = block->handle(this, unwinder);
 			}
 
@@ -603,7 +603,7 @@ void PyFrame::make_function(int arg, int next_pc)
 	PyCode* code = dynamic_cast<PyCode*>(code_obj);
 	if (!code) throw InterpError(space->TypeError_type(), space->wrap_str(context, "expected code object"));
 
-	M_BaseObject* func = new Function(space, code, defaults, globals);
+	M_BaseObject* func = new(context) Function(space, code, defaults, globals);
 	push_value(space->wrap(context, func));
 
 	context->pop_local_frame(nullptr);
@@ -627,7 +627,7 @@ void PyFrame::make_closure(int arg, int next_pc)
 	PyCode* code = dynamic_cast<PyCode*>(code_obj);
 	if (!code) throw InterpError(space->TypeError_type(), space->wrap_str(context, "expected code object"));
 
-	Function* _func = new Function(space, code, defaults, globals);
+	Function* _func = new(context) Function(space, code, defaults, globals);
 	_func->set_closure(freevars);
 	M_BaseObject* func = context->pop_local_frame(_func);
 
