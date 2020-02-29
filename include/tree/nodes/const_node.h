@@ -8,30 +8,35 @@
 #include "macros.h"
 
 namespace mtpython {
-    namespace tree {
+namespace tree {
 
-        class ConstNode : public ASTNode {
-        private:
-            mtpython::objects::M_BaseObject* value;
-        public:
-            ConstNode(const int line_nr);
-            ~ConstNode() {  }
+class ConstNode : public ASTNode {
+private:
+    mtpython::objects::M_BaseObject* value;
 
-            mtpython::objects::M_BaseObject* get_value() { return value; }
-            void set_value(mtpython::objects::M_BaseObject* value) { this->value = value; }
+public:
+    ConstNode(const int line_nr);
+    ~ConstNode() {}
 
-            virtual void print(const int padding) {
-                std::string blank(padding, ' ');
-                std::cout << blank << line << ": Const: ";
-                value->dbg_print();
-                std::cout << std::endl;
-            }
-
-            virtual void visit(ASTVisitor* visitor) { visitor->visit_const(this); }
-            virtual NodeType get_tag() { return NT_CONST; }
-        };
-
+    mtpython::objects::M_BaseObject* get_value() { return value; }
+    void set_value(mtpython::objects::M_BaseObject* value)
+    {
+        this->value = value;
     }
-}
+
+    virtual void print(const int padding)
+    {
+        std::string blank(padding, ' ');
+        std::cout << blank << line << ": Const: ";
+        value->dbg_print();
+        std::cout << std::endl;
+    }
+
+    virtual void visit(ASTVisitor* visitor) { visitor->visit_const(this); }
+    virtual NodeType get_tag() { return NT_CONST; }
+};
+
+} // namespace tree
+} // namespace mtpython
 
 #endif /* _CONST_NODE_ */

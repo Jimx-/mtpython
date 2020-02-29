@@ -12,50 +12,54 @@ namespace utils {
 /* Used to manage source files, etc. */
 class SourceBuffer {
 private:
-	std::string fname;
-	std::vector<char> buf;
-	std::vector<int> line_offset;
+    std::string fname;
+    std::vector<char> buf;
+    std::vector<int> line_offset;
     int pos;
     mtpython::parse::SourceType src_type;
-	
+
 public:
-	/* create an empty buffer */
-	SourceBuffer() : pos(0), fname("<no file>"), src_type(mtpython::parse::SourceType::ST_ERROR) {};
-	/* create a buffer containing the file */
-	SourceBuffer(const std::string& source, mtpython::parse::SourceType src_type);
-	SourceBuffer(std::vector<char>::iterator first, std::vector<char>::iterator last);
-	
-	int load_source(const std::string& source);
-	/* load a file */
-	int load_file(const std::string& filename);
-	/* read a char from the buffer */
-	char read();
+    /* create an empty buffer */
+    SourceBuffer()
+        : pos(0), fname("<no file>"),
+          src_type(mtpython::parse::SourceType::ST_ERROR){};
+    /* create a buffer containing the file */
+    SourceBuffer(const std::string& source,
+                 mtpython::parse::SourceType src_type);
+    SourceBuffer(std::vector<char>::iterator first,
+                 std::vector<char>::iterator last);
 
-	mtpython::parse::SourceType get_src_type();
+    int load_source(const std::string& source);
+    /* load a file */
+    int load_file(const std::string& filename);
+    /* read a char from the buffer */
+    char read();
 
-	/* get & set position */
-	int tell_pos();
-	void seek(int pos);
+    mtpython::parse::SourceType get_src_type();
 
-	/* true iff the whole buffer has been read */
-	bool eof();
-	/* how many chars in this buffer */
-	int size();
+    /* get & set position */
+    int tell_pos();
+    void seek(int pos);
 
-	/* begin & end iterators */
-	std::vector<char>::iterator begin();
-	std::vector<char>::iterator end();
+    /* true iff the whole buffer has been read */
+    bool eof();
+    /* how many chars in this buffer */
+    int size();
 
-	std::string get_filename() { return fname; }
+    /* begin & end iterators */
+    std::vector<char>::iterator begin();
+    std::vector<char>::iterator end();
 
-	/* get #line_nr line */
-	std::string get_line(int line_nr);
+    std::string get_filename() { return fname; }
 
-	/* dump the buffer */
-	void dump();
+    /* get #line_nr line */
+    std::string get_line(int line_nr);
+
+    /* dump the buffer */
+    void dump();
 };
 
-}
-}
+} // namespace utils
+} // namespace mtpython
 
 #endif

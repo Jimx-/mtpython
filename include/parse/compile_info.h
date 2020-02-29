@@ -7,29 +7,36 @@ namespace mtpython {
 namespace parse {
 
 typedef enum {
-	ST_ERROR, ST_FILE_INPUT,
+    ST_ERROR,
+    ST_FILE_INPUT,
 } SourceType;
 
-#define PyCF_SOURCE_IS_UTF8  0x0100
+#define PyCF_SOURCE_IS_UTF8 0x0100
 
 class CompileInfo {
 private:
-	std::string filename;
-	SourceType type;
-	int flags;
-	std::string encoding;
+    std::string filename;
+    SourceType type;
+    int flags;
+    std::string encoding;
+
 public:
-	CompileInfo(const std::string& filename, SourceType type, int flags) : filename(filename), type(type), flags(flags), encoding("") { }
+    CompileInfo(const std::string& filename, SourceType type, int flags)
+        : filename(filename), type(type), flags(flags), encoding("")
+    {}
 
-	std::string& get_filename() { return filename; }
-	SourceType get_type() { return type; }
-	int get_flags() { return flags; }
+    std::string& get_filename() { return filename; }
+    SourceType get_type() { return type; }
+    int get_flags() { return flags; }
 
-	void set_encoding(const std::string& encoding) { this->encoding = encoding; }
-	const std::string& get_encoding() { return encoding; }
+    void set_encoding(const std::string& encoding)
+    {
+        this->encoding = encoding;
+    }
+    const std::string& get_encoding() { return encoding; }
 };
 
-}
-}
+} // namespace parse
+} // namespace mtpython
 
 #endif /* _PARSE_COMPILER_INFO_ */

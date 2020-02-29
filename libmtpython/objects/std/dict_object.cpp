@@ -12,142 +12,161 @@ using namespace mtpython::interpreter;
 
 M_BaseObject* M_StdDictObject::getitem(M_BaseObject* key)
 {
-	auto got = dict.find(key);
-	if (got == dict.end()) return nullptr;
+    auto got = dict.find(key);
+    if (got == dict.end()) return nullptr;
 
-	return got->second;
+    return got->second;
 }
 
 void M_StdDictObject::setitem(M_BaseObject* key, M_BaseObject* value)
 {
-	dict[key] = value;
+    dict[key] = value;
 }
 
-M_BaseObject* M_StdDictObject::__repr__(mtpython::vm::ThreadContext* context, M_BaseObject* self)
+M_BaseObject* M_StdDictObject::__repr__(mtpython::vm::ThreadContext* context,
+                                        M_BaseObject* self)
 {
-	ObjSpace* space = context->get_space();
-	M_StdDictObject* as_dict = dynamic_cast<M_StdDictObject*>(self);
-	assert(as_dict);
-	std::string str;
+    ObjSpace* space = context->get_space();
+    M_StdDictObject* as_dict = dynamic_cast<M_StdDictObject*>(self);
+    assert(as_dict);
+    std::string str;
 
-	as_dict->lock();
-	str += "{";
-	int i = 0;
-	for (auto& item : as_dict->dict) {
-		if (i > 0) str += ", ";
-		M_BaseObject* repr_item = space->repr(item.first);
-		str += space->unwrap_str(repr_item);
-		SAFE_DELETE(repr_item);
-		str += ": ";
-		repr_item = space->repr(item.second);
-		str += space->unwrap_str(repr_item);
-		SAFE_DELETE(repr_item);
-		i++;
-	}
-	str += "}";
-	as_dict->unlock();
+    as_dict->lock();
+    str += "{";
+    int i = 0;
+    for (auto& item : as_dict->dict) {
+        if (i > 0) str += ", ";
+        M_BaseObject* repr_item = space->repr(item.first);
+        str += space->unwrap_str(repr_item);
+        SAFE_DELETE(repr_item);
+        str += ": ";
+        repr_item = space->repr(item.second);
+        str += space->unwrap_str(repr_item);
+        SAFE_DELETE(repr_item);
+        i++;
+    }
+    str += "}";
+    as_dict->unlock();
 
-	return space->wrap_str(context, str);
+    return space->wrap_str(context, str);
 }
 
-M_BaseObject* M_StdDictObject::__getitem__(mtpython::vm::ThreadContext* context, M_BaseObject* obj, M_BaseObject* key)
+M_BaseObject* M_StdDictObject::__getitem__(mtpython::vm::ThreadContext* context,
+                                           M_BaseObject* obj, M_BaseObject* key)
 {
-	ObjSpace* space = context->get_space();
-	M_StdDictObject* as_dict = dynamic_cast<M_StdDictObject*>(obj);
-	assert(as_dict);
+    ObjSpace* space = context->get_space();
+    M_StdDictObject* as_dict = dynamic_cast<M_StdDictObject*>(obj);
+    assert(as_dict);
 
-	as_dict->lock();
-	M_BaseObject* value = as_dict->getitem(key);
-	as_dict->unlock();
+    as_dict->lock();
+    M_BaseObject* value = as_dict->getitem(key);
+    as_dict->unlock();
 
-	if (!value) throw InterpError(space->KeyError_type(), key);
-	return value;
+    if (!value) throw InterpError(space->KeyError_type(), key);
+    return value;
 }
 
-M_BaseObject* M_StdDictObject::__setitem__(mtpython::vm::ThreadContext* context, M_BaseObject* obj, M_BaseObject* key, M_BaseObject* value)
+M_BaseObject* M_StdDictObject::__setitem__(mtpython::vm::ThreadContext* context,
+                                           M_BaseObject* obj, M_BaseObject* key,
+                                           M_BaseObject* value)
 {
-	M_StdDictObject* as_dict = static_cast<M_StdDictObject*>(obj);
+    M_StdDictObject* as_dict = static_cast<M_StdDictObject*>(obj);
 
-	as_dict->lock();
-	as_dict->setitem(key, value);
-	as_dict->unlock();
+    as_dict->lock();
+    as_dict->setitem(key, value);
+    as_dict->unlock();
 
-	return nullptr;
+    return nullptr;
 }
 
 mtpython::interpreter::Typedef* M_StdDictObject::_dict_typedef()
 {
-	static mtpython::interpreter::Typedef dict_typedef("dict", {
-		{ "__repr__", new InterpFunctionWrapper("__repr__", M_StdDictObject::__repr__) },
-		{ "__getitem__", new InterpFunctionWrapper("__getitem__", M_StdDictObject::__getitem__) },
-		{ "__setitem__", new InterpFunctionWrapper("__setitem__", M_StdDictObject::__setitem__) },
-		{ "__contains__", new InterpFunctionWrapper("__contains__", M_StdDictObject::__contains__) },
-		{ "keys", new InterpFunctionWrapper("keys", M_StdDictObject::keys) },
-		{ "values", new InterpFunctionWrapper("values", M_StdDictObject::values) },
-		{ "items", new InterpFunctionWrapper("items", M_StdDictObject::items) },
-	});
+    static mtpython::interpreter::Typedef dict_typedef(
+        "dict",
+        {
+            {"__repr__",
+             new InterpFunctionWrapper("__repr__", M_StdDictObject::__repr__)},
+            {"__getitem__", new InterpFunctionWrapper(
+                                "__getitem__", M_StdDictObject::__getitem__)},
+            {"__setitem__", new InterpFunctionWrapper(
+                                "__setitem__", M_StdDictObject::__setitem__)},
+            {"__contains__",
+             new InterpFunctionWrapper("__contains__",
+                                       M_StdDictObject::__contains__)},
+            {"keys", new InterpFunctionWrapper("keys", M_StdDictObject::keys)},
+            {"values",
+             new InterpFunctionWrapper("values", M_StdDictObject::values)},
+            {"items",
+             new InterpFunctionWrapper("items", M_StdDictObject::items)},
+        });
 
-	return &dict_typedef;
+    return &dict_typedef;
 }
 
 mtpython::interpreter::Typedef* M_StdDictObject::get_typedef()
 {
-	return _dict_typedef();
+    return _dict_typedef();
 }
 
-M_BaseObject* M_StdDictObject::__contains__(mtpython::vm::ThreadContext* context, M_BaseObject* self, M_BaseObject* obj)
+M_BaseObject*
+M_StdDictObject::__contains__(mtpython::vm::ThreadContext* context,
+                              M_BaseObject* self, M_BaseObject* obj)
 {
-	M_StdDictObject* as_dict = static_cast<M_StdDictObject*>(self);
+    M_StdDictObject* as_dict = static_cast<M_StdDictObject*>(self);
 
-	as_dict->lock();
-	M_BaseObject* result = context->get_space()->new_bool(as_dict->dict.find(obj) != as_dict->dict.end());
-	as_dict->unlock();
+    as_dict->lock();
+    M_BaseObject* result = context->get_space()->new_bool(
+        as_dict->dict.find(obj) != as_dict->dict.end());
+    as_dict->unlock();
 
-	return result;
+    return result;
 }
 
-M_BaseObject* M_StdDictObject::keys(mtpython::vm::ThreadContext* context, M_BaseObject* self)
+M_BaseObject* M_StdDictObject::keys(mtpython::vm::ThreadContext* context,
+                                    M_BaseObject* self)
 {
-	M_StdDictObject* as_dict = static_cast<M_StdDictObject*>(self);
-	std::vector<M_BaseObject*> keys;
-	
-	as_dict->lock();
-	for (const auto& iter : as_dict->dict) {
-		keys.push_back(iter.first);
-	}
-	as_dict->unlock();
+    M_StdDictObject* as_dict = static_cast<M_StdDictObject*>(self);
+    std::vector<M_BaseObject*> keys;
 
-	return context->get_space()->new_tuple(context, keys);
+    as_dict->lock();
+    for (const auto& iter : as_dict->dict) {
+        keys.push_back(iter.first);
+    }
+    as_dict->unlock();
+
+    return context->get_space()->new_tuple(context, keys);
 }
 
-M_BaseObject* M_StdDictObject::values(mtpython::vm::ThreadContext* context, M_BaseObject* self)
+M_BaseObject* M_StdDictObject::values(mtpython::vm::ThreadContext* context,
+                                      M_BaseObject* self)
 {
-	M_StdDictObject* as_dict = static_cast<M_StdDictObject*>(self);
-	std::vector<M_BaseObject*> values;
+    M_StdDictObject* as_dict = static_cast<M_StdDictObject*>(self);
+    std::vector<M_BaseObject*> values;
 
-	as_dict->lock();
-	for (const auto& iter : as_dict->dict) {
-		values.push_back(iter.second);
-	}
-	as_dict->unlock();
+    as_dict->lock();
+    for (const auto& iter : as_dict->dict) {
+        values.push_back(iter.second);
+    }
+    as_dict->unlock();
 
-	return context->get_space()->new_tuple(context, values);
+    return context->get_space()->new_tuple(context, values);
 }
 
-M_BaseObject* M_StdDictObject::items(mtpython::vm::ThreadContext* context, M_BaseObject* self)
+M_BaseObject* M_StdDictObject::items(mtpython::vm::ThreadContext* context,
+                                     M_BaseObject* self)
 {
-	M_StdDictObject* as_dict = static_cast<M_StdDictObject*>(self);
-	std::vector<M_BaseObject*> items;
-	ObjSpace* space = context->get_space();
+    M_StdDictObject* as_dict = static_cast<M_StdDictObject*>(self);
+    std::vector<M_BaseObject*> items;
+    ObjSpace* space = context->get_space();
 
-	as_dict->lock();
-	for (const auto& iter : as_dict->dict) {
-		std::vector<M_BaseObject*> item;
-		item.push_back(iter.first);
-		item.push_back(iter.second);
-		items.push_back(space->new_tuple(context, item));
-	}
-	as_dict->unlock();
+    as_dict->lock();
+    for (const auto& iter : as_dict->dict) {
+        std::vector<M_BaseObject*> item;
+        item.push_back(iter.first);
+        item.push_back(iter.second);
+        items.push_back(space->new_tuple(context, item));
+    }
+    as_dict->unlock();
 
-	return context->get_space()->new_list(context, items);
+    return context->get_space()->new_list(context, items);
 }

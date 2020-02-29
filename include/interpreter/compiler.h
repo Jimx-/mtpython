@@ -12,21 +12,32 @@ namespace interpreter {
 
 class BaseCompiler {
 protected:
-	mtpython::vm::ThreadContext* context;
-	mtpython::objects::ObjSpace* space;
-public:
-	BaseCompiler(vm::ThreadContext* context) : space(context->get_space()) { this->context = context; }
+    mtpython::vm::ThreadContext* context;
+    mtpython::objects::ObjSpace* space;
 
-	virtual Code* compile(const std::string& source, const std::string& filename, const std::string& mode, int flags) { return nullptr; }
+public:
+    BaseCompiler(vm::ThreadContext* context) : space(context->get_space())
+    {
+        this->context = context;
+    }
+
+    virtual Code* compile(const std::string& source,
+                          const std::string& filename, const std::string& mode,
+                          int flags)
+    {
+        return nullptr;
+    }
 };
 
 class PyCompiler : public BaseCompiler {
 public:
-	PyCompiler(vm::ThreadContext* context);
-	virtual Code* compile(const std::string& source, const std::string& filename, const std::string& mode, int flags);
+    PyCompiler(vm::ThreadContext* context);
+    virtual Code* compile(const std::string& source,
+                          const std::string& filename, const std::string& mode,
+                          int flags);
 };
 
-}
-}
+} // namespace interpreter
+} // namespace mtpython
 
 #endif

@@ -14,6 +14,7 @@ class GeneratorExpNode : public ASTNode {
 private:
     ASTNode* elt;
     std::vector<ComprehensionNode*> comprehensions;
+
 public:
     GeneratorExpNode(const int line_nr);
     ~GeneratorExpNode()
@@ -23,14 +24,21 @@ public:
         SAFE_DELETE(elt);
     }
 
-    std::vector<ComprehensionNode*>& get_comprehensions() { return comprehensions; }
-    void push_comprehension(ComprehensionNode* comprehension) { comprehensions.push_back(comprehension); }
-    ASTNode * get_elt() { return elt; }
-    void set_elt(ASTNode * elt) { this->elt = elt; }
+    std::vector<ComprehensionNode*>& get_comprehensions()
+    {
+        return comprehensions;
+    }
+    void push_comprehension(ComprehensionNode* comprehension)
+    {
+        comprehensions.push_back(comprehension);
+    }
+    ASTNode* get_elt() { return elt; }
+    void set_elt(ASTNode* elt) { this->elt = elt; }
 
     virtual NodeType get_tag() { return NT_GENERATOREXP; }
 
-    virtual void print(const int padding) {
+    virtual void print(const int padding)
+    {
         std::string blank(padding, ' ');
         std::cout << blank << line << ": GeneratorExp:" << std::endl;
 
@@ -38,14 +46,19 @@ public:
         elt->print(padding + 4);
 
         if (comprehensions.size() > 0)
-            std::cout << blank << "  " << line << ": Comprehensions:" << std::endl;
-        for (unsigned int i = 0; i < comprehensions.size(); i++) comprehensions[i]->print(padding + 4);
+            std::cout << blank << "  " << line
+                      << ": Comprehensions:" << std::endl;
+        for (unsigned int i = 0; i < comprehensions.size(); i++)
+            comprehensions[i]->print(padding + 4);
     }
 
-    virtual void visit(ASTVisitor* visitor) { visitor->visit_generatorexp(this); }
+    virtual void visit(ASTVisitor* visitor)
+    {
+        visitor->visit_generatorexp(this);
+    }
 };
 
-}
-}
+} // namespace tree
+} // namespace mtpython
 
 #endif /* _GENERATOREXP_H_ */

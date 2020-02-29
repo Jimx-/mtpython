@@ -5,9 +5,6 @@ using namespace mtpython::interpreter;
 
 static Typedef Cell_typedef("cell", {
 
-});
+                                    });
 
-Typedef* Cell::get_typedef()
-{
-    return &Cell_typedef;
-}
+Typedef* Cell::get_typedef() { return &Cell_typedef; }

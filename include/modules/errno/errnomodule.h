@@ -12,7 +12,7 @@ public:
     ErrnoModule(objects::ObjSpace* space, objects::M_BaseObject* name);
 };
 
-}
-}
+} // namespace modules
+} // namespace mtpython
 
 #endif /* _ERRNOMODULE_H_ */

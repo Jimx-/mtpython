@@ -5,14 +5,15 @@
 #include "objects/obj_space.h"
 
 namespace mtpython {
-	namespace modules {
+namespace modules {
 
-		class BuiltinsModule : public mtpython::interpreter::BuiltinModule {
-		public:
-			BuiltinsModule(mtpython::objects::ObjSpace* space, mtpython::objects::M_BaseObject* name);
-		};
+class BuiltinsModule : public mtpython::interpreter::BuiltinModule {
+public:
+    BuiltinsModule(mtpython::objects::ObjSpace* space,
+                   mtpython::objects::M_BaseObject* name);
+};
 
-	}
-}
+} // namespace modules
+} // namespace mtpython
 
 #endif /* _BLTINMODULE_H_ */

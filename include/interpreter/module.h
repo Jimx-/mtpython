@@ -14,38 +14,49 @@ namespace interpreter {
 
 class Module : public objects::M_BaseObject {
 protected:
-	objects::ObjSpace* space;
-	objects::M_BaseObject* name;
-	objects::M_BaseObject* dict;
+    objects::ObjSpace* space;
+    objects::M_BaseObject* name;
+    objects::M_BaseObject* dict;
 
-	void add_def(const std::string& name, objects::M_BaseObject* value)
-	{
-		space->setitem(dict, space->new_interned_str(name), space->wrap(space->current_thread(), value));
-	}
+    void add_def(const std::string& name, objects::M_BaseObject* value)
+    {
+        space->setitem(dict, space->new_interned_str(name),
+                       space->wrap(space->current_thread(), value));
+    }
+
 public:
-	Module(objects::ObjSpace* space, objects::M_BaseObject* name, objects::M_BaseObject* dict=nullptr);
+    Module(objects::ObjSpace* space, objects::M_BaseObject* name,
+           objects::M_BaseObject* dict = nullptr);
 
-	Typedef* get_typedef();
+    Typedef* get_typedef();
 
-	objects::M_BaseObject* get_dict(objects::ObjSpace* space) { return dict; }
-	objects::M_BaseObject* get(const std::string& name);
-	objects::M_BaseObject* call(vm::ThreadContext* context, const std::string& name, const std::initializer_list<objects::M_BaseObject*> args);
-	objects::M_BaseObject* get_dict_value(objects::ObjSpace* space, const std::string& attr);
-	
-	virtual void install();
+    objects::M_BaseObject* get_dict(objects::ObjSpace* space) { return dict; }
+    objects::M_BaseObject* get(const std::string& name);
+    objects::M_BaseObject*
+    call(vm::ThreadContext* context, const std::string& name,
+         const std::initializer_list<objects::M_BaseObject*> args);
+    objects::M_BaseObject* get_dict_value(objects::ObjSpace* space,
+                                          const std::string& attr);
 
-	static objects::M_BaseObject* __repr__(vm::ThreadContext* context, objects::M_BaseObject* self);
-	static objects::M_BaseObject* __dict__get(vm::ThreadContext* context, objects::M_BaseObject* self);
+    virtual void install();
+
+    static objects::M_BaseObject* __repr__(vm::ThreadContext* context,
+                                           objects::M_BaseObject* self);
+    static objects::M_BaseObject* __dict__get(vm::ThreadContext* context,
+                                              objects::M_BaseObject* self);
 };
 
 class BuiltinModule : public Module {
 public:
-	BuiltinModule(objects::ObjSpace* space, objects::M_BaseObject* name, objects::M_BaseObject* dict=nullptr) : Module(space, name, dict) { }
+    BuiltinModule(objects::ObjSpace* space, objects::M_BaseObject* name,
+                  objects::M_BaseObject* dict = nullptr)
+        : Module(space, name, dict)
+    {}
 
-	void* operator new(size_t size) { return ::operator new(size); }
+    void* operator new(size_t size) { return ::operator new(size); }
 };
 
-}
-}
+} // namespace interpreter
+} // namespace mtpython
 
 #endif /* _INTERPRETER_MODULE_H_ */

@@ -15,34 +15,43 @@ GeneratorIterator::GeneratorIterator(PyFrame* _frame)
 
 Typedef* GeneratorIterator::get_typedef()
 {
-    static Typedef GeneratorIterator_typedef("generator", {
-        { "__iter__", new InterpFunctionWrapper("__iter__", GeneratorIterator::__iter__) },
-        { "__next__", new InterpFunctionWrapper("__next__", GeneratorIterator::__next__) },
-        { "send", new InterpFunctionWrapper("send", GeneratorIterator::send) },
-    });
+    static Typedef GeneratorIterator_typedef(
+        "generator",
+        {
+            {"__iter__", new InterpFunctionWrapper(
+                             "__iter__", GeneratorIterator::__iter__)},
+            {"__next__", new InterpFunctionWrapper(
+                             "__next__", GeneratorIterator::__next__)},
+            {"send",
+             new InterpFunctionWrapper("send", GeneratorIterator::send)},
+        });
 
     return &GeneratorIterator_typedef;
 }
 
-M_BaseObject* GeneratorIterator::__iter__(ThreadContext* context, M_BaseObject* self)
+M_BaseObject* GeneratorIterator::__iter__(ThreadContext* context,
+                                          M_BaseObject* self)
 {
     ObjSpace* space = context->get_space();
     return space->wrap(context, self);
 }
 
-M_BaseObject* GeneratorIterator::__next__(ThreadContext* context, M_BaseObject* self)
+M_BaseObject* GeneratorIterator::__next__(ThreadContext* context,
+                                          M_BaseObject* self)
 {
     ObjSpace* space = context->get_space();
     return send(context, self, space->wrap_None());
 }
 
-M_BaseObject* GeneratorIterator::send(ThreadContext* context, M_BaseObject* self,
-                                      M_BaseObject* arg)
+M_BaseObject* GeneratorIterator::send(ThreadContext* context,
+                                      M_BaseObject* self, M_BaseObject* arg)
 {
     GeneratorIterator* gi = static_cast<GeneratorIterator*>(self);
     ObjSpace* space = gi->space;
     if (gi->running) {
-        throw InterpError(space->ValueError_type(), space->wrap_str(context, "generator already executing"));
+        throw InterpError(
+            space->ValueError_type(),
+            space->wrap_str(context, "generator already executing"));
     }
 
     if (!gi->frame) {
@@ -52,16 +61,20 @@ M_BaseObject* GeneratorIterator::send(ThreadContext* context, M_BaseObject* self
     PyFrame* frame = gi->frame;
     if (frame->get_pc() == -1) {
         if (arg && !space->i_is(arg, space->wrap_None())) {
-            throw InterpError(space->TypeError_type(), space->wrap_str(context,
-             "can't send non-None value to a just-started generator"));
+            throw InterpError(
+                space->TypeError_type(),
+                space->wrap_str(
+                    context,
+                    "can't send non-None value to a just-started generator"));
         }
-    } else if (!arg) arg = space->wrap_None();
+    } else if (!arg)
+        arg = space->wrap_None();
 
     gi->running = true;
     M_BaseObject* result = nullptr;
 
     try {
-       result = frame->execute_frame(arg);
+        result = frame->execute_frame(arg);
     } catch (InterpError&) {
         gi->frame = nullptr;
         gi->running = false;
@@ -76,4 +89,3 @@ M_BaseObject* GeneratorIterator::send(ThreadContext* context, M_BaseObject* self
 
     return result;
 }
-

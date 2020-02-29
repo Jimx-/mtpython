@@ -18,31 +18,46 @@ namespace interpreter {
 /* List of arguments to a function call */
 class Arguments {
 protected:
-	objects::ObjSpace* space;
-	std::deque<objects::M_BaseObject*> args;
+    objects::ObjSpace* space;
+    std::deque<objects::M_BaseObject*> args;
 
-	std::vector<std::string> keywords;
-	std::vector<objects::M_BaseObject*> keyword_values;
+    std::vector<std::string> keywords;
+    std::vector<objects::M_BaseObject*> keyword_values;
+
 public:
-	Arguments(objects::ObjSpace* space, const std::initializer_list<objects::M_BaseObject*>& args) : space(space), args(args) { }
-	Arguments(objects::ObjSpace* space, const std::vector<objects::M_BaseObject*>& args) : space(space), args(args.begin(), args.end()) { }
-	Arguments(objects::ObjSpace* space, const std::vector<objects::M_BaseObject*>& args,
-			  const std::vector<std::string>& keywords, const std::vector<objects::M_BaseObject*>& keyword_values) :
-		space(space), args(args.begin(), args.end()), keywords(keywords), keyword_values(keyword_values) { }
+    Arguments(objects::ObjSpace* space,
+              const std::initializer_list<objects::M_BaseObject*>& args)
+        : space(space), args(args)
+    {}
+    Arguments(objects::ObjSpace* space,
+              const std::vector<objects::M_BaseObject*>& args)
+        : space(space), args(args.begin(), args.end())
+    {}
+    Arguments(objects::ObjSpace* space,
+              const std::vector<objects::M_BaseObject*>& args,
+              const std::vector<std::string>& keywords,
+              const std::vector<objects::M_BaseObject*>& keyword_values)
+        : space(space), args(args.begin(), args.end()), keywords(keywords),
+          keyword_values(keyword_values)
+    {}
 
-	objects::M_BaseObject* front() const { return args.front(); }
-	void pop_front() { args.pop_front(); }
-	void prepend(objects::M_BaseObject* obj) { args.push_front(obj); }
-	
-	void parse(const std::string& fname, objects::M_BaseObject* first, Signature& sig, std::vector<objects::M_BaseObject*>& scope) const {
-		std::vector<objects::M_BaseObject*> defaults;
-		parse(fname, first, sig, scope, defaults);
-	}
+    objects::M_BaseObject* front() const { return args.front(); }
+    void pop_front() { args.pop_front(); }
+    void prepend(objects::M_BaseObject* obj) { args.push_front(obj); }
 
-	void parse(const std::string& fname, objects::M_BaseObject* first, Signature& sig, std::vector<objects::M_BaseObject*>& scope, const std::vector<objects::M_BaseObject*>& defaults) const;
+    void parse(const std::string& fname, objects::M_BaseObject* first,
+               Signature& sig, std::vector<objects::M_BaseObject*>& scope) const
+    {
+        std::vector<objects::M_BaseObject*> defaults;
+        parse(fname, first, sig, scope, defaults);
+    }
+
+    void parse(const std::string& fname, objects::M_BaseObject* first,
+               Signature& sig, std::vector<objects::M_BaseObject*>& scope,
+               const std::vector<objects::M_BaseObject*>& defaults) const;
 };
 
-}
-}
+} // namespace interpreter
+} // namespace mtpython
 
 #endif /* _INTERPRETER_ARGUMENTS_H_ */

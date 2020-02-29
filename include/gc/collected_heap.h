@@ -8,7 +8,6 @@ namespace gc {
 
 class CollectedHeap : public Heap {
 public:
-
     virtual size_t capacity();
     virtual size_t used();
 
@@ -17,8 +16,7 @@ public:
     virtual void post_allocate_obj(void* obj);
 };
 
-}
-}
+} // namespace gc
+} // namespace mtpython
 
 #endif
-

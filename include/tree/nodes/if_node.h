@@ -6,67 +6,69 @@
 #include <iostream>
 #include "macros.h"
 
-namespace mtpython { 
+namespace mtpython {
 namespace tree {
 
 class IfNode : public ASTNode {
 private:
-	ASTNode* test, *body, *orelse; 
+    ASTNode *test, *body, *orelse;
+
 public:
-	IfNode(const int line_nr);
-	~IfNode()
-	{
-		SAFE_DELETE(test);
-		ASTNode* node = body, *prev;
-		while (node) {
-			prev = node;
-			node = node->get_sibling();
-			SAFE_DELETE(prev);
-		}
-		node = orelse;
-		while (node) {
-			prev = node;
-			node = node->get_sibling();
-			SAFE_DELETE(prev);
-		}
-	}
+    IfNode(const int line_nr);
+    ~IfNode()
+    {
+        SAFE_DELETE(test);
+        ASTNode *node = body, *prev;
+        while (node) {
+            prev = node;
+            node = node->get_sibling();
+            SAFE_DELETE(prev);
+        }
+        node = orelse;
+        while (node) {
+            prev = node;
+            node = node->get_sibling();
+            SAFE_DELETE(prev);
+        }
+    }
 
-	ASTNode * get_test() { return test; }
-	void set_test(ASTNode * test) { this->test = test; }
-	ASTNode * get_body() { return body; }
-	void set_body(ASTNode * body) { this->body = body; }
-	ASTNode * get_orelse() { return orelse; }
-	void set_orelse(ASTNode * orelse) { this->orelse = orelse; }
+    ASTNode* get_test() { return test; }
+    void set_test(ASTNode* test) { this->test = test; }
+    ASTNode* get_body() { return body; }
+    void set_body(ASTNode* body) { this->body = body; }
+    ASTNode* get_orelse() { return orelse; }
+    void set_orelse(ASTNode* orelse) { this->orelse = orelse; }
 
-	virtual void print(const int padding) {
-		std::string blank(padding, ' ');
-		std::cout << blank << line << ": If:" << std::endl;
-		std::cout << blank << "  " << line << ": Test:" << std::endl;
-		test->print(padding + 4);
-		
-		std::cout << blank << "  " << line << ": Body:" << std::endl;
-		ASTNode* stmt = body;
-		while (stmt) {
-			stmt->print(padding + 4);
-			stmt = stmt->get_sibling();
-		}
-		
-		if (orelse) {
-			std::cout << blank << "  " << line << ": Else:" << std::endl;
-			stmt = orelse;
-			while (stmt) {
-				stmt->print(padding + 4);
-				stmt = stmt->get_sibling();
-			}
-		}
-	}
+    virtual void print(const int padding)
+    {
+        std::string blank(padding, ' ');
+        std::cout << blank << line << ": If:" << std::endl;
+        std::cout << blank << "  " << line << ": Test:" << std::endl;
+        test->print(padding + 4);
 
-	virtual NodeType get_tag() { return NT_IF; }
+        std::cout << blank << "  " << line << ": Body:" << std::endl;
+        ASTNode* stmt = body;
+        while (stmt) {
+            stmt->print(padding + 4);
+            stmt = stmt->get_sibling();
+        }
 
-	virtual void visit(ASTVisitor* visitor) { visitor->visit_if(this); }
+        if (orelse) {
+            std::cout << blank << "  " << line << ": Else:" << std::endl;
+            stmt = orelse;
+            while (stmt) {
+                stmt->print(padding + 4);
+                stmt = stmt->get_sibling();
+            }
+        }
+    }
+
+    virtual NodeType get_tag() { return NT_IF; }
+
+    virtual void visit(ASTVisitor* visitor) { visitor->visit_if(this); }
 };
 
-}
-}
+} // namespace tree
+} // namespace mtpython
 
 #endif /* _IF_NODE_ */

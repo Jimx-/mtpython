@@ -7,13 +7,13 @@ namespace mtpython {
 
 class FileHelper {
 public:
-	static char sep;
-	static char pathsep;
+    static char sep;
+    static char pathsep;
 
-	static bool file_exists(const std::string& name);
-	static bool is_dir(const std::string& path);
+    static bool file_exists(const std::string& name);
+    static bool is_dir(const std::string& path);
 };
 
-}
+} // namespace mtpython
 
 #endif /* _FILE_HELPER_H_ */

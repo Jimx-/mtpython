@@ -6,7 +6,8 @@ using namespace mtpython::objects;
 using namespace mtpython::interpreter;
 using namespace mtpython::vm;
 
-M_BaseObject* M_StdSeqIterObject::__next__(ThreadContext* context, M_BaseObject* self)
+M_BaseObject* M_StdSeqIterObject::__next__(ThreadContext* context,
+                                           M_BaseObject* self)
 {
     ObjSpace* space = context->get_space();
 
@@ -32,26 +33,36 @@ M_BaseObject* M_StdSeqIterObject::__next__(ThreadContext* context, M_BaseObject*
 
 Typedef* M_StdSeqIterObject::get_typedef()
 {
-    static Typedef seq_iter_typedef("seq_iterator", {
-        { "__next__", new InterpFunctionWrapper("__next__", M_StdSeqIterObject::__next__) },
-    });
+    static Typedef seq_iter_typedef(
+        "seq_iterator",
+        {
+            {"__next__", new InterpFunctionWrapper(
+                             "__next__", M_StdSeqIterObject::__next__)},
+        });
     return &seq_iter_typedef;
 }
 
 mtpython::interpreter::Typedef* M_StdTupleIterObject::get_typedef()
 {
-    static Typedef tuple_iter_typedef("tuple_iterator", {
-        { "__next__", new InterpFunctionWrapper("__next__", M_StdTupleIterObject::__next__) },
-    });
+    static Typedef tuple_iter_typedef(
+        "tuple_iterator",
+        {
+            {"__next__", new InterpFunctionWrapper(
+                             "__next__", M_StdTupleIterObject::__next__)},
+        });
 
     return &tuple_iter_typedef;
 }
 
-M_BaseObject* M_StdTupleIterObject::__next__(ThreadContext* context, M_BaseObject* self)
+M_BaseObject* M_StdTupleIterObject::__next__(ThreadContext* context,
+                                             M_BaseObject* self)
 {
-    ObjSpace*space = context->get_space();
+    ObjSpace* space = context->get_space();
     M_StdTupleIterObject* as_iter = dynamic_cast<M_StdTupleIterObject*>(self);
-    if (!as_iter) throw InterpError(space->TypeError_type(), space->wrap_str(context, "object is not tuple iterator"));
+    if (!as_iter)
+        throw InterpError(
+            space->TypeError_type(),
+            space->wrap_str(context, "object is not tuple iterator"));
 
     if (as_iter->index == as_iter->items.size()) {
         throw InterpError(space->StopIteration_type(), space->wrap_None());
@@ -62,4 +73,3 @@ M_BaseObject* M_StdTupleIterObject::__next__(ThreadContext* context, M_BaseObjec
 
     return item;
 }
-

@@ -8,11 +8,14 @@ namespace objects {
 
 class StdFrame : public interpreter::PyFrame {
 public:
-	StdFrame(vm::ThreadContext* context, interpreter::Code* code, mtpython::objects::M_BaseObject* globals,
-			 mtpython::objects::M_BaseObject* outer) : interpreter::PyFrame(context, code, globals, outer) { }
+    StdFrame(vm::ThreadContext* context, interpreter::Code* code,
+             mtpython::objects::M_BaseObject* globals,
+             mtpython::objects::M_BaseObject* outer)
+        : interpreter::PyFrame(context, code, globals, outer)
+    {}
 };
 
-}
-}
+} // namespace objects
+} // namespace mtpython
 
 #endif /* _STD_FRAME_H_ */

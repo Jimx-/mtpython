@@ -13,6 +13,7 @@ namespace tree {
 class IndexNode : public ASTNode {
 private:
     ASTNode* value;
+
 public:
     IndexNode(const int line_nr);
     ~IndexNode() { SAFE_DELETE(value); }
@@ -20,7 +21,8 @@ public:
     ASTNode* get_value() { return value; }
     void set_value(ASTNode* value) { this->value = value; }
 
-    virtual void print(const int padding) {
+    virtual void print(const int padding)
+    {
         std::string blank(padding, ' ');
         std::cout << blank << line << ": Index: " << std::endl;
         value->print(padding + 4);
@@ -32,10 +34,16 @@ public:
 
 class SliceNode : public ASTNode {
 private:
-    ASTNode* lower, *upper, *step;
+    ASTNode *lower, *upper, *step;
+
 public:
     SliceNode(const int line_nr);
-    ~SliceNode() { SAFE_DELETE(lower); SAFE_DELETE(upper); SAFE_DELETE(step); }
+    ~SliceNode()
+    {
+        SAFE_DELETE(lower);
+        SAFE_DELETE(upper);
+        SAFE_DELETE(step);
+    }
 
     ASTNode* get_lower() { return lower; }
     void set_lower(ASTNode* lower) { this->lower = lower; }
@@ -44,7 +52,8 @@ public:
     ASTNode* get_step() { return step; }
     void set_step(ASTNode* step) { this->step = step; }
 
-    virtual void print(const int padding) {
+    virtual void print(const int padding)
+    {
         std::string blank(padding, ' ');
         std::cout << blank << line << ": Slice: " << std::endl;
         if (lower) {
@@ -65,7 +74,7 @@ public:
     virtual NodeType get_tag() { return NT_SLICE; }
 };
 
-}
-}
+} // namespace tree
+} // namespace mtpython
 
 #endif /* _SLICE_NODE_ */

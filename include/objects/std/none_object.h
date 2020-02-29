@@ -11,14 +11,18 @@ namespace objects {
 
 class M_StdNoneObject : public M_BaseObject {
 public:
-	virtual interpreter::Typedef* get_typedef();
+    virtual interpreter::Typedef* get_typedef();
 
-	virtual bool i_is(ObjSpace* space, M_BaseObject* other) { return (other == space->wrap_None()); }
+    virtual bool i_is(ObjSpace* space, M_BaseObject* other)
+    {
+        return (other == space->wrap_None());
+    }
 
-	static M_BaseObject* __repr__(vm::ThreadContext* context, M_BaseObject* self);
+    static M_BaseObject* __repr__(vm::ThreadContext* context,
+                                  M_BaseObject* self);
 };
 
-}
-}
+} // namespace objects
+} // namespace mtpython
 
 #endif /* _STD_NONE_OBJECT_H_ */

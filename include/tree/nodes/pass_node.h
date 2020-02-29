@@ -6,24 +6,25 @@
 #include <iostream>
 #include "macros.h"
 
-namespace mtpython { 
+namespace mtpython {
 namespace tree {
 
 class PassNode : public ASTNode {
 public:
-	PassNode(const int line_nr);
-	~PassNode() { }
+    PassNode(const int line_nr);
+    ~PassNode() {}
 
-	virtual NodeType get_tag() { return NT_PASS; }
-	virtual void print(const int padding) {
-		std::string blank(padding, ' ');
-		std::cout << blank << line << ": Pass" << std::endl;
-	}
+    virtual NodeType get_tag() { return NT_PASS; }
+    virtual void print(const int padding)
+    {
+        std::string blank(padding, ' ');
+        std::cout << blank << line << ": Pass" << std::endl;
+    }
 
-	virtual void visit(ASTVisitor* visitor) { visitor->visit_pass(this); }
+    virtual void visit(ASTVisitor* visitor) { visitor->visit_pass(this); }
 };
 
-}
-}
+} // namespace tree
+} // namespace mtpython
 
 #endif /* _PASS_NODE_ */

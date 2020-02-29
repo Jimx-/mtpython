@@ -13,30 +13,38 @@ namespace interpreter {
 /* Interpreter level error to be sent to app level */
 class InterpError : public std::runtime_error {
 private:
-	objects::M_BaseObject* type;
-	objects::M_BaseObject* value;
+    objects::M_BaseObject* type;
+    objects::M_BaseObject* value;
+
 public:
-	InterpError(objects::M_BaseObject* type, objects::M_BaseObject* value) : std::runtime_error("Interpreter exception"), type(type), value(value) { }
+    InterpError(objects::M_BaseObject* type, objects::M_BaseObject* value)
+        : std::runtime_error("Interpreter exception"), type(type), value(value)
+    {}
 
-	objects::M_BaseObject* get_type() const { return type; }
-	objects::M_BaseObject* get_value() const { return value; }
+    objects::M_BaseObject* get_type() const { return type; }
+    objects::M_BaseObject* get_value() const { return value; }
 
-	template<typename ... Args>
-	static InterpError format(objects::ObjSpace* space, objects::M_BaseObject* type, const char* format, Args ... args)
-	{
-		size_t size = snprintf(nullptr, 0, format, args ...) + 1;
-		std::unique_ptr<char[]> buf(new char[size]);
-		snprintf(buf.get(), size, format, args ...);
-		return InterpError(type, space->wrap_str(space->current_thread(), std::string(buf.get(), buf.get() + size - 1)));
-	}
+    template <typename... Args>
+    static InterpError format(objects::ObjSpace* space,
+                              objects::M_BaseObject* type, const char* format,
+                              Args... args)
+    {
+        size_t size = snprintf(nullptr, 0, format, args...) + 1;
+        std::unique_ptr<char[]> buf(new char[size]);
+        snprintf(buf.get(), size, format, args...);
+        return InterpError(
+            type,
+            space->wrap_str(space->current_thread(),
+                            std::string(buf.get(), buf.get() + size - 1)));
+    }
 
-	bool match(objects::ObjSpace* space, objects::M_BaseObject* match_type)
-	{
-		return space->match_exception(type, match_type);
-	}
+    bool match(objects::ObjSpace* space, objects::M_BaseObject* match_type)
+    {
+        return space->match_exception(type, match_type);
+    }
 };
 
-}
-}
+} // namespace interpreter
+} // namespace mtpython
 
 #endif

@@ -16,13 +16,14 @@ private:
     std::vector<ExceptHandlerNode*> handlers;
     ASTNode* orelse;
     ASTNode* finalbody;
+
 public:
     TryNode(const int line_nr);
     ~TryNode()
     {
         for (std::size_t i = 0; i < handlers.size(); i++)
             SAFE_DELETE(handlers[i]);
-        ASTNode* node = body, *prev;
+        ASTNode *node = body, *prev;
         while (node) {
             prev = node;
             node = node->get_sibling();
@@ -43,17 +44,21 @@ public:
     }
 
     std::vector<ExceptHandlerNode*>& get_handlers() { return handlers; }
-    void push_handler(ExceptHandlerNode* handler) { handlers.push_back(handler); }
-    ASTNode * get_body() { return body; }
-    void set_body(ASTNode * body) { this->body = body; }
-    ASTNode * get_orelse() { return orelse; }
-    void set_orelse(ASTNode * orelse) { this->orelse = orelse; }
-    ASTNode * get_finalbody() { return finalbody; }
-    void set_finalbody(ASTNode * finalbody) { this->finalbody = finalbody; }
+    void push_handler(ExceptHandlerNode* handler)
+    {
+        handlers.push_back(handler);
+    }
+    ASTNode* get_body() { return body; }
+    void set_body(ASTNode* body) { this->body = body; }
+    ASTNode* get_orelse() { return orelse; }
+    void set_orelse(ASTNode* orelse) { this->orelse = orelse; }
+    ASTNode* get_finalbody() { return finalbody; }
+    void set_finalbody(ASTNode* finalbody) { this->finalbody = finalbody; }
 
     virtual NodeType get_tag() { return NT_TRY; }
 
-    virtual void print(const int padding) {
+    virtual void print(const int padding)
+    {
         std::string blank(padding, ' ');
         std::cout << blank << line << ": Try:" << std::endl;
 
@@ -66,7 +71,8 @@ public:
 
         if (handlers.size() > 0)
             std::cout << blank << "  " << line << ": Handlers:" << std::endl;
-        for (unsigned int i = 0; i < handlers.size(); i++) handlers[i]->print(padding + 4);
+        for (unsigned int i = 0; i < handlers.size(); i++)
+            handlers[i]->print(padding + 4);
         if (orelse) {
             std::cout << blank << "  " << line << ": Else:" << std::endl;
             stmt = orelse;
@@ -89,7 +95,7 @@ public:
     virtual void visit(ASTVisitor* visitor) { visitor->visit_try(this); }
 };
 
-}
-}
+} // namespace tree
+} // namespace mtpython
 
 #endif /* _TRY_NODE_ */

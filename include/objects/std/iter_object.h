@@ -10,28 +10,37 @@ namespace objects {
 
 class M_StdSeqIterObject : public M_BaseObject {
 private:
-	int index;
-	M_BaseObject* obj;
-public:
-	M_StdSeqIterObject(M_BaseObject* obj, int index = 0) : obj(obj), index(index) { }
-	interpreter::Typedef* get_typedef();
+    int index;
+    M_BaseObject* obj;
 
-	static M_BaseObject* __next__(vm::ThreadContext* context, M_BaseObject* self);
+public:
+    M_StdSeqIterObject(M_BaseObject* obj, int index = 0)
+        : obj(obj), index(index)
+    {}
+    interpreter::Typedef* get_typedef();
+
+    static M_BaseObject* __next__(vm::ThreadContext* context,
+                                  M_BaseObject* self);
 };
 
 class M_StdTupleIterObject : public M_BaseObject {
 private:
-	std::size_t index;
-	std::vector<M_BaseObject*> items;
+    std::size_t index;
+    std::vector<M_BaseObject*> items;
+
 public:
-	M_StdTupleIterObject(const std::vector<M_BaseObject*>& items) : items(items) { index = 0; }
+    M_StdTupleIterObject(const std::vector<M_BaseObject*>& items) : items(items)
+    {
+        index = 0;
+    }
 
-	interpreter::Typedef* get_typedef();
+    interpreter::Typedef* get_typedef();
 
-	static M_BaseObject* __next__(vm::ThreadContext* context, M_BaseObject* self);
+    static M_BaseObject* __next__(vm::ThreadContext* context,
+                                  M_BaseObject* self);
 };
 
-}
-}
+} // namespace objects
+} // namespace mtpython
 
 #endif /* _STD_ITER_OBJECT_H_ */

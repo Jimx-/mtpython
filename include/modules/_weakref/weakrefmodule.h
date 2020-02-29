@@ -9,10 +9,11 @@ namespace modules {
 
 class WeakrefModule : public mtpython::interpreter::BuiltinModule {
 public:
-	WeakrefModule(mtpython::objects::ObjSpace* space, mtpython::objects::M_BaseObject* name);
+    WeakrefModule(mtpython::objects::ObjSpace* space,
+                  mtpython::objects::M_BaseObject* name);
 };
 
-}
-}
+} // namespace modules
+} // namespace mtpython
 
 #endif /* __WEAKREF_MODULE_H_ */

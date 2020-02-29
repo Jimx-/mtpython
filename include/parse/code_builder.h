@@ -18,127 +18,164 @@ class CodeBlock;
 
 class Instruction {
 private:
-	unsigned char op;
-	int arg;
-	int lineno;
+    unsigned char op;
+    int arg;
+    int lineno;
 
-	CodeBlock* jump;
-	bool absolute_jump;
+    CodeBlock* jump;
+    bool absolute_jump;
+
 public:
-	Instruction(unsigned char op, int arg=0) { this->op = op; this->arg = arg; this->lineno = 0; jump = nullptr; }
-	void set_lineno(int lineno) { this->lineno = lineno; }
+    Instruction(unsigned char op, int arg = 0)
+    {
+        this->op = op;
+        this->arg = arg;
+        this->lineno = 0;
+        jump = nullptr;
+    }
+    void set_lineno(int lineno) { this->lineno = lineno; }
 
-	int size() { if (op >= HAVE_ARGUMENT) { if (arg > 0xffff) return 6; else return 3; } return 1; }
-	unsigned char get_op() { return op; }
-	int get_arg() { return arg; }
-	void set_arg(int arg) { this->arg = arg; }
-	int get_lineno() { return lineno; }
+    int size()
+    {
+        if (op >= HAVE_ARGUMENT) {
+            if (arg > 0xffff)
+                return 6;
+            else
+                return 3;
+        }
+        return 1;
+    }
+    unsigned char get_op() { return op; }
+    int get_arg() { return arg; }
+    void set_arg(int arg) { this->arg = arg; }
+    int get_lineno() { return lineno; }
 
-	void jump_to(CodeBlock* target, bool absolute=false) { jump = target; absolute_jump = absolute; }
-	bool has_jump() { return (jump != nullptr); }
-	bool is_absolute() { return absolute_jump; }
-	CodeBlock* get_target() { return jump; }
+    void jump_to(CodeBlock* target, bool absolute = false)
+    {
+        jump = target;
+        absolute_jump = absolute;
+    }
+    bool has_jump() { return (jump != nullptr); }
+    bool is_absolute() { return absolute_jump; }
+    CodeBlock* get_target() { return jump; }
 };
 
 class CodeBlock {
 private:
-	std::vector<Instruction*> instructions;
-	CodeBlock* next;
-	int depth;
-	int offset;
-	bool seen;
+    std::vector<Instruction*> instructions;
+    CodeBlock* next;
+    int depth;
+    int offset;
+    bool seen;
 
-	bool _has_return;
+    bool _has_return;
 
-	void dfs(std::vector<CodeBlock*>& blocks);
+    void dfs(std::vector<CodeBlock*>& blocks);
+
 public:
-	CodeBlock() { _has_return = false; next = nullptr; seen = false; }
-	
-	std::vector<Instruction*>& get_instructions() { return instructions; }
-	void append_instruction(Instruction* inst) { instructions.push_back(inst); }
+    CodeBlock()
+    {
+        _has_return = false;
+        next = nullptr;
+        seen = false;
+    }
 
-	int code_size() { int sum = 0; for (auto inst : instructions) { sum += inst->size(); } return sum; }
+    std::vector<Instruction*>& get_instructions() { return instructions; }
+    void append_instruction(Instruction* inst) { instructions.push_back(inst); }
 
-	void get_code(std::vector<unsigned char>& code);
+    int code_size()
+    {
+        int sum = 0;
+        for (auto inst : instructions) {
+            sum += inst->size();
+        }
+        return sum;
+    }
 
-	int get_depth() { return depth; }
-	void set_depth(int depth) { this->depth = depth; }
-	int get_offset() { return offset; }
-	void set_offset(int offset) { this->offset = offset; }
+    void get_code(std::vector<unsigned char>& code);
 
-	bool has_return() { return _has_return; }
-	void set_has_return(bool v) { _has_return = v; }
+    int get_depth() { return depth; }
+    void set_depth(int depth) { this->depth = depth; }
+    int get_offset() { return offset; }
+    void set_offset(int offset) { this->offset = offset; }
 
-	CodeBlock* get_next() { return next; }
-	void set_next(CodeBlock* block) { next = block; }
+    bool has_return() { return _has_return; }
+    void set_has_return(bool v) { _has_return = v; }
 
-	void get_block_list(std::vector<CodeBlock*>& blocks);
+    CodeBlock* get_next() { return next; }
+    void set_next(CodeBlock* block) { next = block; }
+
+    void get_block_list(std::vector<CodeBlock*>& blocks);
 };
 
 class CodeBuilder : public mtpython::tree::GenericVisitor {
 private:
-	std::string name;
-	int first_lineno;
-	int lineno;
-	bool lineno_set;
+    std::string name;
+    int first_lineno;
+    int lineno;
+    bool lineno_set;
 
-	int argcount;
-	int kwonlyargcount;
+    int argcount;
+    int kwonlyargcount;
 
-	CodeBlock* first_block;
-	CodeBlock* current_block;
+    CodeBlock* first_block;
+    CodeBlock* current_block;
 
-	/* const -> index mapping */
-	std::unordered_map<mtpython::objects::M_BaseObject*, int> consts;
+    /* const -> index mapping */
+    std::unordered_map<mtpython::objects::M_BaseObject*, int> consts;
 
-	void append_instruction(Instruction* inst);
+    void append_instruction(Instruction* inst);
 
-	int add_const(mtpython::objects::M_BaseObject* obj);
-	int get_stacksize(std::vector<CodeBlock*>& blocks);
-	void build_lnotab(std::vector<CodeBlock*>& blocks, std::vector<unsigned char>& lnotab);
-	void patch_jump(std::vector<CodeBlock*>& blocks);
+    int add_const(mtpython::objects::M_BaseObject* obj);
+    int get_stacksize(std::vector<CodeBlock*>& blocks);
+    void build_lnotab(std::vector<CodeBlock*>& blocks,
+                      std::vector<unsigned char>& lnotab);
+    void patch_jump(std::vector<CodeBlock*>& blocks);
 
 protected:
-	mtpython::vm::ThreadContext* context;
-	mtpython::objects::ObjSpace* space;
-	CompileInfo* compile_info;
+    mtpython::vm::ThreadContext* context;
+    mtpython::objects::ObjSpace* space;
+    CompileInfo* compile_info;
 
-	mtpython::objects::M_BaseObject* qualname;
-	
-	std::unordered_map<std::string, int> names;
-	std::unordered_map<std::string, int> varnames;
-	std::unordered_map<std::string, int> freevars;
-	std::unordered_map<std::string, int> cellvars;
+    mtpython::objects::M_BaseObject* qualname;
 
-	virtual int get_code_flags() { return 0; }
+    std::unordered_map<std::string, int> names;
+    std::unordered_map<std::string, int> varnames;
+    std::unordered_map<std::string, int> freevars;
+    std::unordered_map<std::string, int> cellvars;
 
-	int add_name(std::unordered_map<std::string, int>& container, const std::string& id);
+    virtual int get_code_flags() { return 0; }
 
-	Instruction* emit_op(unsigned char op);
-	Instruction* emit_op_arg(unsigned char op, int arg);
-	void emit_jump(unsigned char op, CodeBlock* target, bool absolute=false);
+    int add_name(std::unordered_map<std::string, int>& container,
+                 const std::string& id);
 
-	int opcode_stack_effect(unsigned char op, int arg);
+    Instruction* emit_op(unsigned char op);
+    Instruction* emit_op_arg(unsigned char op, int arg);
+    void emit_jump(unsigned char op, CodeBlock* target, bool absolute = false);
 
-	CodeBlock* new_block() { return new CodeBlock(); }
-	void use_block(CodeBlock* block) { current_block = block; }
-	CodeBlock* use_next_block(CodeBlock* block=nullptr);
-	void set_lineno(int lineno);
+    int opcode_stack_effect(unsigned char op, int arg);
 
-	int expr_constant(mtpython::tree::ASTNode* node);
+    CodeBlock* new_block() { return new CodeBlock(); }
+    void use_block(CodeBlock* block) { current_block = block; }
+    CodeBlock* use_next_block(CodeBlock* block = nullptr);
+    void set_lineno(int lineno);
 
-	void load_const(mtpython::objects::M_BaseObject* obj);
+    int expr_constant(mtpython::tree::ASTNode* node);
+
+    void load_const(mtpython::objects::M_BaseObject* obj);
+
 public:
-	CodeBuilder(const std::string& name, mtpython::vm::ThreadContext* context, Scope* scope, int first_lineno, CompileInfo* info);
+    CodeBuilder(const std::string& name, mtpython::vm::ThreadContext* context,
+                Scope* scope, int first_lineno, CompileInfo* info);
 
-	void set_argcount(int argcount) { this->argcount = argcount; }
+    void set_argcount(int argcount) { this->argcount = argcount; }
 
-	mtpython::objects::M_BaseObject* get_qualname() { return qualname; }
+    mtpython::objects::M_BaseObject* get_qualname() { return qualname; }
 
-	mtpython::interpreter::PyCode* build();
+    mtpython::interpreter::PyCode* build();
 };
 
-}
-}
+} // namespace parse
+} // namespace mtpython
 
 #endif /* _CODE_BUILDER_H_ */

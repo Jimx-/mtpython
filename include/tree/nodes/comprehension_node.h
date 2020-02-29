@@ -15,6 +15,7 @@ private:
     ASTNode* target;
     ASTNode* iter;
     std::vector<ASTNode*> ifs;
+
 public:
     ComprehensionNode(const int line_nr);
     ~ComprehensionNode()
@@ -27,14 +28,15 @@ public:
 
     std::vector<ASTNode*>& get_ifs() { return ifs; }
     void push_if(ASTNode* _if) { ifs.push_back(_if); }
-    ASTNode * get_target() { return target; }
-    void set_target(ASTNode * target) { this->target = target; }
-    ASTNode * get_iter() { return iter; }
-    void set_iter(ASTNode * iter) { this->iter = iter; }
+    ASTNode* get_target() { return target; }
+    void set_target(ASTNode* target) { this->target = target; }
+    ASTNode* get_iter() { return iter; }
+    void set_iter(ASTNode* iter) { this->iter = iter; }
 
     virtual NodeType get_tag() { return NT_COMPREHENSION; }
 
-    virtual void print(const int padding) {
+    virtual void print(const int padding)
+    {
         std::string blank(padding, ' ');
         std::cout << blank << line << ": Comprehension:" << std::endl;
 
@@ -46,13 +48,17 @@ public:
 
         if (ifs.size() > 0)
             std::cout << blank << "  " << line << ": Ifs:" << std::endl;
-        for (unsigned int i = 0; i < ifs.size(); i++) ifs[i]->print(padding + 4);
+        for (unsigned int i = 0; i < ifs.size(); i++)
+            ifs[i]->print(padding + 4);
     }
 
-    virtual void visit(ASTVisitor* visitor) { visitor->visit_comprehension(this); }
+    virtual void visit(ASTVisitor* visitor)
+    {
+        visitor->visit_comprehension(this);
+    }
 };
 
-}
-}
+} // namespace tree
+} // namespace mtpython
 
 #endif /* _COMPREHENSION_H_ */

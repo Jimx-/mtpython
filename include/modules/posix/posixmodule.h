@@ -9,10 +9,10 @@ namespace modules {
 
 class PosixModule : public interpreter::BuiltinModule {
 public:
-	PosixModule(objects::ObjSpace* space, objects::M_BaseObject* name);
+    PosixModule(objects::ObjSpace* space, objects::M_BaseObject* name);
 };
 
-}
-}
+} // namespace modules
+} // namespace mtpython
 
 #endif /* _POSIXMODULE_H_ */

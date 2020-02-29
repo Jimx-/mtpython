@@ -17,7 +17,7 @@ public:
     interpreter::Typedef* get_typedef();
 };
 
-}
-}
+} // namespace objects
+} // namespace mtpython
 
 #endif /* _STD_MEMORY_OBJECT_H_ */

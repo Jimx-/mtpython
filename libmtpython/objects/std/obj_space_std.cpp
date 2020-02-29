@@ -26,183 +26,204 @@ using namespace mtpython::interpreter;
 
 class M_NotImplemented : public M_BaseObject {
 public:
-	static M_BaseObject* __repr__(ThreadContext* context, mtpython::objects::M_BaseObject* self)
-	{
-		return context->get_space()->new_interned_str("NotImplemented");
-	}
+    static M_BaseObject* __repr__(ThreadContext* context,
+                                  mtpython::objects::M_BaseObject* self)
+    {
+        return context->get_space()->new_interned_str("NotImplemented");
+    }
 
-	virtual Typedef* get_typedef();
+    virtual Typedef* get_typedef();
 };
 
 Typedef* M_NotImplemented::get_typedef()
 {
-	static Typedef NotImplemented_typedef = { "NotImplemented", {
-		{ "__repr__", new InterpFunctionWrapper("__repr__", M_StdTypeObject::__repr__) },
-	}};
+    static Typedef NotImplemented_typedef = {
+        "NotImplemented",
+        {
+            {"__repr__",
+             new InterpFunctionWrapper("__repr__", M_StdTypeObject::__repr__)},
+        }};
 
-	return &NotImplemented_typedef;
+    return &NotImplemented_typedef;
 }
 
 StdObjSpace::StdObjSpace() : ObjSpace()
 {
-	typedef_cache = new StdTypedefCache(this);
+    typedef_cache = new StdTypedefCache(this);
 
-	wrapped_None = new(current_thread()) M_StdNoneObject();
-	wrapped_True = new(current_thread()) M_StdBoolObject(true);
-	wrapped_False = new(current_thread()) M_StdBoolObject(false);
-	wrapped_NotImplemented = new(current_thread()) M_NotImplemented();
+    wrapped_None = new (current_thread()) M_StdNoneObject();
+    wrapped_True = new (current_thread()) M_StdBoolObject(true);
+    wrapped_False = new (current_thread()) M_StdBoolObject(false);
+    wrapped_NotImplemented = new (current_thread()) M_NotImplemented();
 
-	/* type of all types */
-	M_BaseObject* type_obj = get_typeobject(M_StdTypeObject::_type_typedef());
-	type_obj->set_class(this, type_obj);
-	builtin_types["type"] = type_obj;
+    /* type of all types */
+    M_BaseObject* type_obj = get_typeobject(M_StdTypeObject::_type_typedef());
+    type_obj->set_class(this, type_obj);
+    builtin_types["type"] = type_obj;
 
-	M_BaseObject* object_type = get_typeobject(M_StdObjectObject::_object_typedef());
-	object_type->set_class(this, type_obj);
-	builtin_types["object"] = object_type;
+    M_BaseObject* object_type =
+        get_typeobject(M_StdObjectObject::_object_typedef());
+    object_type->set_class(this, type_obj);
+    builtin_types["object"] = object_type;
 
-	builtin_types["bool"] = get_typeobject(M_StdBoolObject::_bool_typedef());
-	builtin_types["bytearray"] = get_typeobject(M_StdByteArrayObject::_bytearray_typedef());
-	builtin_types["dict"] = get_typeobject(M_StdDictObject::_dict_typedef());
-	builtin_types["int"] = get_typeobject(M_StdIntObject::_int_typedef());
-	builtin_types["set"] = get_typeobject(M_StdSetObject::_set_typedef());
-	builtin_types["frozenset"] = get_typeobject(M_StdSetObject::_set_typedef());
-	builtin_types["str"] = get_typeobject(M_StdUnicodeObject::_str_typedef());
-	builtin_types["tuple"] = get_typeobject(M_StdTupleObject::_tuple_typedef());
-	builtin_types["list"] = get_typeobject(M_StdListObject::_list_typedef());
-	builtin_types["bytes"] = get_typeobject(M_StdBytesObject::_bytes_typedef());
-	builtin_types["memoryview"] = get_typeobject(M_StdMemoryViewObject::_memoryview_typedef());
+    builtin_types["bool"] = get_typeobject(M_StdBoolObject::_bool_typedef());
+    builtin_types["bytearray"] =
+        get_typeobject(M_StdByteArrayObject::_bytearray_typedef());
+    builtin_types["dict"] = get_typeobject(M_StdDictObject::_dict_typedef());
+    builtin_types["int"] = get_typeobject(M_StdIntObject::_int_typedef());
+    builtin_types["set"] = get_typeobject(M_StdSetObject::_set_typedef());
+    builtin_types["frozenset"] = get_typeobject(M_StdSetObject::_set_typedef());
+    builtin_types["str"] = get_typeobject(M_StdUnicodeObject::_str_typedef());
+    builtin_types["tuple"] = get_typeobject(M_StdTupleObject::_tuple_typedef());
+    builtin_types["list"] = get_typeobject(M_StdListObject::_list_typedef());
+    builtin_types["bytes"] = get_typeobject(M_StdBytesObject::_bytes_typedef());
+    builtin_types["memoryview"] =
+        get_typeobject(M_StdMemoryViewObject::_memoryview_typedef());
 
-	make_builtins();
-	setup_builtin_modules();
+    make_builtins();
+    setup_builtin_modules();
 }
 
-mtpython::interpreter::PyFrame* StdObjSpace::create_frame(ThreadContext* context, mtpython::interpreter::Code* code, M_BaseObject* globals, M_BaseObject* outer)
+mtpython::interpreter::PyFrame*
+StdObjSpace::create_frame(ThreadContext* context,
+                          mtpython::interpreter::Code* code,
+                          M_BaseObject* globals, M_BaseObject* outer)
 {
-	return new(context) StdFrame(context, code, globals, outer);
+    return new (context) StdFrame(context, code, globals, outer);
 }
 
 M_BaseObject* StdObjSpace::lookup(M_BaseObject* obj, const std::string& name)
 {
-	M_StdTypeObject* obj_type = dynamic_cast<M_StdTypeObject*>(type(obj));
-	if (!obj_type) return nullptr;
-	
-	return obj_type->lookup(name);
+    M_StdTypeObject* obj_type = dynamic_cast<M_StdTypeObject*>(type(obj));
+    if (!obj_type) return nullptr;
+
+    return obj_type->lookup(name);
 }
 
-M_BaseObject* StdObjSpace::lookup_type_cls(M_BaseObject* obj, const std::string& attr, M_BaseObject*& where)
+M_BaseObject* StdObjSpace::lookup_type_cls(M_BaseObject* obj,
+                                           const std::string& attr,
+                                           M_BaseObject*& where)
 {
-	M_StdTypeObject* type = dynamic_cast<M_StdTypeObject*>(obj);
-	if (!type) return nullptr;
+    M_StdTypeObject* type = dynamic_cast<M_StdTypeObject*>(obj);
+    if (!type) return nullptr;
 
-	type->lock();
-	M_BaseObject* value = type->lookup_cls(attr, where);
-	type->unlock();
+    type->lock();
+    M_BaseObject* value = type->lookup_cls(attr, where);
+    type->unlock();
 
-	return value;
+    return value;
 }
 
-M_BaseObject* StdObjSpace::lookup_type_starting_at(M_BaseObject* type, M_BaseObject* start, const std::string& name)
+M_BaseObject* StdObjSpace::lookup_type_starting_at(M_BaseObject* type,
+                                                   M_BaseObject* start,
+                                                   const std::string& name)
 {
-	M_StdTypeObject* as_type = static_cast<M_StdTypeObject*>(type);
+    M_StdTypeObject* as_type = static_cast<M_StdTypeObject*>(type);
 
-	return as_type->lookup_starting_at(start, name);
+    return as_type->lookup_starting_at(start, name);
 }
 
 bool StdObjSpace::i_issubtype(M_BaseObject* sub, M_BaseObject* type)
 {
-	M_StdTypeObject* sub_as_type = dynamic_cast<M_StdTypeObject*>(sub);
-	M_StdTypeObject* type_as_type = dynamic_cast<M_StdTypeObject*>(type);
+    M_StdTypeObject* sub_as_type = dynamic_cast<M_StdTypeObject*>(sub);
+    M_StdTypeObject* type_as_type = dynamic_cast<M_StdTypeObject*>(type);
 
-	if (sub_as_type && type_as_type) {
-		return sub_as_type->issubtype(type);
-	}
+    if (sub_as_type && type_as_type) {
+        return sub_as_type->issubtype(type);
+    }
 
-	throw InterpError(TypeError_type(), wrap_str(current_thread(), "need type objects"));
+    throw InterpError(TypeError_type(),
+                      wrap_str(current_thread(), "need type objects"));
 }
 
 bool StdObjSpace::i_isinstance(M_BaseObject* inst, M_BaseObject* type)
 {
-	if (dynamic_cast<M_StdTypeObject*>(type) == nullptr) {
-		throw InterpError(TypeError_type(), wrap_str(this->current_thread(), "need type object"));
-	}
-	return static_cast<M_StdTypeObject*>(this->type(inst))->issubtype(type);
+    if (dynamic_cast<M_StdTypeObject*>(type) == nullptr) {
+        throw InterpError(TypeError_type(),
+                          wrap_str(this->current_thread(), "need type object"));
+    }
+    return static_cast<M_StdTypeObject*>(this->type(inst))->issubtype(type);
 }
 
 M_BaseObject* StdObjSpace::get_type_by_name(const std::string& name)
 {
-	auto found = builtin_types.find(name);
-	if (found == builtin_types.end())
-		return nullptr;
+    auto found = builtin_types.find(name);
+    if (found == builtin_types.end()) return nullptr;
 
-	return found->second;
+    return found->second;
 }
 
 std::string StdObjSpace::get_type_name(M_BaseObject* obj)
 {
-	M_StdTypeObject* type_obj = static_cast<M_StdTypeObject*>(type(obj));
-	return type_obj->get_name();
+    M_StdTypeObject* type_obj = static_cast<M_StdTypeObject*>(type(obj));
+    return type_obj->get_name();
 }
 
 M_BaseObject* StdObjSpace::wrap_int(ThreadContext* context, int x)
 {
-	return new(context) M_StdIntObject(x);
+    return new (context) M_StdIntObject(x);
 }
 
-M_BaseObject* StdObjSpace::wrap_int(ThreadContext* context, const std::string& x)
+M_BaseObject* StdObjSpace::wrap_int(ThreadContext* context,
+                                    const std::string& x)
 {
-	return new(context) M_StdIntObject(x);
+    return new (context) M_StdIntObject(x);
 }
 
-M_BaseObject* StdObjSpace::wrap_str(ThreadContext* context, const std::string& x)
+M_BaseObject* StdObjSpace::wrap_str(ThreadContext* context,
+                                    const std::string& x)
 {
-	return new(context) M_StdUnicodeObject(x);
+    return new (context) M_StdUnicodeObject(x);
 }
 
-M_BaseObject* StdObjSpace::new_tuple(ThreadContext* context, const std::vector<M_BaseObject*>& items)
+M_BaseObject* StdObjSpace::new_tuple(ThreadContext* context,
+                                     const std::vector<M_BaseObject*>& items)
 {
-	return new(context) M_StdTupleObject(items);
+    return new (context) M_StdTupleObject(items);
 }
 
-M_BaseObject* StdObjSpace::new_list(ThreadContext* context, const std::vector<M_BaseObject*>& items)
+M_BaseObject* StdObjSpace::new_list(ThreadContext* context,
+                                    const std::vector<M_BaseObject*>& items)
 {
-	return new(context)  M_StdListObject(items);
+    return new (context) M_StdListObject(items);
 }
 
 M_BaseObject* StdObjSpace::new_dict(ThreadContext* context)
 {
-	return new(context)  M_StdDictObject(this);
+    return new (context) M_StdDictObject(this);
 }
 
 M_BaseObject* StdObjSpace::new_set(ThreadContext* context)
 {
-	return new(context)  M_StdSetObject(this);
+    return new (context) M_StdSetObject(this);
 }
 
-M_BaseObject* StdObjSpace::new_seqiter(ThreadContext* context, M_BaseObject* obj)
+M_BaseObject* StdObjSpace::new_seqiter(ThreadContext* context,
+                                       M_BaseObject* obj)
 {
-	return new(context)  M_StdSeqIterObject(obj);
+    return new (context) M_StdSeqIterObject(obj);
 }
 
-void StdObjSpace::unwrap_tuple(M_BaseObject* obj, std::vector<M_BaseObject*>& list)
+void StdObjSpace::unwrap_tuple(M_BaseObject* obj,
+                               std::vector<M_BaseObject*>& list)
 {
-	M_StdTupleObject* tuple = M_STDTUPLEOBJECT(obj);
-	if (!tuple) return;
-	std::vector<M_BaseObject*>& items = tuple->get_items();
+    M_StdTupleObject* tuple = M_STDTUPLEOBJECT(obj);
+    if (!tuple) return;
+    std::vector<M_BaseObject*>& items = tuple->get_items();
 
-	list.clear();
-	list.insert(list.end(), items.begin(), items.end());
+    list.clear();
+    list.insert(list.end(), items.begin(), items.end());
 }
 
-int StdObjSpace::i_get_index(M_BaseObject* obj, M_BaseObject* exc, M_BaseObject* descr)
+int StdObjSpace::i_get_index(M_BaseObject* obj, M_BaseObject* exc,
+                             M_BaseObject* descr)
 {
-	int result;
-	try {
-		result = obj->to_int(this, false);
-	} catch (const NotImplementedException&) {
-		return ObjSpace::i_get_index(obj, exc, descr);
-	}
+    int result;
+    try {
+        result = obj->to_int(this, false);
+    } catch (const NotImplementedException&) {
+        return ObjSpace::i_get_index(obj, exc, descr);
+    }
 
-	return result;
+    return result;
 }
-

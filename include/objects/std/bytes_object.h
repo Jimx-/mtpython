@@ -18,7 +18,7 @@ public:
     interpreter::Typedef* get_typedef();
 };
 
-}
-}
+} // namespace objects
+} // namespace mtpython
 
 #endif /* _STD_BYTES_OBJECT_H_ */

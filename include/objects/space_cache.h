@@ -10,43 +10,46 @@ namespace objects {
 
 class ObjSpace;
 
-template <typename K, typename V>
-class ObjSpaceCache {
+template <typename K, typename V> class ObjSpaceCache {
 private:
-	std::unordered_map<K, V> map;
+    std::unordered_map<K, V> map;
+
 protected:
-	ObjSpace* space;
+    ObjSpace* space;
+
 public:
-	ObjSpaceCache(ObjSpace* space) { this->space = space; }
+    ObjSpaceCache(ObjSpace* space) { this->space = space; }
 
-	V get(K key) {
-		auto got = map.find(key);
-		if (got == map.end()) {
-			V value = build(key);
-			map[key] = value;
-			return value;
-		}
-		return got->second;
-	}
+    V get(K key)
+    {
+        auto got = map.find(key);
+        if (got == map.end()) {
+            V value = build(key);
+            map[key] = value;
+            return value;
+        }
+        return got->second;
+    }
 
-	virtual V build(K key) { return V();  }
+    virtual V build(K key) { return V(); }
 };
 
 /* Typedef -> TypeObject mapping */
-class TypedefCache : public ObjSpaceCache<interpreter::Typedef*, M_BaseObject*> {
+class TypedefCache
+    : public ObjSpaceCache<interpreter::Typedef*, M_BaseObject*> {
 public:
-	TypedefCache(ObjSpace* space) : ObjSpaceCache(space) { }
+    TypedefCache(ObjSpace* space) : ObjSpaceCache(space) {}
 };
 
 /* InterpFunctionWrapper -> Function mapping */
 class GatewayCache : public ObjSpaceCache<M_BaseObject*, M_BaseObject*> {
 public:
-	GatewayCache(ObjSpace* space) : ObjSpaceCache(space) { }
+    GatewayCache(ObjSpace* space) : ObjSpaceCache(space) {}
 
-	virtual M_BaseObject* build(M_BaseObject* key);
+    virtual M_BaseObject* build(M_BaseObject* key);
 };
 
-}
-}
+} // namespace objects
+} // namespace mtpython
 
 #endif

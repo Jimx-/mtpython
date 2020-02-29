@@ -11,17 +11,19 @@ namespace objects {
 
 class M_StdByteArrayObject : public M_BaseObject {
 private:
-	std::string array;
+    std::string array;
+
 public:
-	M_StdByteArrayObject();
+    M_StdByteArrayObject();
 
-	static M_BaseObject* __iter__(mtpython::vm::ThreadContext* context, M_BaseObject* self);
+    static M_BaseObject* __iter__(mtpython::vm::ThreadContext* context,
+                                  M_BaseObject* self);
 
-	static interpreter::Typedef* _bytearray_typedef();
-	interpreter::Typedef* get_typedef();
+    static interpreter::Typedef* _bytearray_typedef();
+    interpreter::Typedef* get_typedef();
 };
 
-}
-}
+} // namespace objects
+} // namespace mtpython
 
 #endif /* _STD_BYTEARRAY_OBJECT_H_ */

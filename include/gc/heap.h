@@ -6,13 +6,11 @@
 namespace mtpython {
 namespace gc {
 
-struct HeapAllocation {
-
-};
+struct HeapAllocation {};
 
 class Heap {
 public:
-    ~Heap() { }
+    ~Heap() {}
 
     virtual size_t capacity() = 0;
     virtual size_t used() = 0;
@@ -21,8 +19,7 @@ public:
     virtual void post_allocate_obj(void* obj) = 0;
 };
 
-}
-}
+} // namespace gc
+} // namespace mtpython
 
 #endif
-

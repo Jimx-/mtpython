@@ -9,11 +9,9 @@ using namespace mtpython::modules;
 using namespace mtpython::objects;
 using namespace mtpython::interpreter;
 
-ErrnoModule::ErrnoModule(ObjSpace* space, M_BaseObject* name) : BuiltinModule(space, name)
+ErrnoModule::ErrnoModule(ObjSpace* space, M_BaseObject* name)
+    : BuiltinModule(space, name)
 {
     mtpython::vm::ThreadContext* context = space->current_thread();
 #include "tools/errno_def.h"
-
 }
-
-

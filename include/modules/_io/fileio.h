@@ -7,25 +7,29 @@
 namespace mtpython {
 namespace modules {
 
-class M_FileIO : public M_RawIOBase {	
+class M_FileIO : public M_RawIOBase {
 private:
-	M_BaseObject* name;
-	int fd;
-	bool closefd;
+    M_BaseObject* name;
+    int fd;
+    bool closefd;
+
 public:
-	M_FileIO(mtpython::objects::ObjSpace* space) : M_RawIOBase(space) { }
+    M_FileIO(mtpython::objects::ObjSpace* space) : M_RawIOBase(space) {}
 
-	interpreter::Typedef* get_typedef();
+    interpreter::Typedef* get_typedef();
 
-	static objects::M_BaseObject* __new__(vm::ThreadContext* context, const interpreter::Arguments& args);
-	static objects::M_BaseObject* __init__(vm::ThreadContext* context, const interpreter::Arguments& args);
+    static objects::M_BaseObject* __new__(vm::ThreadContext* context,
+                                          const interpreter::Arguments& args);
+    static objects::M_BaseObject* __init__(vm::ThreadContext* context,
+                                           const interpreter::Arguments& args);
 
-	static objects::M_BaseObject* name_get(vm::ThreadContext* context, objects::M_BaseObject* self);
-	static void name_set(vm::ThreadContext* context, objects::M_BaseObject* obj, objects::M_BaseObject* value);
+    static objects::M_BaseObject* name_get(vm::ThreadContext* context,
+                                           objects::M_BaseObject* self);
+    static void name_set(vm::ThreadContext* context, objects::M_BaseObject* obj,
+                         objects::M_BaseObject* value);
 };
 
-
-}
-}
+} // namespace modules
+} // namespace mtpython
 
 #endif /* _FILEIO_H_ */

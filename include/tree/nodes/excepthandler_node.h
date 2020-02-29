@@ -17,7 +17,7 @@ public:
     ~ExceptHandlerNode()
     {
         SAFE_DELETE(type);
-        ASTNode* node = body, *prev;
+        ASTNode *node = body, *prev;
         while (node) {
             prev = node;
             node = node->get_sibling();
@@ -32,13 +32,14 @@ public:
     ASTNode* get_body() { return body; }
     void set_body(ASTNode* body) { this->body = body; }
 
-    virtual void print(const int padding) {
+    virtual void print(const int padding)
+    {
         std::string blank(padding, ' ');
         std::cout << blank << line << ": ExceptHandler: " << std::endl;
-		if (type) {
-			std::cout << blank << "  " << line << ": Type:" << std::endl;
-			type->print(padding + 4);
-		}
+        if (type) {
+            std::cout << blank << "  " << line << ": Type:" << std::endl;
+            type->print(padding + 4);
+        }
         std::cout << blank << "  " << line << ": Name: " << name << std::endl;
         std::cout << blank << "  " << line << ": Body:" << std::endl;
         ASTNode* stmt = body;
@@ -48,10 +49,13 @@ public:
         }
     }
     virtual NodeType get_tag() { return NT_EXCEPTHANDLER; }
-    virtual void visit(ASTVisitor* visitor) { visitor->visit_excepthandler(this); }
+    virtual void visit(ASTVisitor* visitor)
+    {
+        visitor->visit_excepthandler(this);
+    }
 };
 
-}
-}
+} // namespace tree
+} // namespace mtpython
 
 #endif // _EXCEPTHANDLER_NODE_

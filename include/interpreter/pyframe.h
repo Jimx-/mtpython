@@ -17,28 +17,36 @@ namespace mtpython {
 namespace interpreter {
 
 typedef enum {
-    WHY_NOT =       0x0001, /* No error */
-        WHY_EXCEPTION = 0x0002, /* Exception occurred */
-        WHY_RETURN =    0x0008, /* 'return' statement */
-        WHY_BREAK =     0x0010, /* 'break' statement */
-        WHY_CONTINUE =  0x0020, /* 'continue' statement */
-        WHY_YIELD =     0x0040, /* 'yield' operator */
-        WHY_SILENCED =  0x0080  /* Exception silenced by 'with' */
+    WHY_NOT = 0x0001,       /* No error */
+    WHY_EXCEPTION = 0x0002, /* Exception occurred */
+    WHY_RETURN = 0x0008,    /* 'return' statement */
+    WHY_BREAK = 0x0010,     /* 'break' statement */
+    WHY_CONTINUE = 0x0020,  /* 'continue' statement */
+    WHY_YIELD = 0x0040,     /* 'yield' operator */
+    WHY_SILENCED = 0x0080   /* Exception silenced by 'with' */
 } WhyCode;
 
 class StackUnwinder : public mtpython::objects::M_BaseObject {
 protected:
     WhyCode why_code;
+
 public:
     WhyCode why() { return why_code; }
-	virtual objects::M_BaseObject* unhandle() { throw NotImplementedException("unhandle()"); }
+    virtual objects::M_BaseObject* unhandle()
+    {
+        throw NotImplementedException("unhandle()");
+    }
 };
 
 class ExceptionUnwinder : public StackUnwinder {
 private:
     InterpError error;
+
 public:
-    ExceptionUnwinder(const InterpError& e) : error(e) { why_code = WHY_EXCEPTION; }
+    ExceptionUnwinder(const InterpError& e) : error(e)
+    {
+        why_code = WHY_EXCEPTION;
+    }
     const InterpError& get_error() { return error; }
     virtual objects::M_BaseObject* unhandle() { throw error; }
 };
@@ -46,8 +54,12 @@ public:
 class ReturnUnwinder : public StackUnwinder {
 private:
     objects::M_BaseObject* retval;
+
 public:
-    ReturnUnwinder(objects::M_BaseObject* ret) : retval(ret) { why_code = WHY_RETURN; }
+    ReturnUnwinder(objects::M_BaseObject* ret) : retval(ret)
+    {
+        why_code = WHY_RETURN;
+    }
     virtual objects::M_BaseObject* unhandle() { return retval; }
 };
 
@@ -61,44 +73,63 @@ protected:
     int handler;
     int level;
     int mask;
+
 public:
-    FrameBlock(int handler, int level) : handler(handler), level(level) { mask = WHY_NOT; }
+    FrameBlock(int handler, int level) : handler(handler), level(level)
+    {
+        mask = WHY_NOT;
+    }
 
     int handling_mask() { return mask; }
-    virtual int handle(PyFrame* frame, StackUnwinder* unwinder) { throw mtpython::NotImplementedException("handle()"); }
+    virtual int handle(PyFrame* frame, StackUnwinder* unwinder)
+    {
+        throw mtpython::NotImplementedException("handle()");
+    }
 
     void cleanup(PyFrame* frame);
 };
 
 class LoopBlock : public FrameBlock {
 public:
-    LoopBlock(int handler, int level) : FrameBlock(handler, level) { mask = (WHY_BREAK | WHY_CONTINUE); };
+    LoopBlock(int handler, int level) : FrameBlock(handler, level)
+    {
+        mask = (WHY_BREAK | WHY_CONTINUE);
+    };
 
     virtual int handle(PyFrame* frame, StackUnwinder* unwinder);
 };
 
 class ExceptBlock : public FrameBlock {
 public:
-    ExceptBlock(int handler, int level) : FrameBlock(handler, level) { mask = WHY_EXCEPTION; };
+    ExceptBlock(int handler, int level) : FrameBlock(handler, level)
+    {
+        mask = WHY_EXCEPTION;
+    };
 
     virtual int handle(PyFrame* frame, StackUnwinder* unwinder);
 };
 
-class ExceptHandlerBlock : public FrameBlock {  /* Pseudo block for POP_EXCEPT */
+class ExceptHandlerBlock : public FrameBlock { /* Pseudo block for POP_EXCEPT */
 public:
-    ExceptHandlerBlock(int handler, int level) : FrameBlock(handler, level) { mask = 0; };
+    ExceptHandlerBlock(int handler, int level) : FrameBlock(handler, level)
+    {
+        mask = 0;
+    };
 };
 
 class FinallyBlock : public FrameBlock {
 public:
-    FinallyBlock(int handler, int level) : FrameBlock(handler, level) { mask = -1; };
+    FinallyBlock(int handler, int level) : FrameBlock(handler, level)
+    {
+        mask = -1;
+    };
 
     virtual int handle(PyFrame* frame, StackUnwinder* unwinder);
 };
 
 class WithBlock : public FinallyBlock {
 public:
-    WithBlock(int handler, int level) : FinallyBlock(handler, level) { }
+    WithBlock(int handler, int level) : FinallyBlock(handler, level) {}
 };
 
 class PyFrame : public mtpython::objects::M_BaseObject {
@@ -136,7 +167,8 @@ protected:
         return tmp;
     }
 
-    void pop_values_untrack(int n, std::vector<mtpython::objects::M_BaseObject*>& v)
+    void pop_values_untrack(int n,
+                            std::vector<mtpython::objects::M_BaseObject*>& v)
     {
         v.resize(n);
         n--;
@@ -148,10 +180,7 @@ protected:
         }
     }
 
-    mtpython::objects::M_BaseObject* peek_value()
-    {
-        return value_stack.top();
-    }
+    mtpython::objects::M_BaseObject* peek_value() { return value_stack.top(); }
 
     FrameBlock* pop_block()
     {
@@ -216,8 +245,8 @@ protected:
     void binary_getitem(int arg, int next_pc);
     void binary_subscr(int arg, int next_pc);
     void build_list(int arg, int next_pc);
-	void import_from(int arg, int next_pc);
-	void import_star(int arg, int next_pc);
+    void import_from(int arg, int next_pc);
+    void import_star(int arg, int next_pc);
     void binary__and(int arg, int next_pc);
     void build_set(int arg, int next_pc);
     void load_build_class(int arg, int next_pc);
@@ -229,13 +258,19 @@ protected:
     void with_cleanup(int arg, int next_pc);
     void yield_value(int arg, int next_pc);
     void unpack_sequence(int arg, int next_pc);
-	void store_subscr(int arg, int next_pc);
+    void store_subscr(int arg, int next_pc);
 
     objects::M_BaseObject* end_finally();
 
-    void call_function_common(int arg, mtpython::objects::M_BaseObject* star=nullptr, mtpython::objects::M_BaseObject* starstar=nullptr);
+    void
+    call_function_common(int arg,
+                         mtpython::objects::M_BaseObject* star = nullptr,
+                         mtpython::objects::M_BaseObject* starstar = nullptr);
+
 public:
-    PyFrame(vm::ThreadContext* context, Code* code, mtpython::objects::M_BaseObject* globals, mtpython::objects::M_BaseObject* outer);
+    PyFrame(vm::ThreadContext* context, Code* code,
+            mtpython::objects::M_BaseObject* globals,
+            mtpython::objects::M_BaseObject* outer);
 
     void push_value(mtpython::objects::M_BaseObject* value)
     {
@@ -245,39 +280,46 @@ public:
 
     int value_stack_level() { return value_stack.size(); }
 
-    void push_block(FrameBlock* block)
-    {
-        block_stack.push(block);
-    }
+    void push_block(FrameBlock* block) { block_stack.push(block); }
 
     vm::ThreadContext* get_context() { return context; }
     objects::ObjSpace* get_space() { return space; }
     objects::M_BaseObject* get_globals() { return globals; }
-	objects::M_BaseObject* get_locals();
+    objects::M_BaseObject* get_locals();
     int get_pc() { return pc; }
     bool finished_execution() { return _finished_execution; }
-	void set_locals(objects::M_BaseObject* locals);
+    void set_locals(objects::M_BaseObject* locals);
     PyCode* get_pycode() { return pycode; }
 
     objects::M_BaseObject* exec();
     objects::M_BaseObject* execute_frame(objects::M_BaseObject* arg = nullptr);
 
-    std::vector<mtpython::objects::M_BaseObject*>& get_local_vars() { return local_vars; }
-    const std::vector<mtpython::interpreter::Cell*>& get_cells() { return cells; }
+    std::vector<mtpython::objects::M_BaseObject*>& get_local_vars()
+    {
+        return local_vars;
+    }
+    const std::vector<mtpython::interpreter::Cell*>& get_cells()
+    {
+        return cells;
+    }
 
     void fill_cellvars_from_args();
 
-    objects::M_BaseObject* dispatch(vm::ThreadContext* context, Code* code, int next_pc);
-    int execute_bytecode(vm::ThreadContext* context, std::vector<unsigned char>& bytecode, int next_pc);
-    int dispatch_bytecode(vm::ThreadContext* context, std::vector<unsigned char>& bytecode, int next_pc);
+    objects::M_BaseObject* dispatch(vm::ThreadContext* context, Code* code,
+                                    int next_pc);
+    int execute_bytecode(vm::ThreadContext* context,
+                         std::vector<unsigned char>& bytecode, int next_pc);
+    int dispatch_bytecode(vm::ThreadContext* context,
+                          std::vector<unsigned char>& bytecode, int next_pc);
 
     void drop_values_until(int level)
     {
-        while (value_stack.size() > (std::size_t)level) pop_value();
+        while (value_stack.size() > (std::size_t)level)
+            pop_value();
     }
 };
 
-}
-}
+} // namespace interpreter
+} // namespace mtpython
 
 #endif /* _INTERPRETER_PYFRAME_H_ */

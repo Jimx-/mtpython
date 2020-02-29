@@ -14,35 +14,38 @@ using namespace mtpython::objects;
 /* Remove ".." and "." in the path */
 static std::string canonical_path(const std::string& path)
 {
-	std::deque<std::string> stack;
+    std::deque<std::string> stack;
 
-	std::size_t start = 0;
-	while (true) {
-		std::size_t dot = path.find(mtpython::FileHelper::sep, start);
-		std::size_t end;
-		if (dot == std::string::npos) {
-			end = path.size();
+    std::size_t start = 0;
+    while (true) {
+        std::size_t dot = path.find(mtpython::FileHelper::sep, start);
+        std::size_t end;
+        if (dot == std::string::npos) {
+            end = path.size();
 
-		} else {
-			end = dot;
-		}
+        } else {
+            end = dot;
+        }
 
-		std::string part = path.substr(start, end - start);
-		if (part == ".." && stack.size() > 0) stack.pop_back();
-		else if (part != "." && part != "") stack.push_back(part);
+        std::string part = path.substr(start, end - start);
+        if (part == ".." && stack.size() > 0)
+            stack.pop_back();
+        else if (part != "." && part != "")
+            stack.push_back(part);
 
-		if (dot == std::string::npos) break;
-		while (end < path.size() && path[end] == mtpython::FileHelper::sep) end++;
+        if (dot == std::string::npos) break;
+        while (end < path.size() && path[end] == mtpython::FileHelper::sep)
+            end++;
 
-		start = end;
-	}
+        start = end;
+    }
 
-	std::string final_path = "";
-	for (auto& part : stack) {
+    std::string final_path = "";
+    for (auto& part : stack) {
 #ifdef _WIN32_
-		if (final_path.size() > 0) {
+        if (final_path.size() > 0) {
 #endif
-		final_path += mtpython::FileHelper::sep;
+            final_path += mtpython::FileHelper::sep;
 #ifdef _WIN32_
         }
 #endif
@@ -57,9 +60,11 @@ static std::string find_executable(const std::string& executable)
 {
     std::string exec_name = executable;
 #ifdef _WIN32_
-    if (exec_name.substr(exec_name.size() - 4, 4) != ".exe") exec_name += ".exe";
+    if (exec_name.substr(exec_name.size() - 4, 4) != ".exe")
+        exec_name += ".exe";
 #endif
-    if (exec_name.find(mtpython::FileHelper::sep) != std::string::npos) return exec_name;
+    if (exec_name.find(mtpython::FileHelper::sep) != std::string::npos)
+        return exec_name;
     else {
         char* path_env;
 #ifdef _WIN32_
@@ -73,10 +78,12 @@ static std::string find_executable(const std::string& executable)
             char* start = (char*)path_env;
             char* end = start + 1;
             while (true) {
-                while (*end != mtpython::FileHelper::pathsep && *end != '\0') end++;
+                while (*end != mtpython::FileHelper::pathsep && *end != '\0')
+                    end++;
                 std::string dir(start, end - start);
 
-                if (dir.back() != mtpython::FileHelper::sep) dir += mtpython::FileHelper::sep;
+                if (dir.back() != mtpython::FileHelper::sep)
+                    dir += mtpython::FileHelper::sep;
                 dir += exec_name;
                 if (mtpython::FileHelper::file_exists(dir)) {
                     exec_name = dir;
@@ -99,7 +106,8 @@ static std::string resolve_dir(const std::string& path)
     if (path.size() == 0) return path;
 
     std::string dirname = path;
-    if (dirname.back() != mtpython::FileHelper::sep) dirname += mtpython::FileHelper::sep;
+    if (dirname.back() != mtpython::FileHelper::sep)
+        dirname += mtpython::FileHelper::sep;
     dirname += "..";
 
     return canonical_path(dirname);
@@ -107,7 +115,8 @@ static std::string resolve_dir(const std::string& path)
 
 static std::string version_str = "";
 
-static bool compute_stdlib_path(const std::string& prefix, std::vector<std::string>& paths)
+static bool compute_stdlib_path(const std::string& prefix,
+                                std::vector<std::string>& paths)
 {
     if (version_str == "") {
         version_str += CPYTHON_VERSION[0];
@@ -125,7 +134,8 @@ static bool compute_stdlib_path(const std::string& prefix, std::vector<std::stri
     return true;
 }
 
-static bool find_stdlib(const std::string& executable, std::vector<std::string>& paths, std::string& prefix)
+static bool find_stdlib(const std::string& executable,
+                        std::vector<std::string>& paths, std::string& prefix)
 {
     std::string search = executable;
     while (true) {
@@ -152,7 +162,8 @@ void PyVM::init_bootstrap_path(const std::string& executable)
     std::vector<std::string> stdlib_paths;
     std::string prefix = "";
     if (!find_stdlib(exec_path, stdlib_paths, prefix)) {
-        std::cerr << "error: cannot compute sys.path, using default" << std::endl;
+        std::cerr << "error: cannot compute sys.path, using default"
+                  << std::endl;
         return;
     }
 

@@ -10,25 +10,25 @@
 using namespace mtpython::objects;
 using namespace mtpython::interpreter;
 
-M_StdByteArrayObject::M_StdByteArrayObject()
-{
-}
+M_StdByteArrayObject::M_StdByteArrayObject() {}
 
 Typedef* M_StdByteArrayObject::_bytearray_typedef()
 {
-	static mtpython::interpreter::Typedef bytearray_typedef("bytearray", {
-		{ "__iter__", new InterpFunctionWrapper("__iter__", M_StdByteArrayObject::__iter__) },
-	});
+    static mtpython::interpreter::Typedef bytearray_typedef(
+        "bytearray",
+        {
+            {"__iter__", new InterpFunctionWrapper(
+                             "__iter__", M_StdByteArrayObject::__iter__)},
+        });
 
-	return &bytearray_typedef;
+    return &bytearray_typedef;
 }
 
-Typedef* M_StdByteArrayObject::get_typedef()
-{
-	return _bytearray_typedef();
-}
+Typedef* M_StdByteArrayObject::get_typedef() { return _bytearray_typedef(); }
 
-M_BaseObject* M_StdByteArrayObject::__iter__(mtpython::vm::ThreadContext* context, M_BaseObject* self)
+M_BaseObject*
+M_StdByteArrayObject::__iter__(mtpython::vm::ThreadContext* context,
+                               M_BaseObject* self)
 {
-	return context->get_space()->new_seqiter(context, self);
+    return context->get_space()->new_seqiter(context, self);
 }

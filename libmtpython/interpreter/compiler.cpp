@@ -6,30 +6,31 @@
 using namespace mtpython::interpreter;
 using namespace mtpython::parse;
 
-PyCompiler::PyCompiler(mtpython::vm::ThreadContext* context) : BaseCompiler(context)
+PyCompiler::PyCompiler(mtpython::vm::ThreadContext* context)
+    : BaseCompiler(context)
+{}
+
+Code* PyCompiler::compile(const std::string& source,
+                          const std::string& filename, const std::string& mode,
+                          int flags)
 {
+    mtpython::parse::SourceType type = mtpython::parse::SourceType::ST_ERROR;
 
-}
+    if (mode == "exec") type = mtpython::parse::SourceType::ST_FILE_INPUT;
 
-Code* PyCompiler::compile(const std::string& source, const std::string& filename, const std::string& mode, int flags)
-{
-	mtpython::parse::SourceType type = mtpython::parse::SourceType::ST_ERROR;
+    flags = flags | PyCF_SOURCE_IS_UTF8;
 
-	if (mode == "exec") type = mtpython::parse::SourceType::ST_FILE_INPUT;
+    CompileInfo info(filename, type, flags);
 
-	flags = flags | PyCF_SOURCE_IS_UTF8;
+    Parser parser(context, source, &info, flags);
 
-	CompileInfo info(filename, type, flags);
+    mtpython::tree::ASTNode* module = parser.parse();
+    // module->print(0);
+    SymtableVisitor symtab(space, module);
+    ModuleCodeGenerator codegen(context, module, &symtab, &info);
+    mtpython::interpreter::PyCode* code = codegen.build();
 
-	Parser parser(context, source, &info, flags);
+    SAFE_DELETE(module);
 
-	mtpython::tree::ASTNode* module = parser.parse();
-	//module->print(0);
-	SymtableVisitor symtab(space, module);
-	ModuleCodeGenerator codegen(context, module, &symtab, &info);
-	mtpython::interpreter::PyCode* code = codegen.build();
-
-	SAFE_DELETE(module);
-
-	return code;
+    return code;
 }

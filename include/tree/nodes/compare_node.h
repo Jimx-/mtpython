@@ -7,47 +7,55 @@
 #include <vector>
 #include "macros.h"
 
-namespace mtpython { 
+namespace mtpython {
 namespace tree {
 
 class CompareNode : public ASTNode {
 private:
-	ASTNode* left;
-	std::vector<mtpython::parse::CmpOper> ops;
-	std::vector<ASTNode*> comparators;
+    ASTNode* left;
+    std::vector<mtpython::parse::CmpOper> ops;
+    std::vector<ASTNode*> comparators;
+
 public:
-	CompareNode(const int line_nr);
-	~CompareNode()
-	{
-		SAFE_DELETE(left);
-		for (std::size_t i = 0; i < comparators.size(); i++) SAFE_DELETE(comparators[i]);
-	}
+    CompareNode(const int line_nr);
+    ~CompareNode()
+    {
+        SAFE_DELETE(left);
+        for (std::size_t i = 0; i < comparators.size(); i++)
+            SAFE_DELETE(comparators[i]);
+    }
 
-	ASTNode* get_left() { return this->left; }
-	void set_left(ASTNode* left) { this->left = left; }
-	void push_op(mtpython::parse::CmpOper op) { ops.push_back(op); }
-	std::vector<mtpython::parse::CmpOper>& get_ops() { return ops; }
-	void push_comparator(ASTNode* comparator) { comparators.push_back(comparator); }
-	std::vector<ASTNode*>& get_comparators() { return comparators; }
+    ASTNode* get_left() { return this->left; }
+    void set_left(ASTNode* left) { this->left = left; }
+    void push_op(mtpython::parse::CmpOper op) { ops.push_back(op); }
+    std::vector<mtpython::parse::CmpOper>& get_ops() { return ops; }
+    void push_comparator(ASTNode* comparator)
+    {
+        comparators.push_back(comparator);
+    }
+    std::vector<ASTNode*>& get_comparators() { return comparators; }
 
-	virtual void print(const int padding) {
-		std::string blank(padding, ' ');
-		std::cout << blank << line << ": Compare: "<< std::endl;
-		std::cout << blank << "  " << line << ": Left: "<< std::endl;
-		left->print(padding + 4);
-		std::cout << blank << "  " << line << ": Operators: ";
-		for (unsigned int i = 0; i < ops.size(); i++) std::cout << cmpop2str(ops[i]) << " ";
-		std::cout << std::endl;
-		std::cout << blank << "  " << line << ": Comparators: " << std::endl;
-		for (unsigned int i = 0; i < comparators.size(); i++) comparators[i]->print(padding + 4);
-	}
-	
-	virtual NodeType get_tag() { return NT_COMPARE; }
+    virtual void print(const int padding)
+    {
+        std::string blank(padding, ' ');
+        std::cout << blank << line << ": Compare: " << std::endl;
+        std::cout << blank << "  " << line << ": Left: " << std::endl;
+        left->print(padding + 4);
+        std::cout << blank << "  " << line << ": Operators: ";
+        for (unsigned int i = 0; i < ops.size(); i++)
+            std::cout << cmpop2str(ops[i]) << " ";
+        std::cout << std::endl;
+        std::cout << blank << "  " << line << ": Comparators: " << std::endl;
+        for (unsigned int i = 0; i < comparators.size(); i++)
+            comparators[i]->print(padding + 4);
+    }
 
-	virtual void visit(ASTVisitor* visitor) { visitor->visit_compare(this); }
+    virtual NodeType get_tag() { return NT_COMPARE; }
+
+    virtual void visit(ASTVisitor* visitor) { visitor->visit_compare(this); }
 };
 
-}
-}
+} // namespace tree
+} // namespace mtpython
 
 #endif /* _COMPARE_NODE_ */

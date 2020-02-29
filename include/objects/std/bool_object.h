@@ -11,20 +11,25 @@ namespace objects {
 
 class M_StdBoolObject : public M_StdIntObject {
 public:
-	M_StdBoolObject(bool x);
+    M_StdBoolObject(bool x);
 
-	virtual bool i_is(ObjSpace* space, M_BaseObject* other);
+    virtual bool i_is(ObjSpace* space, M_BaseObject* other);
 
-	static M_BaseObject* __repr__(mtpython::vm::ThreadContext* context, mtpython::objects::M_BaseObject* self);
-	static M_BaseObject* __str__(mtpython::vm::ThreadContext* context, mtpython::objects::M_BaseObject* self);
-	static M_BaseObject* __bool__(mtpython::vm::ThreadContext* context, mtpython::objects::M_BaseObject* self);
-	static M_BaseObject* __and__(mtpython::vm::ThreadContext* context, mtpython::objects::M_BaseObject* self, mtpython::objects::M_BaseObject* other);
+    static M_BaseObject* __repr__(mtpython::vm::ThreadContext* context,
+                                  mtpython::objects::M_BaseObject* self);
+    static M_BaseObject* __str__(mtpython::vm::ThreadContext* context,
+                                 mtpython::objects::M_BaseObject* self);
+    static M_BaseObject* __bool__(mtpython::vm::ThreadContext* context,
+                                  mtpython::objects::M_BaseObject* self);
+    static M_BaseObject* __and__(mtpython::vm::ThreadContext* context,
+                                 mtpython::objects::M_BaseObject* self,
+                                 mtpython::objects::M_BaseObject* other);
 
-	static interpreter::Typedef* _bool_typedef();
-	virtual interpreter::Typedef* get_typedef();
+    static interpreter::Typedef* _bool_typedef();
+    virtual interpreter::Typedef* get_typedef();
 };
 
-}
-}
+} // namespace objects
+} // namespace mtpython
 
 #endif /* _STD_BOOL_OBJECT_H_ */

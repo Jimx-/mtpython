@@ -10,45 +10,90 @@ namespace tree {
 #define error_tree nullptr
 
 typedef enum {
-	NT_EMPTY, NT_IF, NT_FOR, NT_ASSIGN, NT_AUGASSIGN, NT_WHILE, NT_TRY,
-	NT_CATCH, NT_FINALLY, NT_RETURN, NT_BREAK, NT_CONTINUE, NT_IDENT, NT_UNARY, NT_ARGUMENTS, NT_CALL,
-    NT_MODULE, NT_FUNCDEF, NT_NUMBER, NT_BINOP, NT_COMPARE, NT_IFEXP, NT_TUPLE, NT_DELETE,
-    NT_YIELD, NT_YIELDFROM, NT_RAISE, NT_PASS, NT_KEYWORD, NT_STRING, NT_EXPR, NT_CONST,
-    NT_EXCEPTHANDLER, NT_ATTRIBUTE, NT_ALIAS, NT_IMPORT, NT_COMPREHENSION, NT_GENERATOREXP,
-    NT_SUBSCRIPT, NT_INDEX, NT_LIST, NT_IMPORTFROM, NT_DICT, NT_SET, NT_STARRED,
-    NT_WITH, NT_WITHITEM, NT_CLASSDEF, NT_LAMBDA, NT_SLICE, NT_GLOBAL, NT_ASSERT,
+    NT_EMPTY,
+    NT_IF,
+    NT_FOR,
+    NT_ASSIGN,
+    NT_AUGASSIGN,
+    NT_WHILE,
+    NT_TRY,
+    NT_CATCH,
+    NT_FINALLY,
+    NT_RETURN,
+    NT_BREAK,
+    NT_CONTINUE,
+    NT_IDENT,
+    NT_UNARY,
+    NT_ARGUMENTS,
+    NT_CALL,
+    NT_MODULE,
+    NT_FUNCDEF,
+    NT_NUMBER,
+    NT_BINOP,
+    NT_COMPARE,
+    NT_IFEXP,
+    NT_TUPLE,
+    NT_DELETE,
+    NT_YIELD,
+    NT_YIELDFROM,
+    NT_RAISE,
+    NT_PASS,
+    NT_KEYWORD,
+    NT_STRING,
+    NT_EXPR,
+    NT_CONST,
+    NT_EXCEPTHANDLER,
+    NT_ATTRIBUTE,
+    NT_ALIAS,
+    NT_IMPORT,
+    NT_COMPREHENSION,
+    NT_GENERATOREXP,
+    NT_SUBSCRIPT,
+    NT_INDEX,
+    NT_LIST,
+    NT_IMPORTFROM,
+    NT_DICT,
+    NT_SET,
+    NT_STARRED,
+    NT_WITH,
+    NT_WITHITEM,
+    NT_CLASSDEF,
+    NT_LAMBDA,
+    NT_SLICE,
+    NT_GLOBAL,
+    NT_ASSERT,
 } NodeType;
 
 class ASTVisitor;
 
 class ASTNode {
 protected:
-	int line;					// line nr
-	
-	ASTNode* sibling;		// sibling node
-	
+    int line; // line nr
+
+    ASTNode* sibling; // sibling node
+
 public:
     ASTNode(const int line_nr) : line(line_nr) { sibling = nullptr; }
-    ~ASTNode() { }
+    ~ASTNode() {}
 
     int get_line() { return line; }
-    ASTNode * get_sibling() { return this->sibling; }
-    void set_sibling(ASTNode * sbl) { this->sibling = sbl; }
-    virtual void set_context(ExprContext ctx) { }
+    ASTNode* get_sibling() { return this->sibling; }
+    void set_sibling(ASTNode* sbl) { this->sibling = sbl; }
+    virtual void set_context(ExprContext ctx) {}
     virtual NodeType get_tag() { return NT_EMPTY; }
-    virtual void print(const int padding) { }
+    virtual void print(const int padding) {}
 
-    virtual void visit(ASTVisitor* visitor) { }
+    virtual void visit(ASTVisitor* visitor) {}
 
-    int length() 
+    int length()
     {
-    	int ret = 0;
-    	ASTNode * tree = this;
-    	while (tree) {
-    		ret ++;
-    		tree = tree->sibling;
-    	}
-    	return ret;
+        int ret = 0;
+        ASTNode* tree = this;
+        while (tree) {
+            ret++;
+            tree = tree->sibling;
+        }
+        return ret;
     }
 };
 
@@ -104,7 +149,8 @@ class YieldFromNode;
 
 class ASTVisitor {
 public:
-    virtual void visit_sequence(ASTNode* seq) {
+    virtual void visit_sequence(ASTNode* seq)
+    {
         ASTNode* node = seq;
         while (node) {
             node->visit(this);
@@ -124,16 +170,28 @@ public:
     virtual ASTNode* visit_call(CallNode* node) { return nullptr; }
     virtual ASTNode* visit_classdef(ClassDefNode* node) { return nullptr; }
     virtual ASTNode* visit_compare(CompareNode* node) { return nullptr; }
-    virtual ASTNode* visit_comprehension(ComprehensionNode* node) { return nullptr; }
+    virtual ASTNode* visit_comprehension(ComprehensionNode* node)
+    {
+        return nullptr;
+    }
     virtual ASTNode* visit_const(ConstNode* node) { return nullptr; }
     virtual ASTNode* visit_continue(ContinueNode* node) { return nullptr; }
     virtual ASTNode* visit_delete(DeleteNode* node) { return nullptr; }
     virtual ASTNode* visit_dict(DictNode* node) { return nullptr; }
-    virtual ASTNode* visit_excepthandler(ExceptHandlerNode* node) { return nullptr; }
+    virtual ASTNode* visit_excepthandler(ExceptHandlerNode* node)
+    {
+        return nullptr;
+    }
     virtual ASTNode* visit_expr(ExprNode* node) { return nullptr; }
     virtual ASTNode* visit_for(ForNode* node) { return nullptr; }
-    virtual ASTNode* visit_functiondef(FunctionDefNode* node) { return nullptr; }
-    virtual ASTNode* visit_generatorexp(GeneratorExpNode* node) { return nullptr; }
+    virtual ASTNode* visit_functiondef(FunctionDefNode* node)
+    {
+        return nullptr;
+    }
+    virtual ASTNode* visit_generatorexp(GeneratorExpNode* node)
+    {
+        return nullptr;
+    }
     virtual ASTNode* visit_global(GlobalNode* node) { return nullptr; }
     virtual ASTNode* visit_if(IfNode* node) { return nullptr; }
     virtual ASTNode* visit_ifexp(IfExpNode* node) { return nullptr; }
@@ -163,7 +221,7 @@ public:
     virtual ASTNode* visit_yieldfrom(YieldFromNode* node) { return nullptr; }
 };
 
-}
-}
+} // namespace tree
+} // namespace mtpython
 
 #endif /* _NODE_H_ */

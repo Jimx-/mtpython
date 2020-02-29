@@ -12,16 +12,20 @@ namespace modules {
 
 class SysModule : public mtpython::interpreter::BuiltinModule {
 private:
-	static std::string filesystem_encoding;
-public:
-	SysModule(mtpython::vm::ThreadContext* context, mtpython::objects::M_BaseObject* name);
-	void initstdio(mtpython::vm::ThreadContext* context, bool unbuffered = false);
-	void initfsencoding(mtpython::vm::ThreadContext* context);
+    static std::string filesystem_encoding;
 
-	static objects::M_BaseObject* getfilesystemencoding(mtpython::vm::ThreadContext* context);
+public:
+    SysModule(mtpython::vm::ThreadContext* context,
+              mtpython::objects::M_BaseObject* name);
+    void initstdio(mtpython::vm::ThreadContext* context,
+                   bool unbuffered = false);
+    void initfsencoding(mtpython::vm::ThreadContext* context);
+
+    static objects::M_BaseObject*
+    getfilesystemencoding(mtpython::vm::ThreadContext* context);
 };
 
-}
-}
+} // namespace modules
+} // namespace mtpython
 
 #endif /* _SYSMODULE_H_ */
