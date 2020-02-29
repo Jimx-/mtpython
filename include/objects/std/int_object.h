@@ -19,6 +19,9 @@ public:
     M_StdIntObject(int x);
     M_StdIntObject(const std::string& x);
 
+    static M_BaseObject* __new__(mtpython::vm::ThreadContext* context,
+                                 mtpython::objects::M_BaseObject* int_type,
+                                 mtpython::objects::M_BaseObject* value);
     static M_BaseObject* __repr__(mtpython::vm::ThreadContext* context,
                                   mtpython::objects::M_BaseObject* self);
     static M_BaseObject* __str__(mtpython::vm::ThreadContext* context,

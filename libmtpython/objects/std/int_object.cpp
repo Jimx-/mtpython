@@ -27,6 +27,8 @@ mtpython::interpreter::Typedef* M_StdIntObject::_int_typedef()
     static mtpython::interpreter::Typedef int_typedef(
         "int",
         {
+            {"__new__",
+             new InterpFunctionWrapper("__new__", M_StdIntObject::__new__)},
             {"__repr__",
              new InterpFunctionWrapper("__repr__", M_StdIntObject::__repr__)},
             {"__str__",
@@ -68,6 +70,19 @@ mtpython::interpreter::Typedef* M_StdIntObject::get_typedef()
 }
 
 void M_StdIntObject::dbg_print() { std::cout << intval; }
+
+M_BaseObject* M_StdIntObject::__new__(mtpython::vm::ThreadContext* context,
+                                      mtpython::objects::M_BaseObject* int_type,
+                                      mtpython::objects::M_BaseObject* value)
+{
+    ObjSpace* space = context->get_space();
+    int ivalue = 0;
+    if (space->i_isinstance(value, space->get_type_by_name("int"))) {
+        ivalue = space->unwrap_int(value);
+    }
+
+    return space->wrap_int(context, ivalue);
+}
 
 M_BaseObject* M_StdIntObject::__repr__(mtpython::vm::ThreadContext* context,
                                        M_BaseObject* self)
