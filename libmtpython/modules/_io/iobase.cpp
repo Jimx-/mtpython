@@ -9,8 +9,9 @@
 using namespace mtpython::modules;
 using namespace mtpython::objects;
 using namespace mtpython::interpreter;
+using namespace mtpython::vm;
 
 M_IOBase::M_IOBase(ObjSpace* space)
 {
-    dict = space->new_dict(space->current_thread());
+    dict = space->new_dict(ThreadContext::current_thread());
 }

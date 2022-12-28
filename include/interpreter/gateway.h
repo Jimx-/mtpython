@@ -287,10 +287,7 @@ public:
 
     void* operator new(size_t size) { return ::operator new(size); }
 
-    objects::M_BaseObject* bind_space(objects::ObjSpace* space)
-    {
-        return space->wrap_str(space->current_thread(), doc);
-    }
+    objects::M_BaseObject* bind_space(objects::ObjSpace* space);
 };
 
 } // namespace interpreter

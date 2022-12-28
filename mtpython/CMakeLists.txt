@@ -1,9 +1,9 @@
-SET(MTPYTHON_SRCLIST
+set(MTPYTHON_SRCLIST
 		main.cpp)
 
-SET(LIBRARIES  libmtpython)
+set(LIBRARIES  libmtpython)
 
-ADD_EXECUTABLE(mtpython ${MTPYTHON_SRCLIST})
+add_executable(mtpython ${MTPYTHON_SRCLIST})
 
-TARGET_LINK_LIBRARIES(mtpython ${LIBRARIES})
-INSTALL(TARGETS mtpython RUNTIME DESTINATION ${CMAKE_INSTALL_PREFIX}/bin)
+target_link_libraries(mtpython ${LIBRARIES})
+install(TARGETS mtpython RUNTIME DESTINATION ${CMAKE_INSTALL_PREFIX}/bin)

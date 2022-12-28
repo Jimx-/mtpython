@@ -204,8 +204,13 @@ M_BaseObject* GatewayCache::build(M_BaseObject* key)
     InterpFunctionWrapper* wrapper = dynamic_cast<InterpFunctionWrapper*>(key);
     if (!wrapper) return nullptr;
 
-    Function* f =
-        new (space->current_thread()) Function(space, wrapper->get_code());
+    Function* f = new (ThreadContext::current_thread())
+        Function(space, wrapper->get_code());
 
     return f;
+}
+
+M_BaseObject* InterpDocstringWrapper::bind_space(ObjSpace* space)
+{
+    return space->wrap_str(ThreadContext::current_thread(), doc);
 }

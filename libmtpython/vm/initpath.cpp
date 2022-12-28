@@ -156,7 +156,7 @@ static bool find_stdlib(const std::string& executable,
 
 void PyVM::init_bootstrap_path(const std::string& executable)
 {
-    ThreadContext* thread = space->current_thread();
+    ThreadContext* thread = vm::ThreadContext::current_thread();
     std::string exec_name = executable;
     std::string exec_path = find_executable(exec_name);
     std::vector<std::string> stdlib_paths;

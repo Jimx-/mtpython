@@ -1,30 +1,27 @@
-cmake_minimum_required(VERSION 2.8.4)
+cmake_minimum_required(VERSION 3.10)
+project(mtpython)
 
-PROJECT(mtpython)
+set(TOPDIR ${mtpython_SOURCE_DIR})
 
-SET(TOPDIR ${mtpython_SOURCE_DIR})
-SET(CMAKE_LEGACY_CYGWIN_WIN32 0)
+set(CMAKE_CXX_STANDARD 17)
 
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${TOPDIR}/build/bin")
+include_directories(${TOPDIR}/include)
 
-INCLUDE_DIRECTORIES(${TOPDIR}/include)
+if(${UNIX})
+	add_definitions(-D_UNIX_)
+endif(${UNIX})
 
-IF(${UNIX})
-	ADD_DEFINITIONS(-D_UNIX_)
-	SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
-ENDIF(${UNIX})
+if(${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
+	add_definitions(-D_LINUX_)
+endif(${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
 
-IF(${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
-	ADD_DEFINITIONS(-D_LINUX_)
-ENDIF(${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
+if(${WIN32})
+	add_definitions(-D_WIN32_)
+endif(${WIN32})
 
-IF(${WIN32})
-	ADD_DEFINITIONS(-D_WIN32_)
-ENDIF(${WIN32})
+if(${CYGWIN})
+	add_definitions(-D_CYGWIN_)
+endif(${CYGWIN})
 
-IF(${CYGWIN})
-	ADD_DEFINITIONS(-D_CYGWIN_)
-ENDIF(${CYGWIN})
-
-ADD_SUBDIRECTORY(libmtpython lib)
-ADD_SUBDIRECTORY(mtpython bin)
+add_subdirectory(libmtpython lib)
+add_subdirectory(mtpython bin)

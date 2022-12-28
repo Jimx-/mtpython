@@ -13,7 +13,7 @@ using namespace mtpython::interpreter;
 using namespace mtpython::gc;
 
 PyVM::PyVM(ObjSpace* space, const std::string& executable)
-    : main_thread(this, space)
+    : main_thread(this, space, true)
 {
     this->space = space;
     space->set_vm(this);

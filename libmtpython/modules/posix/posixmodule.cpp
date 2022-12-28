@@ -69,12 +69,13 @@ PosixModule::PosixModule(ObjSpace* space, M_BaseObject* name)
     std::vector<M_BaseObject*> _have_functions;
     std::for_each(have_functions.begin(), have_functions.end(),
                   [&_have_functions, space](const std::string& name) {
-                      _have_functions.push_back(
-                          space->wrap_str(space->current_thread(), name));
+                      _have_functions.push_back(space->wrap_str(
+                          vm::ThreadContext::current_thread(), name));
                   });
 
-    add_def("_have_functions",
-            space->new_list(space->current_thread(), _have_functions));
+    add_def(
+        "_have_functions",
+        space->new_list(vm::ThreadContext::current_thread(), _have_functions));
 
     add_def("_exit", new InterpFunctionWrapper("_exit", os__exit));
     add_def("listdir", new InterpFunctionWrapper("listdir", os_listdir));

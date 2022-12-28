@@ -179,7 +179,8 @@ IOModule::IOModule(ObjSpace* space, M_BaseObject* name)
     : BuiltinModule(space, name)
 {
     add_def("DEFAULT_BUFFER_SIZE",
-            space->wrap_int(space->current_thread(), DEFAULT_BUFFER_SIZE));
+            space->wrap_int(vm::ThreadContext::current_thread(),
+                            DEFAULT_BUFFER_SIZE));
 
     add_def("_IOBase", space->get_typeobject(&_IOBase_typedef));
     add_def("_RawIOBase", space->get_typeobject(&_RawIOBase_typedef));

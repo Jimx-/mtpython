@@ -2,6 +2,7 @@
 #define _INTERPRETER_ERROR_H_
 
 #include "objects/obj_space.h"
+#include "vm/thread_context.h"
 #include "exceptions.h"
 #include "objects/bltin_exceptions.h"
 #include <string>
@@ -34,7 +35,7 @@ public:
         snprintf(buf.get(), size, format, args...);
         return InterpError(
             type,
-            space->wrap_str(space->current_thread(),
+            space->wrap_str(vm::ThreadContext::current_thread(),
                             std::string(buf.get(), buf.get() + size - 1)));
     }
 

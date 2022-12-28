@@ -33,7 +33,7 @@ M_BaseObject* M_BaseObject::get_class(ObjSpace* space)
 
 M_BaseObject* M_BaseObject::unique_id(ObjSpace* space)
 {
-    return space->wrap_int(space->current_thread(),
+    return space->wrap_int(vm::ThreadContext::current_thread(),
                            reinterpret_cast<unsigned long>(this));
 }
 
@@ -43,7 +43,7 @@ M_BaseObject* M_BaseObject::get(ObjSpace* space, const std::string& attr)
     if (!obj) {
         throw mtpython::interpreter::InterpError(
             space->AttributeError_type(),
-            space->wrap_str(space->current_thread(), attr));
+            space->wrap_str(vm::ThreadContext::current_thread(), attr));
     }
 
     return obj;
@@ -78,7 +78,7 @@ bool M_BaseObject::del_dict_value(ObjSpace* space, const std::string& attr)
 
     if (dict) {
         M_BaseObject* wrapped_attr =
-            space->wrap_str(space->current_thread(), attr);
+            space->wrap_str(vm::ThreadContext::current_thread(), attr);
         space->delitem(dict, wrapped_attr);
         return true;
     }
@@ -101,5 +101,5 @@ M_BaseObject* M_BaseObject::get_repr(ObjSpace* space, const std::string& info)
     std::string addr(buf.get());
 
     std::string repr_string = "<" + info + " at " + addr + ">";
-    return space->wrap_str(space->current_thread(), repr_string);
+    return space->wrap_str(vm::ThreadContext::current_thread(), repr_string);
 }

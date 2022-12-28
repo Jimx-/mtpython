@@ -43,8 +43,6 @@ private:
 
 protected:
     mtpython::vm::PyVM* vm;
-    vm::ThreadContext*
-        dummy_context; /* used only in initialization, when VM is not set */
 
     TypedefCache* typedef_cache;
     GatewayCache gateway_cache;
@@ -56,6 +54,8 @@ protected:
     M_BaseObject* sys;
     std::unordered_map<std::string, M_BaseObject*> builtin_modules;
 
+    virtual void initialize() = 0;
+
     void make_builtins();
     void setup_builtin_modules();
     M_BaseObject* get_builtin_module(const std::string& name);
@@ -64,10 +64,14 @@ protected:
 
 public:
     ObjSpace();
-    ~ObjSpace();
+    virtual ~ObjSpace();
 
-    void set_vm(mtpython::vm::PyVM* vm) { this->vm = vm; }
-    vm::ThreadContext* current_thread();
+    void set_vm(mtpython::vm::PyVM* vm)
+    {
+        auto* old_vm = this->vm;
+        this->vm = vm;
+        if (!old_vm) initialize();
+    }
 
     M_BaseObject* get__io() { return _io; }
     M_BaseObject* get_builtin() { return builtin; }

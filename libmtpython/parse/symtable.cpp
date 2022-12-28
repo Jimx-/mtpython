@@ -35,14 +35,16 @@ void Scope::note_return(mtpython::tree::ReturnNode* node)
 {
     throw interpreter::InterpError(
         space->SyntaxError_type(),
-        space->wrap_str(space->current_thread(), "return outside function"));
+        space->wrap_str(vm::ThreadContext::current_thread(),
+                        "return outside function"));
 }
 
 void Scope::note_yield(mtpython::tree::YieldNode* node)
 {
     throw interpreter::InterpError(
         space->SyntaxError_type(),
-        space->wrap_str(space->current_thread(), "yield outside function"));
+        space->wrap_str(vm::ThreadContext::current_thread(),
+                        "yield outside function"));
 }
 
 int Scope::lookup(const std::string& id)
@@ -178,7 +180,7 @@ void FunctionScope::note_return(mtpython::tree::ReturnNode* node)
         if (_is_generator) {
             throw interpreter::InterpError(
                 space->SyntaxError_type(),
-                space->wrap_str(space->current_thread(),
+                space->wrap_str(vm::ThreadContext::current_thread(),
                                 "'return' with argument in generator"));
         }
         return_with_value = true;
@@ -190,7 +192,7 @@ void FunctionScope::note_yield(mtpython::tree::YieldNode* node)
     if (return_with_value) {
         throw interpreter::InterpError(
             space->SyntaxError_type(),
-            space->wrap_str(space->current_thread(),
+            space->wrap_str(vm::ThreadContext::current_thread(),
                             "'return' with argument in generator"));
     }
     _is_generator = true;

@@ -19,6 +19,8 @@ private:
 
     std::unordered_map<std::string, M_BaseObject*> builtin_types;
 
+    virtual void initialize();
+
 public:
     StdObjSpace();
 

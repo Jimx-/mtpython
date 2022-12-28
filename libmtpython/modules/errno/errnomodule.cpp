@@ -12,6 +12,6 @@ using namespace mtpython::interpreter;
 ErrnoModule::ErrnoModule(ObjSpace* space, M_BaseObject* name)
     : BuiltinModule(space, name)
 {
-    mtpython::vm::ThreadContext* context = space->current_thread();
+    vm::ThreadContext* context = vm::ThreadContext::current_thread();
 #include "tools/errno_def.h"
 }

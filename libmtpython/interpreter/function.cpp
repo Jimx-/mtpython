@@ -4,6 +4,7 @@
 
 using namespace mtpython::objects;
 using namespace mtpython::interpreter;
+using namespace mtpython::vm;
 
 Function::Function(ObjSpace* space, Code* code,
                    const std::vector<M_BaseObject*>& defaults,
@@ -32,7 +33,7 @@ Typedef* Function::get_typedef()
 M_BaseObject* Function::get_dict(ObjSpace* space)
 {
     if (func_dict) return func_dict;
-    func_dict = space->new_dict(space->current_thread());
+    func_dict = space->new_dict(ThreadContext::current_thread());
 
     return func_dict;
 }

@@ -1,4 +1,5 @@
 class Number:
+
     def __init__(self, i):
         self.value = i
 

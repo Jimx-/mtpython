@@ -5,14 +5,16 @@
 
 using namespace mtpython::interpreter;
 using namespace mtpython::objects;
+using namespace mtpython::vm;
 
 Module::Module(ObjSpace* space, M_BaseObject* name, M_BaseObject* dict)
 {
     this->space = space;
     this->name = name;
 
-    this->dict =
-        (dict != nullptr) ? dict : space->new_dict(space->current_thread());
+    this->dict = (dict != nullptr)
+                     ? dict
+                     : space->new_dict(ThreadContext::current_thread());
 
     if (name) {
         space->setitem(this->dict, space->new_interned_str("__name__"), name);
@@ -34,7 +36,7 @@ Typedef* Module::get_typedef()
 void Module::install()
 {
     std::string s_name = space->unwrap_str(name);
-    M_BaseObject* wrapped = space->wrap(space->current_thread(), this);
+    M_BaseObject* wrapped = space->wrap(ThreadContext::current_thread(), this);
     space->set_builtin_module(s_name, wrapped);
 }
 
@@ -48,7 +50,7 @@ M_BaseObject* Module::get(const std::string& name)
     M_BaseObject* value = get_dict_value(space, name);
     if (!value)
         throw InterpError(space->TypeError_type(),
-                          space->wrap(space->current_thread(), name));
+                          space->wrap(ThreadContext::current_thread(), name));
     return value;
 }
 

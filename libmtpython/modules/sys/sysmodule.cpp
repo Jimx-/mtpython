@@ -26,7 +26,8 @@ SysModule::SysModule(mtpython::vm::ThreadContext* context, M_BaseObject* name)
     initstdio(context);
     initfsencoding(context);
 
-    add_def("platform", space->wrap_str(space->current_thread(), PLATFORM));
+    add_def("platform",
+            space->wrap_str(vm::ThreadContext::current_thread(), PLATFORM));
     add_def("getfilesystemencoding",
             new InterpFunctionWrapper("getfilesystemencoding",
                                       SysModule::getfilesystemencoding));

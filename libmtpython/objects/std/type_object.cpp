@@ -99,7 +99,7 @@ M_BaseObject* M_StdTypeObject::get_dict(ObjSpace* space)
 {
     if (wrapped_dict) return wrapped_dict;
 
-    mtpython::vm::ThreadContext* context = space->current_thread();
+    mtpython::vm::ThreadContext* context = vm::ThreadContext::current_thread();
     wrapped_dict = space->new_dict(context);
 
     for (auto& it : dict) {
@@ -203,10 +203,10 @@ M_BaseObject* StdTypedefCache::build(mtpython::interpreter::Typedef* key)
     std::unordered_map<std::string, M_BaseObject*> wrapped_dict;
     for (auto it = dict.begin(); it != dict.end(); it++) {
         wrapped_dict[it->first] =
-            space->wrap(space->current_thread(), it->second);
+            space->wrap(vm::ThreadContext::current_thread(), it->second);
     }
 
-    M_StdTypeObject* wrapped_type = new (space->current_thread())
+    M_StdTypeObject* wrapped_type = new (vm::ThreadContext::current_thread())
         M_StdTypeObject(space, space->get_type_by_name("type"), key->get_name(),
                         wrapped_bases, wrapped_dict);
 

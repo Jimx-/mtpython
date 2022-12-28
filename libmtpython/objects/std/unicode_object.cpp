@@ -18,6 +18,8 @@ Typedef* M_StdUnicodeObject::_str_typedef()
     static mtpython::interpreter::Typedef str_typedef(
         "str",
         {
+            {"__new__",
+             new InterpFunctionWrapper("__new__", M_StdUnicodeObject::__new__)},
             {"__repr__", new InterpFunctionWrapper(
                              "__repr__", M_StdUnicodeObject::__repr__)},
             {"__str__",
@@ -40,6 +42,31 @@ bool M_StdUnicodeObject::i_is(ObjSpace* space, M_BaseObject* other)
     if (!M_STDUNICODEOBJECT(other)) return false;
 
     return this == other;
+}
+
+M_BaseObject*
+M_StdUnicodeObject::__new__(mtpython::vm::ThreadContext* context,
+                            mtpython::objects::M_BaseObject* str_type,
+                            mtpython::objects::M_BaseObject* value)
+{
+    ObjSpace* space = context->get_space();
+
+    if (space->i_isinstance(value, space->get_type_by_name("str"))) {
+        return value;
+    } else {
+        M_BaseObject* str_method = space->lookup(value, "__str__");
+        M_BaseObject* res;
+
+        if (str_method) {
+            res = space->get_and_call_function(context, str_method, {value});
+        } else {
+            res = space->str(value);
+        }
+
+        return res;
+    }
+
+    return space->wrap_None();
 }
 
 M_BaseObject* M_StdUnicodeObject::__iter__(mtpython::vm::ThreadContext* context,

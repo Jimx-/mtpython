@@ -1,4 +1,4 @@
-SET(LIBMTPYTHON_SRCLIST
+set(LIBMTPYTHON_SRCLIST
 		parse/token.cpp
 		parse/diagnostics.cpp
 		parse/scanner.cpp
@@ -50,18 +50,16 @@ SET(LIBMTPYTHON_SRCLIST
 		modules/errno/errnomodule.cpp
 		gc/collected_heap.cpp
 		vm/initpath.cpp
+        vm/native_thread.cpp
+        vm/native_thread_posix.cpp        
 		vm/thread_context.cpp
 		vm/vm.cpp)
 
-FILE(GLOB_RECURSE LIBMTPYTHON_HDRLIST ../include/*.h)
+set(LIBRARIES )
 
-SOURCE_GROUP("Header Files" FILES ${LIBMTPYTHON_HDRLIST})
+add_library(libmtpython ${LIBMTPYTHON_SRCLIST})
 
-SET(LIBRARIES )
+set_target_properties(libmtpython PROPERTIES OUTPUT_NAME "mtpython") 
 
-ADD_LIBRARY(libmtpython ${LIBMTPYTHON_SRCLIST} ${LIBMTPYTHON_HDRLIST})
-
-SET_TARGET_PROPERTIES(libmtpython PROPERTIES OUTPUT_NAME "mtpython") 
-
-TARGET_LINK_LIBRARIES(libmtpython ${LIBRARIES})
-INSTALL(TARGETS libmtpython ARCHIVE DESTINATION ${CMAKE_INSTALL_PREFIX}/lib)
+target_link_libraries(libmtpython ${LIBRARIES})
+install(TARGETS libmtpython ARCHIVE DESTINATION ${CMAKE_INSTALL_PREFIX}/lib)

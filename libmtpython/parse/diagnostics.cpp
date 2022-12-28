@@ -22,5 +22,5 @@ void Diagnostics::error(int line, int col, const std::string& error_msg)
 
     throw interpreter::InterpError(
         space->SyntaxError_type(),
-        space->wrap_str(space->current_thread(), error_msg));
+        space->wrap_str(vm::ThreadContext::current_thread(), error_msg));
 }

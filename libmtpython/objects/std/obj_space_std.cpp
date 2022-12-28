@@ -47,14 +47,18 @@ Typedef* M_NotImplemented::get_typedef()
     return &NotImplemented_typedef;
 }
 
-StdObjSpace::StdObjSpace() : ObjSpace()
+StdObjSpace::StdObjSpace() : ObjSpace() {}
+
+void StdObjSpace::initialize()
 {
     typedef_cache = new StdTypedefCache(this);
 
-    wrapped_None = new (current_thread()) M_StdNoneObject();
-    wrapped_True = new (current_thread()) M_StdBoolObject(true);
-    wrapped_False = new (current_thread()) M_StdBoolObject(false);
-    wrapped_NotImplemented = new (current_thread()) M_NotImplemented();
+    wrapped_None = new (ThreadContext::current_thread()) M_StdNoneObject();
+    wrapped_True = new (ThreadContext::current_thread()) M_StdBoolObject(true);
+    wrapped_False =
+        new (ThreadContext::current_thread()) M_StdBoolObject(false);
+    wrapped_NotImplemented =
+        new (ThreadContext::current_thread()) M_NotImplemented();
 
     /* type of all types */
     M_BaseObject* type_obj = get_typeobject(M_StdTypeObject::_type_typedef());
@@ -132,15 +136,17 @@ bool StdObjSpace::i_issubtype(M_BaseObject* sub, M_BaseObject* type)
         return sub_as_type->issubtype(type);
     }
 
-    throw InterpError(TypeError_type(),
-                      wrap_str(current_thread(), "need type objects"));
+    throw InterpError(
+        TypeError_type(),
+        wrap_str(ThreadContext::current_thread(), "need type objects"));
 }
 
 bool StdObjSpace::i_isinstance(M_BaseObject* inst, M_BaseObject* type)
 {
     if (dynamic_cast<M_StdTypeObject*>(type) == nullptr) {
-        throw InterpError(TypeError_type(),
-                          wrap_str(this->current_thread(), "need type object"));
+        throw InterpError(
+            TypeError_type(),
+            wrap_str(ThreadContext::current_thread(), "need type object"));
     }
     return static_cast<M_StdTypeObject*>(this->type(inst))->issubtype(type);
 }

@@ -6,6 +6,7 @@
 
 using namespace mtpython::interpreter;
 using namespace mtpython::objects;
+using namespace mtpython::vm;
 
 template <typename... Args>
 static std::string string_format(const char* format, Args... args)
@@ -76,7 +77,7 @@ void Arguments::parse(const std::string& fname, M_BaseObject* first,
                     throw InterpError(
                         space->TypeError_type(),
                         space->wrap_str(
-                            space->current_thread(),
+                            ThreadContext::current_thread(),
                             argcount_err_msg(fname, nargs, nkwargs, sig)));
                 }
                 starargs.insert(starargs.end(), args.begin() + left,
@@ -85,19 +86,19 @@ void Arguments::parse(const std::string& fname, M_BaseObject* first,
                 starargs.clear();
         }
         M_BaseObject* wrapped_starargs =
-            space->new_tuple(space->current_thread(), starargs);
+            space->new_tuple(ThreadContext::current_thread(), starargs);
         scope[argcount] = wrapped_starargs;
     } else if (args_avail > argcount) { /* error */
         throw InterpError(
             space->TypeError_type(),
-            space->wrap_str(space->current_thread(),
+            space->wrap_str(ThreadContext::current_thread(),
                             argcount_err_msg(fname, nargs, nkwargs, sig)));
     }
 
     /* create kwarg dict */
     M_BaseObject* wrapped_kwargs = nullptr;
     if (sig.has_kwarg()) {
-        wrapped_kwargs = space->new_dict(space->current_thread());
+        wrapped_kwargs = space->new_dict(ThreadContext::current_thread());
         scope[argcount + (sig.has_vararg() ? 1 : 0)] = wrapped_kwargs;
     }
 
@@ -171,6 +172,6 @@ void Arguments::parse(const std::string& fname, M_BaseObject* first,
     if (missing > 0)
         throw InterpError(
             space->TypeError_type(),
-            space->wrap_str(space->current_thread(),
+            space->wrap_str(ThreadContext::current_thread(),
                             argcount_err_msg(fname, nargs, nkwargs, sig)));
 }

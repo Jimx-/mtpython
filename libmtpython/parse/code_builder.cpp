@@ -472,9 +472,10 @@ mtpython::interpreter::PyCode* CodeBuilder::build()
         block->get_code(code);
     }
 
-    return new (space->current_thread()) mtpython::interpreter::PyCode(
-        space, argcount, kwonlyargcount, varnames.size(), stacksize,
-        get_code_flags(), code, consts_array, names_array, varnames_array,
-        freevars_array, cellvars_array, compile_info->get_filename(), name,
-        first_lineno, lnotab);
+    return new (vm::ThreadContext::current_thread())
+        mtpython::interpreter::PyCode(
+            space, argcount, kwonlyargcount, varnames.size(), stacksize,
+            get_code_flags(), code, consts_array, names_array, varnames_array,
+            freevars_array, cellvars_array, compile_info->get_filename(), name,
+            first_lineno, lnotab);
 }

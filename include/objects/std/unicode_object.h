@@ -18,6 +18,9 @@ public:
 
     bool i_is(ObjSpace* space, M_BaseObject* other);
 
+    static M_BaseObject* __new__(mtpython::vm::ThreadContext* context,
+                                 mtpython::objects::M_BaseObject* str_type,
+                                 mtpython::objects::M_BaseObject* value);
     static M_BaseObject* __iter__(mtpython::vm::ThreadContext* context,
                                   M_BaseObject* self);
     static M_BaseObject* __repr__(mtpython::vm::ThreadContext* context,

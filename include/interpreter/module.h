@@ -21,7 +21,7 @@ protected:
     void add_def(const std::string& name, objects::M_BaseObject* value)
     {
         space->setitem(dict, space->new_interned_str(name),
-                       space->wrap(space->current_thread(), value));
+                       space->wrap(vm::ThreadContext::current_thread(), value));
     }
 
 public:
