@@ -221,7 +221,9 @@ void M_StdTypeObject::mark_children(gc::GarbageCollector* gc)
         gc->mark_object(obj);
     for (const auto& [k, v] : dict)
         gc->mark_object_maybe(v);
-    gc->mark_object(wrapped_dict);
+
+    if (wrapped_dict) gc->mark_object(wrapped_dict);
+
     for (const auto& obj : mro)
         gc->mark_object(obj);
     for (const auto& obj : subclasses)

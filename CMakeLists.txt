@@ -8,6 +8,8 @@ set(TOPDIR ${mtpython_SOURCE_DIR})
 include(${CMAKE_BINARY_DIR}/conanbuildinfo.cmake)
 conan_basic_setup(TARGETS)
 
+find_package(Corrosion REQUIRED)
+
 include_directories(${TOPDIR}/include)
 
 if(${UNIX})
