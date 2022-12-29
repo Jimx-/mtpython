@@ -50,6 +50,19 @@ M_BaseObject* Function::call_obj_args(mtpython::vm::ThreadContext* context,
     return get_code()->funcrun_obj(context, this, obj, args);
 }
 
+void Function::mark_children(gc::GarbageCollector* gc)
+{
+    gc->mark_object_maybe(code);
+    gc->mark_object(func_globals);
+    gc->mark_object(func_dict);
+    gc->mark_object(doc);
+
+    for (const auto& obj : defaults)
+        gc->mark_object_maybe(obj);
+    for (const auto& obj : closure)
+        gc->mark_object(obj);
+}
+
 M_BaseObject* Function::__get__(mtpython::vm::ThreadContext* context,
                                 M_BaseObject* self, M_BaseObject* obj,
                                 M_BaseObject* type)

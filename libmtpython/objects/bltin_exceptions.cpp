@@ -1,4 +1,5 @@
 #include "objects/bltin_exceptions.h"
+#include "objects/space_cache.h"
 
 using namespace mtpython::objects;
 using namespace mtpython::interpreter;

@@ -1,0 +1,3 @@
+[submodule "3rdparty/mmtk"]
+	path = 3rdparty/mmtk
+	url = https://github.com/mmtk/mmtk-ruby.git

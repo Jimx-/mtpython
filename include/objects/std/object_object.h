@@ -3,6 +3,7 @@
 
 #include <string>
 #include "objects/base_object.h"
+#include "gc/garbage_collector.h"
 #include "vm/vm.h"
 
 namespace mtpython {
@@ -22,6 +23,12 @@ public:
 
     M_BaseObject* get_dict(ObjSpace* space) { return dict; }
     void set_dict(M_BaseObject* dict) { this->dict = dict; }
+
+    virtual void mark_children(gc::GarbageCollector* gc)
+    {
+        gc->mark_object(dict);
+        gc->mark_object(obj_type);
+    }
 
     static objects::M_BaseObject* __new__(vm::ThreadContext* context,
                                           const interpreter::Arguments& args);

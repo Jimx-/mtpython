@@ -4,6 +4,7 @@
 #include <string>
 #include <unordered_map>
 #include "objects/obj_space.h"
+#include "gc/garbage_collector.h"
 
 namespace mtpython {
 namespace objects {
@@ -45,6 +46,14 @@ public:
 
     M_BaseObject* getitem(M_BaseObject* key);
     void setitem(M_BaseObject* key, M_BaseObject* value);
+
+    virtual void mark_chidren(gc::GarbageCollector* gc)
+    {
+        for (const auto& [k, v] : dict) {
+            gc->mark_object(k);
+            gc->mark_object(v);
+        }
+    }
 
     static M_BaseObject* __repr__(vm::ThreadContext* context,
                                   M_BaseObject* self);

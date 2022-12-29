@@ -70,14 +70,12 @@ M_BaseObject* Module::__repr__(mtpython::vm::ThreadContext* context,
     ObjSpace* space = context->get_space();
     M_BaseObject* repr_str = space->repr(as_mod->name);
     str += "<module " + space->unwrap_str(repr_str);
-    SAFE_DELETE(repr_str);
 
     if (dynamic_cast<BuiltinModule*>(as_mod)) {
         str += " (built-in)>";
     } else {
         M_BaseObject* attr = space->wrap_str(context, "__file__");
         M_BaseObject* wrapped_file = space->getattr(self, attr);
-        context->delete_local_ref(attr);
         std::string filename = space->unwrap_str(wrapped_file);
         str += " from '" + filename + "'>";
     }

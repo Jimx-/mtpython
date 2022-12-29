@@ -4,20 +4,24 @@
 #include "interpreter/compiler.h"
 #include "interpreter/pycode.h"
 #include "interpreter/module.h"
-#include "gc/collected_heap.h"
+#include "objects/space_cache.h"
+#include "gc/garbage_collector_mmtk.h"
 
 using namespace mtpython::vm;
 using namespace mtpython::objects;
 using namespace mtpython::parse;
 using namespace mtpython::interpreter;
-using namespace mtpython::gc;
 
 PyVM::PyVM(ObjSpace* space, const std::string& executable)
-    : main_thread(this, space, true)
+    : main_thread_(this, space, true)
 {
-    this->space = space;
+    this->space_ = space;
+
+    gc_ = std::make_unique<gc::GarbageCollectorMmtk>(this);
+
+    main_thread_.bind_gc(gc_.get());
+
     space->set_vm(this);
-    heap = new CollectedHeap();
 
     init_bootstrap_path(executable);
 }
@@ -48,7 +52,7 @@ void PyVM::run_file(const std::string& filename)
     file.read(&source[0], source.size());
     file.close();
 
-    run_eval_string(&main_thread, source, filename, false);
+    run_eval_string(&main_thread_, source, filename, false);
 }
 
 void PyVM::run_eval_string(ThreadContext* context, const std::string& source,
@@ -95,3 +99,5 @@ mtpython::interpreter::Code* PyVM::compile_code(ThreadContext* context,
 }
 
 void PyVM::run_toplevel(std::function<void()> f) { f(); }
+
+void PyVM::mark_roots() { space_->mark_roots(gc_.get()); }

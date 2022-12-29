@@ -5,6 +5,7 @@
 #include "objects/obj_space.h"
 #include "interpreter/code.h"
 #include "interpreter/arguments.h"
+#include "gc/garbage_collector.h"
 #include "vm/vm.h"
 #include <string>
 
@@ -54,6 +55,8 @@ public:
                                          objects::M_BaseObject* obj,
                                          Arguments& args);
 
+    virtual void mark_children(gc::GarbageCollector* gc);
+
     static objects::M_BaseObject* __get__(vm::ThreadContext* context,
                                           objects::M_BaseObject* self,
                                           objects::M_BaseObject* obj,
@@ -80,6 +83,12 @@ public:
 
     objects::M_BaseObject* call_args(vm::ThreadContext* context,
                                      Arguments& args);
+
+    virtual void mark_children(gc::GarbageCollector* gc)
+    {
+        gc->mark_object(func);
+        gc->mark_object(instance);
+    }
 };
 
 class StaticMethod : public objects::M_BaseObject {
@@ -90,6 +99,11 @@ public:
     StaticMethod(objects::M_BaseObject* func) : func(func) {}
     Typedef* get_typedef();
     static Typedef* _staticmethod_typedef();
+
+    virtual void mark_children(gc::GarbageCollector* gc)
+    {
+        gc->mark_object(func);
+    }
 
     static objects::M_BaseObject* __new__(vm::ThreadContext* context,
                                           objects::M_BaseObject* type,
@@ -106,6 +120,11 @@ public:
     ClassMethod(objects::M_BaseObject* func) : func(func) {}
     Typedef* get_typedef();
     static Typedef* _classmethod_typedef();
+
+    virtual void mark_children(gc::GarbageCollector* gc)
+    {
+        gc->mark_object(func);
+    }
 
     static objects::M_BaseObject* __new__(vm::ThreadContext* context,
                                           objects::M_BaseObject* type,

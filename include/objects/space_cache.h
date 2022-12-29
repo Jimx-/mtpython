@@ -3,9 +3,11 @@
 
 #include "interpreter/typedef.h"
 #include "objects/base_object.h"
+#include "gc/garbage_collector.h"
 #include <unordered_map>
 
 namespace mtpython {
+
 namespace objects {
 
 class ObjSpace;
@@ -32,6 +34,12 @@ public:
     }
 
     virtual V build(K key) { return V(); }
+
+    virtual void mark_objects(gc::GarbageCollector* gc)
+    {
+        for (const auto& [k, v] : map)
+            gc->mark_object(v);
+    }
 };
 
 /* Typedef -> TypeObject mapping */

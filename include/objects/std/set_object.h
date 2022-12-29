@@ -5,6 +5,7 @@
 #include <unordered_set>
 #include "objects/obj_space.h"
 #include "objects/std/dict_object.h"
+#include "gc/garbage_collector.h"
 
 namespace mtpython {
 namespace objects {
@@ -25,6 +26,8 @@ public:
                                   M_BaseObject* self);
 
     interpreter::Typedef* get_typedef();
+
+    virtual void mark_children(gc::GarbageCollector* gc);
 };
 
 class M_StdSetObject : public M_BaseObject {
@@ -69,6 +72,12 @@ public:
 
     static interpreter::Typedef* _set_typedef();
     interpreter::Typedef* get_typedef();
+
+    virtual void mark_children(gc::GarbageCollector* gc)
+    {
+        for (const auto& obj : set)
+            gc->mark_object(obj);
+    }
 };
 
 } // namespace objects

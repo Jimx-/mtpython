@@ -38,11 +38,9 @@ M_BaseObject* M_StdDictObject::__repr__(mtpython::vm::ThreadContext* context,
         if (i > 0) str += ", ";
         M_BaseObject* repr_item = space->repr(item.first);
         str += space->unwrap_str(repr_item);
-        SAFE_DELETE(repr_item);
         str += ": ";
         repr_item = space->repr(item.second);
         str += space->unwrap_str(repr_item);
-        SAFE_DELETE(repr_item);
         i++;
     }
     str += "}";

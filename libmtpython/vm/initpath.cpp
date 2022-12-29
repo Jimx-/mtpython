@@ -169,13 +169,14 @@ void PyVM::init_bootstrap_path(const std::string& executable)
 
     std::vector<M_BaseObject*> wrapped_paths;
     for (auto& path : stdlib_paths)
-        wrapped_paths.push_back(space->wrap_str(thread, path));
+        wrapped_paths.push_back(space_->wrap_str(thread, path));
 
-    BuiltinModule* sys_mod = static_cast<BuiltinModule*>(space->get_sys());
-    M_BaseObject* dict = sys_mod->get_dict(space);
-    space->setitem_str(dict, "path", space->new_list(thread, wrapped_paths));
+    BuiltinModule* sys_mod = static_cast<BuiltinModule*>(space_->get_sys());
+    M_BaseObject* dict = sys_mod->get_dict(space_);
+    space_->setitem_str(dict, "path", space_->new_list(thread, wrapped_paths));
 
-    space->setitem_str(dict, "executable", space->wrap_str(thread, executable));
-    space->setitem_str(dict, "prefix", space->wrap_str(thread, prefix));
-    space->setitem_str(dict, "exec_prefix", space->wrap_str(thread, prefix));
+    space_->setitem_str(dict, "executable",
+                        space_->wrap_str(thread, executable));
+    space_->setitem_str(dict, "prefix", space_->wrap_str(thread, prefix));
+    space_->setitem_str(dict, "exec_prefix", space_->wrap_str(thread, prefix));
 }

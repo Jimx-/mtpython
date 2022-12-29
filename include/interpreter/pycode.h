@@ -4,6 +4,7 @@
 #include "objects/obj_space.h"
 #include "interpreter/code.h"
 #include "interpreter/signature.h"
+#include "gc/garbage_collector.h"
 #include "vm/vm.h"
 #include <vector>
 
@@ -81,6 +82,14 @@ public:
     funcrun_obj(vm::ThreadContext* context,
                 mtpython::objects::M_BaseObject* func,
                 mtpython::objects::M_BaseObject* obj, Arguments& args);
+
+    virtual void mark_children(gc::GarbageCollector* gc)
+    {
+        for (const auto& obj : co_consts)
+            gc->mark_object(obj);
+        for (const auto& obj : co_names)
+            gc->mark_object(obj);
+    }
 };
 
 } // namespace interpreter

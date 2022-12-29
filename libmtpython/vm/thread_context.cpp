@@ -1,81 +1,68 @@
 #include <assert.h>
+#include "macros.h"
 #include "vm/vm.h"
 #include "interpreter/compiler.h"
-#include "macros.h"
-
 #include "vm/native_thread_posix.h"
+#include "gc/garbage_collector.h"
+#include "interpreter/pyframe.h"
 
 using namespace mtpython::vm;
 using namespace mtpython::objects;
-using namespace mtpython::gc;
-
-void ThreadContext::LocalFrame::new_local_ref(M_BaseObject* obj)
-{
-    local_refs.insert(obj);
-}
-
-void ThreadContext::LocalFrame::delete_local_ref(M_BaseObject* obj)
-{
-    local_refs.erase(obj);
-}
 
 ThreadContext::ThreadContext(PyVM* vm, ObjSpace* space, bool is_main_thread)
-    : vm_(vm), is_main_thread_(is_main_thread), space_(space)
+    : vm_(vm), is_main_thread_(is_main_thread), space_(space),
+      gc_context_(nullptr)
 {
-    compiler_ = space->get_compiler(this);
+    compiler_.reset(space->get_compiler(this));
 
     native_thread_ = std::make_unique<NativeThreadPOSIX>(this);
     if (is_main_thread)
         native_thread_->init_main();
     else
         native_thread_->create();
-
-    push_local_frame();
 }
 
-ThreadContext::~ThreadContext() { SAFE_DELETE(compiler_); }
+ThreadContext::~ThreadContext() {}
 
-void ThreadContext::enter(mtpython::interpreter::PyFrame* frame)
+void ThreadContext::enter(interpreter::PyFrame* frame)
 {
-    frame_stack_.push(frame);
+    frame_stack_.push_back(frame);
 }
 
-void ThreadContext::leave(mtpython::interpreter::PyFrame* frame)
+void ThreadContext::leave(interpreter::PyFrame* frame)
 {
-    frame_stack_.pop();
+    frame_stack_.pop_back();
 }
 
-void ThreadContext::new_local_ref(M_BaseObject* obj)
+void ThreadContext::bind_gc(gc::GarbageCollector* gc)
 {
-    top_local_frame_->new_local_ref(obj);
+    gc_context_ = gc->create_context(this);
+    gc_ = gc;
 }
 
-void ThreadContext::delete_local_ref(M_BaseObject* obj)
+void ThreadContext::save_machine_context()
 {
-    top_local_frame_->delete_local_ref(obj);
+    setjmp(machine_regs_);
+    native_thread_->save_stack_end();
 }
 
-void ThreadContext::push_local_frame()
+void ThreadContext::mark_roots(gc::GarbageCollector* gc)
 {
-    LocalFrame* frame = new LocalFrame();
-    top_local_frame_ = frame;
-    local_frame_stack_.push_back(frame);
-}
+    for (const auto& frame : frame_stack_)
+        gc->mark_object(frame);
 
-M_BaseObject* ThreadContext::pop_local_frame(M_BaseObject* result)
-{
-    assert(local_frame_stack_.size() > 1);
+    auto& stack = native_thread_->get_stack();
+    M_BaseObject** objp = (M_BaseObject**)stack.stack_end;
 
-    if (result) {
-        LocalFrame* outer_frame =
-            local_frame_stack_[local_frame_stack_.size() - 2];
-        outer_frame->new_local_ref(result);
+    while (objp < stack.stack_start) {
+        gc->mark_object_maybe(*objp);
+        objp++;
     }
 
-    LocalFrame* top = local_frame_stack_.back();
-    local_frame_stack_.pop_back();
-    SAFE_DELETE(top);
-    top_local_frame_ = local_frame_stack_.back();
-
-    return result;
+    objp = (M_BaseObject**)&machine_regs_;
+    while (objp <
+           (M_BaseObject**)((char*)&machine_regs_ + sizeof(machine_regs_))) {
+        gc->mark_object_maybe(*objp);
+        objp++;
+    }
 }

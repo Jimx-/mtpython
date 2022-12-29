@@ -9,6 +9,7 @@
 #include "objects/space_cache.h"
 #include "interpreter/arguments.h"
 #include "vm/vm.h"
+#include "gc/garbage_collector.h"
 
 namespace mtpython {
 namespace objects {
@@ -57,6 +58,8 @@ public:
     void add_subclass(M_BaseObject* cls);
     const std::vector<M_BaseObject*>& get_subclasses();
     bool issubtype(M_BaseObject* type);
+
+    virtual void mark_children(gc::GarbageCollector* gc);
 
     static M_BaseObject* __new__(vm::ThreadContext* context,
                                  const interpreter::Arguments& args);

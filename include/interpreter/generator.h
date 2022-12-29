@@ -3,6 +3,7 @@
 
 #include "objects/base_object.h"
 #include "interpreter/pyframe.h"
+#include "gc/garbage_collector.h"
 #include "typedef.h"
 #include "vm/vm.h"
 #include <string>
@@ -20,6 +21,11 @@ public:
     GeneratorIterator(PyFrame*);
 
     Typedef* get_typedef();
+
+    virtual void mark_children(gc::GarbageCollector* gc)
+    {
+        gc->mark_object(frame);
+    }
 
     static objects::M_BaseObject* __iter__(vm::ThreadContext* context,
                                            objects::M_BaseObject* self);

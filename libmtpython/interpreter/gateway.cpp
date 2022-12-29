@@ -18,12 +18,10 @@ M_BaseObject* BuiltinCode::funcrun_obj(ThreadContext* context,
         throw InterpError(space->TypeError_type(),
                           space->wrap_str(context, "expected Functon object"));
 
-    context->push_local_frame();
-
     std::vector<M_BaseObject*> scope;
     args.parse(as_func->get_name(), obj, sig, scope);
 
-    return context->pop_local_frame(this->func(context, scope));
+    return this->func(context, scope);
 }
 
 M_BaseObject* BuiltinCodeRaw::funcrun_obj(ThreadContext* context,
@@ -32,8 +30,7 @@ M_BaseObject* BuiltinCodeRaw::funcrun_obj(ThreadContext* context,
 {
     if (obj) args.prepend(obj);
 
-    context->push_local_frame();
-    return context->pop_local_frame(this->func(context, args));
+    return this->func(context, args);
 }
 
 M_BaseObject* BuiltinCode0::funcrun_obj(ThreadContext* context,
@@ -46,12 +43,10 @@ M_BaseObject* BuiltinCode0::funcrun_obj(ThreadContext* context,
         throw InterpError(space->TypeError_type(),
                           space->wrap_str(context, "expected Functon object"));
 
-    context->push_local_frame();
-
     std::vector<M_BaseObject*> scope;
     args.parse(as_func->get_name(), obj, sig, scope);
 
-    return context->pop_local_frame(this->func(context));
+    return this->func(context);
 }
 
 M_BaseObject* BuiltinCode1::funcrun_obj(ThreadContext* context,
@@ -64,12 +59,10 @@ M_BaseObject* BuiltinCode1::funcrun_obj(ThreadContext* context,
         throw InterpError(space->TypeError_type(),
                           space->wrap_str(context, "expected Functon object"));
 
-    context->push_local_frame();
-
     std::vector<M_BaseObject*> scope;
     args.parse(as_func->get_name(), obj, sig, scope);
 
-    return context->pop_local_frame(this->func(context, scope[0]));
+    return this->func(context, scope[0]);
 }
 
 M_BaseObject* BuiltinCode2::funcrun_obj(ThreadContext* context,
@@ -82,12 +75,10 @@ M_BaseObject* BuiltinCode2::funcrun_obj(ThreadContext* context,
         throw InterpError(space->TypeError_type(),
                           space->wrap_str(context, "expected Functon object"));
 
-    context->push_local_frame();
-
     std::vector<M_BaseObject*> scope;
     args.parse(as_func->get_name(), obj, sig, scope);
 
-    return context->pop_local_frame(this->func(context, scope[0], scope[1]));
+    return this->func(context, scope[0], scope[1]);
 }
 
 M_BaseObject* BuiltinCode3::funcrun_obj(ThreadContext* context,
@@ -100,13 +91,10 @@ M_BaseObject* BuiltinCode3::funcrun_obj(ThreadContext* context,
         throw InterpError(space->TypeError_type(),
                           space->wrap_str(context, "expected Functon object"));
 
-    context->push_local_frame();
-
     std::vector<M_BaseObject*> scope;
     args.parse(as_func->get_name(), obj, sig, scope);
 
-    return context->pop_local_frame(
-        this->func(context, scope[0], scope[1], scope[2]));
+    return this->func(context, scope[0], scope[1], scope[2]);
 }
 
 M_BaseObject* BuiltinCode4::funcrun_obj(ThreadContext* context,
@@ -119,13 +107,10 @@ M_BaseObject* BuiltinCode4::funcrun_obj(ThreadContext* context,
         throw InterpError(space->TypeError_type(),
                           space->wrap_str(context, "expected Functon object"));
 
-    context->push_local_frame();
-
     std::vector<M_BaseObject*> scope;
     args.parse(as_func->get_name(), obj, sig, scope);
 
-    return context->pop_local_frame(
-        this->func(context, scope[0], scope[1], scope[2], scope[3]));
+    return this->func(context, scope[0], scope[1], scope[2], scope[3]);
 }
 
 InterpFunctionWrapper::InterpFunctionWrapper(const std::string& name,

@@ -48,14 +48,15 @@ set(LIBMTPYTHON_SRCLIST
 		modules/posix/posixmodule.cpp
 		modules/sys/sysmodule.cpp
 		modules/errno/errnomodule.cpp
-		gc/collected_heap.cpp
+		gc/garbage_collector_mmtk.cpp
 		vm/initpath.cpp
         vm/native_thread.cpp
         vm/native_thread_posix.cpp        
 		vm/thread_context.cpp
 		vm/vm.cpp)
 
-set(LIBRARIES )
+set(LIBRARIES CONAN_PKG::spdlog
+              ${TOPDIR}/3rdparty/mmtk/mmtk/target/release/libmmtk_ruby.a)
 
 add_library(libmtpython ${LIBMTPYTHON_SRCLIST})
 

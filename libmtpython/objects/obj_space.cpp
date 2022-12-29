@@ -2,6 +2,7 @@
 #include "interpreter/compiler.h"
 #include "interpreter/function.h"
 #include "interpreter/error.h"
+#include "objects/space_cache.h"
 
 #include "modules/_io/iomodule.h"
 #include "modules/builtins/bltinmodule.h"
@@ -16,7 +17,7 @@ using namespace mtpython::objects;
 using namespace mtpython::vm;
 using namespace mtpython::interpreter;
 
-ObjSpace::ObjSpace() : gateway_cache(this) { vm = nullptr; }
+ObjSpace::ObjSpace() : vm(nullptr), gateway_cache(this) {}
 
 ObjSpace::~ObjSpace() {}
 
@@ -106,6 +107,15 @@ void ObjSpace::init_builtin_exceptions()
     SET_EXCEPTION_TYPE(SyntaxError);
 }
 
+void ObjSpace::mark_roots(gc::GarbageCollector* gc)
+{
+    for (const auto& [k, v] : interned_str)
+        gc->mark_object(v);
+
+    typedef_cache->mark_objects(gc);
+    gateway_cache.mark_objects(gc);
+}
+
 M_BaseObject* ObjSpace::get_builtin_module(const std::string& name)
 {
     M_BaseObject* wrapped_name =
@@ -193,7 +203,6 @@ std::size_t ObjSpace::i_hash(M_BaseObject* obj)
 {
     M_BaseObject* tmp = hash(obj);
     std::size_t value = (std::size_t)unwrap_int(tmp);
-    SAFE_DELETE(tmp);
     return value;
 }
 
@@ -464,7 +473,6 @@ M_BaseObject* ObjSpace::getitem_str(M_BaseObject* obj, const std::string& key)
 {
     M_BaseObject* wrapped_key = wrap_str(ThreadContext::current_thread(), key);
     M_BaseObject* value = getitem(obj, wrapped_key);
-    SAFE_DELETE(wrapped_key);
 
     return value;
 }
@@ -582,7 +590,6 @@ M_BaseObject* ObjSpace::findattr_str(M_BaseObject* obj, const std::string& name)
     M_BaseObject* wrapped_name =
         wrap_str(ThreadContext::current_thread(), name);
     M_BaseObject* value = findattr(obj, wrapped_name);
-    SAFE_DELETE(wrapped_name);
 
     return value;
 }

@@ -1,6 +1,7 @@
 #include "interpreter/descriptor.h"
 #include "interpreter/gateway.h"
 #include "interpreter/error.h"
+#include "objects/space_cache.h"
 
 using namespace mtpython::interpreter;
 using namespace mtpython::objects;

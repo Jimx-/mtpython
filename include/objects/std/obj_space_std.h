@@ -24,6 +24,8 @@ private:
 public:
     StdObjSpace();
 
+    virtual void mark_roots(gc::GarbageCollector* gc);
+
     interpreter::PyFrame* create_frame(vm::ThreadContext* context,
                                        interpreter::Code* code,
                                        M_BaseObject* globals,

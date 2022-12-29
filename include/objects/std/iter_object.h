@@ -4,6 +4,7 @@
 #include <string>
 #include <vector>
 #include "objects/obj_space.h"
+#include "gc/garbage_collector.h"
 
 namespace mtpython {
 namespace objects {
@@ -18,6 +19,11 @@ public:
         : obj(obj), index(index)
     {}
     interpreter::Typedef* get_typedef();
+
+    virtual void mark_chidren(gc::GarbageCollector* gc)
+    {
+        gc->mark_object(obj);
+    }
 
     static M_BaseObject* __next__(vm::ThreadContext* context,
                                   M_BaseObject* self);
@@ -35,6 +41,13 @@ public:
     }
 
     interpreter::Typedef* get_typedef();
+
+    virtual void mark_chidren(gc::GarbageCollector* gc)
+    {
+        for (const auto& obj : items) {
+            gc->mark_object(obj);
+        }
+    }
 
     static M_BaseObject* __next__(vm::ThreadContext* context,
                                   M_BaseObject* self);

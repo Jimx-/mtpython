@@ -9,6 +9,8 @@
 #include "objects/space_cache.h"
 #include "exceptions.h"
 
+#include <memory>
+
 namespace mtpython {
 
 namespace interpreter {
@@ -21,6 +23,10 @@ namespace vm {
 class ThreadContext;
 class PyVM;
 } // namespace vm
+
+namespace gc {
+class GarbageCollector;
+}
 
 namespace objects {
 
@@ -44,7 +50,7 @@ private:
 protected:
     mtpython::vm::PyVM* vm;
 
-    TypedefCache* typedef_cache;
+    std::unique_ptr<TypedefCache> typedef_cache;
     GatewayCache gateway_cache;
 
     std::unordered_map<std::string, M_BaseObject*> interned_str;
@@ -72,6 +78,8 @@ public:
         this->vm = vm;
         if (!old_vm) initialize();
     }
+
+    virtual void mark_roots(gc::GarbageCollector* gc);
 
     M_BaseObject* get__io() { return _io; }
     M_BaseObject* get_builtin() { return builtin; }

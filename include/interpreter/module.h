@@ -6,6 +6,7 @@
 #include "interpreter/code.h"
 #include "interpreter/arguments.h"
 #include "interpreter/typedef.h"
+#include "gc/garbage_collector.h"
 #include "vm/vm.h"
 #include <string>
 
@@ -39,6 +40,12 @@ public:
                                           const std::string& attr);
 
     virtual void install();
+
+    virtual void mark_children(gc::GarbageCollector* gc)
+    {
+        gc->mark_object(name);
+        gc->mark_object(dict);
+    }
 
     static objects::M_BaseObject* __repr__(vm::ThreadContext* context,
                                            objects::M_BaseObject* self);

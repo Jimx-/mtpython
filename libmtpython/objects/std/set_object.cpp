@@ -10,6 +10,11 @@ using namespace mtpython::objects;
 using namespace mtpython::interpreter;
 using namespace mtpython::vm;
 
+void M_StdSetIterObject::mark_children(gc::GarbageCollector* gc)
+{
+    gc->mark_object(set);
+}
+
 M_BaseObject* M_StdSetObject::_discard(ThreadContext* context,
                                        M_BaseObject* item)
 {

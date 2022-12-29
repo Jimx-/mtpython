@@ -179,7 +179,6 @@ M_BaseObject* M_StdListObject::pop(mtpython::vm::ThreadContext* context,
 
     if (index == -1) {
         M_BaseObject* result = as_list->items.back();
-        context->new_local_ref(result);
         as_list->items.pop_back();
         return result;
     }
@@ -191,7 +190,6 @@ M_BaseObject* M_StdListObject::pop(mtpython::vm::ThreadContext* context,
     }
 
     M_BaseObject* result = as_list->items[index];
-    context->new_local_ref(result);
     as_list->items.erase(as_list->items.begin() + index);
 
     return result;

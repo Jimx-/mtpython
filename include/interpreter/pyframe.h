@@ -12,6 +12,7 @@
 #include "interpreter/cell.h"
 #include "vm/vm.h"
 #include "exceptions.h"
+#include "gc/garbage_collector.h"
 
 namespace mtpython {
 namespace interpreter {
@@ -144,7 +145,7 @@ protected:
     mtpython::objects::M_BaseObject* globals;
     mtpython::objects::M_BaseObject* locals;
 
-    std::stack<mtpython::objects::M_BaseObject*> value_stack;
+    std::deque<mtpython::objects::M_BaseObject*> value_stack;
     std::vector<mtpython::objects::M_BaseObject*> local_vars;
     std::vector<mtpython::interpreter::Cell*> cells;
     std::stack<FrameBlock*> block_stack;
@@ -154,33 +155,23 @@ protected:
 
     mtpython::objects::M_BaseObject* pop_value()
     {
-        mtpython::objects::M_BaseObject* tmp = value_stack.top();
-        value_stack.pop();
+        mtpython::objects::M_BaseObject* tmp = value_stack.back();
+        value_stack.pop_back();
         return tmp;
     }
 
-    mtpython::objects::M_BaseObject* pop_value_untrack()
-    {
-        mtpython::objects::M_BaseObject* tmp = value_stack.top();
-        context->new_local_ref(tmp);
-        value_stack.pop();
-        return tmp;
-    }
-
-    void pop_values_untrack(int n,
-                            std::vector<mtpython::objects::M_BaseObject*>& v)
+    void pop_values(int n, std::vector<mtpython::objects::M_BaseObject*>& v)
     {
         v.resize(n);
         n--;
         while (n >= 0) {
-            mtpython::objects::M_BaseObject* tmp = value_stack.top();
-            context->new_local_ref(tmp);
-            value_stack.pop();
+            mtpython::objects::M_BaseObject* tmp = value_stack.back();
+            value_stack.pop_back();
             v[n--] = tmp;
         }
     }
 
-    mtpython::objects::M_BaseObject* peek_value() { return value_stack.top(); }
+    mtpython::objects::M_BaseObject* peek_value() { return value_stack.back(); }
 
     FrameBlock* pop_block()
     {
@@ -274,8 +265,7 @@ public:
 
     void push_value(mtpython::objects::M_BaseObject* value)
     {
-        value_stack.push(value);
-        if (value) context->delete_local_ref(value);
+        value_stack.push_back(value);
     }
 
     int value_stack_level() { return value_stack.size(); }
@@ -317,6 +307,8 @@ public:
         while (value_stack.size() > (std::size_t)level)
             pop_value();
     }
+
+    void mark_children(gc::GarbageCollector* gc);
 };
 
 } // namespace interpreter

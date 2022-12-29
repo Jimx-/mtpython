@@ -215,6 +215,20 @@ M_BaseObject* StdTypedefCache::build(mtpython::interpreter::Typedef* key)
 
 void M_StdTypeObject::ready() {}
 
+void M_StdTypeObject::mark_children(gc::GarbageCollector* gc)
+{
+    for (const auto& obj : bases)
+        gc->mark_object(obj);
+    for (const auto& [k, v] : dict)
+        gc->mark_object_maybe(v);
+    gc->mark_object(wrapped_dict);
+    for (const auto& obj : mro)
+        gc->mark_object(obj);
+    for (const auto& obj : subclasses)
+        gc->mark_object(obj);
+    gc->mark_object(cls);
+}
+
 M_BaseObject* M_StdTypeObject::__new__(mtpython::vm::ThreadContext* context,
                                        const Arguments& args)
 {

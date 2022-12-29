@@ -15,6 +15,10 @@ namespace vm {
 class ThreadContext;
 }
 
+namespace gc {
+class GarbageCollector;
+}
+
 namespace objects {
 
 class ObjSpace;
@@ -22,7 +26,10 @@ class ObjSpace;
 /* Base of all MTPython objects */
 class M_BaseObject {
 public:
-    virtual ~M_BaseObject() {}
+    M_BaseObject() : valid_(true) {}
+    virtual ~M_BaseObject() { valid_ = false; }
+
+    bool is_valid() const { return valid_; }
 
     void* operator new(size_t size, vm::ThreadContext* context);
 
@@ -69,7 +76,12 @@ public:
     void lock() {}
     void unlock() {}
 
+    virtual void mark_children(gc::GarbageCollector* gc) {}
+
     virtual void dbg_print() {} /* for debug purpose */
+
+private:
+    bool valid_;
 };
 
 class ScopedObjectLock {

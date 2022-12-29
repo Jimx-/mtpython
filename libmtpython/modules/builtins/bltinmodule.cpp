@@ -11,10 +11,14 @@
 #include "interpreter/error.h"
 #include "interpreter/pyframe.h"
 #include "utils/file_helper.h"
+#include "gc/garbage_collector.h"
 
-using namespace mtpython::modules;
 using namespace mtpython::objects;
 using namespace mtpython::interpreter;
+
+namespace mtpython {
+
+namespace modules {
 
 typedef enum {
     UNKNOWN_MODTYPE,
@@ -607,6 +611,14 @@ public:
         : start(start), stop(stop), step(step), length(length)
     {}
 
+    virtual void mark_children(gc::GarbageCollector* gc)
+    {
+        gc->mark_object(start);
+        gc->mark_object(stop);
+        gc->mark_object(step);
+        gc->mark_object(length);
+    }
+
     static M_BaseObject* __new__(mtpython::vm::ThreadContext* context,
                                  const Arguments& args)
     {
@@ -753,6 +765,11 @@ public:
 
     Typedef* get_typedef();
 
+    virtual void mark_children(gc::GarbageCollector* gc)
+    {
+        gc->mark_object(obj);
+    }
+
     static M_BaseObject* __next__(mtpython::vm::ThreadContext* context,
                                   M_BaseObject* self)
     {
@@ -840,6 +857,14 @@ public:
         this->fset = fset ? fset : space->wrap_None();
         this->fdel = fdel ? fdel : space->wrap_None();
         this->doc = doc ? doc : space->wrap_None();
+    }
+
+    virtual void mark_children(gc::GarbageCollector* gc)
+    {
+        gc->mark_object(fget);
+        gc->mark_object(fset);
+        gc->mark_object(fdel);
+        gc->mark_object(doc);
     }
 
     static M_BaseObject* __new__(mtpython::vm::ThreadContext* context,
@@ -956,6 +981,13 @@ public:
         this->self = self;
     }
 
+    virtual void mark_children(gc::GarbageCollector* gc)
+    {
+        gc->mark_object(type);
+        gc->mark_object(obj_type);
+        gc->mark_object(self);
+    }
+
     static M_BaseObject* __new__(mtpython::vm::ThreadContext* context,
                                  const Arguments& args)
     {
@@ -970,8 +1002,8 @@ public:
         M_BaseObject* obj_type = nullptr;
 
         if (space->i_is(w_starttype, space->wrap_None())) {
-            /* PEP 3135: calling super without arguments, using __class__ cell
-             * and the first parameter of the method */
+            /* PEP 3135: calling super without arguments, using __class__
+             * cell and the first parameter of the method */
             PyFrame* frame = context->top_frame();
             const std::vector<M_BaseObject*>& local_vars =
                 frame->get_local_vars();
@@ -1168,11 +1200,11 @@ BuiltinsModule::BuiltinsModule(ObjSpace* space, M_BaseObject* name)
     ADD_EXCEPTION(IndexError);
     ADD_EXCEPTION(SyntaxError);
 
-    add_def(
-        "__doc__",
-        new InterpDocstringWrapper(
-            "Built-in functions, exceptions, and other objects.\n\nNoteworthy: "
-            "None is the `nil' object; Ellipsis represents `...' in slices."));
+    add_def("__doc__",
+            new InterpDocstringWrapper("Built-in functions, exceptions, "
+                                       "and other objects.\n\nNoteworthy: "
+                                       "None is the `nil' object; Ellipsis "
+                                       "represents `...' in slices."));
     add_def("__import__",
             new InterpFunctionWrapper("__import__", builtin___import__,
                                       Signature({"name", "globals", "locals",
@@ -1209,3 +1241,6 @@ BuiltinsModule::BuiltinsModule(ObjSpace* space, M_BaseObject* name)
     add_def("super", space->get_typeobject(M_Super::_super_typedef()));
     add_def("zip", space->get_typeobject(M_Zip::_zip_typedef()));
 }
+} // namespace modules
+
+} // namespace mtpython

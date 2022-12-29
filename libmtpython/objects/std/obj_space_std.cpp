@@ -51,7 +51,7 @@ StdObjSpace::StdObjSpace() : ObjSpace() {}
 
 void StdObjSpace::initialize()
 {
-    typedef_cache = new StdTypedefCache(this);
+    typedef_cache = std::make_unique<StdTypedefCache>(this);
 
     wrapped_None = new (ThreadContext::current_thread()) M_StdNoneObject();
     wrapped_True = new (ThreadContext::current_thread()) M_StdBoolObject(true);
@@ -86,6 +86,19 @@ void StdObjSpace::initialize()
 
     make_builtins();
     setup_builtin_modules();
+}
+
+void StdObjSpace::mark_roots(gc::GarbageCollector* gc)
+{
+    ObjSpace::mark_roots(gc);
+
+    gc->mark_object_maybe(wrapped_None);
+    gc->mark_object_maybe(wrapped_True);
+    gc->mark_object_maybe(wrapped_False);
+    gc->mark_object_maybe(wrapped_NotImplemented);
+
+    for (const auto& [k, v] : builtin_types)
+        gc->mark_object(v);
 }
 
 mtpython::interpreter::PyFrame*

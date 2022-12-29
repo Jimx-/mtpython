@@ -1,9 +1,12 @@
 cmake_minimum_required(VERSION 3.10)
 project(mtpython)
 
+set(CMAKE_CXX_STANDARD 17)
+
 set(TOPDIR ${mtpython_SOURCE_DIR})
 
-set(CMAKE_CXX_STANDARD 17)
+include(${CMAKE_BINARY_DIR}/conanbuildinfo.cmake)
+conan_basic_setup(TARGETS)
 
 include_directories(${TOPDIR}/include)
 

@@ -44,7 +44,6 @@ static M_BaseObject* create_stdio(mtpython::vm::ThreadContext* context,
     std::string mode = writing ? "w" : "r";
     mode += "b";
 
-    context->push_local_frame();
 
     M_BaseObject* open_impl = space->getattr_str(io, "open");
     if (!open_impl) return nullptr;
@@ -87,7 +86,6 @@ static M_BaseObject* create_stdio(mtpython::vm::ThreadContext* context,
     space->setattr(wrapper, space->wrap_str(context, "mode"),
                    space->wrap_str(context, mode));
 
-    wrapper = context->pop_local_frame(wrapper);
     return wrapper;
 }
 
