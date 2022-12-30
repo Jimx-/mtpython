@@ -6,6 +6,9 @@
 #include "interpreter/module.h"
 #include "objects/space_cache.h"
 #include "gc/garbage_collector_mmtk.h"
+#include "interpreter/error.h"
+
+#include "spdlog/spdlog.h"
 
 using namespace mtpython::vm;
 using namespace mtpython::objects;
@@ -98,6 +101,13 @@ mtpython::interpreter::Code* PyVM::compile_code(ThreadContext* context,
     return code;
 }
 
-void PyVM::run_toplevel(std::function<void()> f) { f(); }
+void PyVM::run_toplevel(std::function<void()> f)
+{
+    try {
+        f();
+    } catch (interpreter::InterpError& e) {
+        spdlog::error("{}", space_->unwrap_str(e.get_value()));
+    }
+}
 
 void PyVM::mark_roots() { space_->mark_roots(gc_.get()); }

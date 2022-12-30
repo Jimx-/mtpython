@@ -23,6 +23,9 @@ Typedef* Function::get_typedef()
         {
             {"__get__",
              new InterpFunctionWrapper("__get__", Function::__get__)},
+            {"__code__", new GetSetDescriptor(Function::__code__get,
+                                              Function::__code__set)},
+            {"__globals__", new GetSetDescriptor(Function::__globals__get)},
             {"__doc__",
              new GetSetDescriptor(Function::__doc__get, Function::__doc__set)},
         });
@@ -89,6 +92,33 @@ void Function::__doc__set(mtpython::vm::ThreadContext* context,
 {
     Function* f = static_cast<Function*>(obj);
     f->doc = value;
+}
+
+M_BaseObject* Function::__code__get(vm::ThreadContext* context,
+                                    objects::M_BaseObject* self)
+{
+    ObjSpace* space = context->get_space();
+    return space->wrap_None();
+}
+
+void Function::__code__set(vm::ThreadContext* context,
+                           objects::M_BaseObject* obj,
+                           objects::M_BaseObject* value)
+{}
+
+M_BaseObject* Function::__globals__get(vm::ThreadContext* context,
+                                       objects::M_BaseObject* self)
+{
+    Function* f = static_cast<Function*>(self);
+    if (!f->func_globals) return context->get_space()->wrap_None();
+    return f->func_globals;
+}
+
+Typedef* Method::get_typedef()
+{
+    static Typedef Method_typedef("method", {});
+
+    return &Method_typedef;
 }
 
 M_BaseObject* Method::call_args(mtpython::vm::ThreadContext* context,

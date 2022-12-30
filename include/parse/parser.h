@@ -32,6 +32,8 @@ protected:
     mtpython::tree::ASTNode* module();
     mtpython::tree::ASTNode* suite();
     mtpython::tree::ASTNode* stmt();
+    mtpython::tree::ASTNode* simple_stmt();
+    mtpython::tree::ASTNode* small_stmt();
     mtpython::tree::ASTNode* expr_stmt();
     mtpython::tree::ASTNode* star_expr();
     mtpython::tree::ASTNode* expr();

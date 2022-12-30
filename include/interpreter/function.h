@@ -61,11 +61,21 @@ public:
                                           objects::M_BaseObject* self,
                                           objects::M_BaseObject* obj,
                                           objects::M_BaseObject* type);
+
     static objects::M_BaseObject* __doc__get(vm::ThreadContext* context,
                                              objects::M_BaseObject* self);
     static void __doc__set(vm::ThreadContext* context,
                            objects::M_BaseObject* obj,
                            objects::M_BaseObject* value);
+
+    static objects::M_BaseObject* __code__get(vm::ThreadContext* context,
+                                              objects::M_BaseObject* self);
+    static void __code__set(vm::ThreadContext* context,
+                            objects::M_BaseObject* obj,
+                            objects::M_BaseObject* value);
+
+    static objects::M_BaseObject* __globals__get(vm::ThreadContext* context,
+                                                 objects::M_BaseObject* self);
 };
 
 /* A method is a function bound to an instance */
@@ -80,6 +90,8 @@ public:
            objects::M_BaseObject* instance)
         : space(space), func(func), instance(instance)
     {}
+
+    Typedef* get_typedef();
 
     objects::M_BaseObject* call_args(vm::ThreadContext* context,
                                      Arguments& args);

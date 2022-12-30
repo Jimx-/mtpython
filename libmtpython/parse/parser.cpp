@@ -8,6 +8,21 @@ using namespace mtpython::parse;
 using namespace mtpython::tree;
 using namespace mtpython::objects;
 
+class ScopedImplicitLineJoining {
+public:
+    ScopedImplicitLineJoining(Scanner& s) : s_(s)
+    {
+        saved_ = s.get_implicit_line_joining();
+        s.set_implicit_line_joining(true);
+    }
+
+    ~ScopedImplicitLineJoining() { s_.set_implicit_line_joining(saved_); }
+
+private:
+    Scanner& s_;
+    bool saved_;
+};
+
 Parser::Parser(mtpython::vm::ThreadContext* context, const std::string& source,
                CompileInfo* info, int flags)
     : sb(source, info->get_type()), diag(context->get_space(), info, &sb),
@@ -163,29 +178,95 @@ ASTNode* Parser::suite()
 ASTNode* Parser::stmt()
 {
     ASTNode* node = nullptr;
-    bool compound_stmt = false;
 
     switch (cur_tok) {
     case TOK_DEF:
-        compound_stmt = true;
         node = function_def();
         break;
     case TOK_CLASS:
-        compound_stmt = true;
         node = class_def();
         break;
     case TOK_IF:
-        compound_stmt = true;
         node = if_stmt();
         break;
     case TOK_FOR:
-        compound_stmt = true;
         node = for_stmt();
         break;
     case TOK_WHILE:
-        compound_stmt = true;
         node = while_stmt();
         break;
+    case TOK_TRY:
+        node = try_stmt();
+        break;
+    case TOK_WITH:
+        node = with_stmt();
+        break;
+    case TOK_AT:
+        node = decorated();
+        break;
+    case TOK_BREAK:
+    case TOK_CONTINUE:
+    case TOK_RETURN:
+    case TOK_DEL:
+    case TOK_RAISE:
+    case TOK_YIELD:
+    case TOK_PASS:
+    case TOK_IMPORT:
+    case TOK_FROM:
+    case TOK_GLOBAL:
+    case TOK_ASSERT:
+    case TOK_LAMBDA:
+    case TOK_IDENT:
+    case TOK_INTLITERAL:
+    case TOK_STRINGLITERAL:
+    case TOK_NONE:
+    case TOK_NEWLINE:
+        node = simple_stmt();
+        break;
+    case TOK_INDENT:
+        diag.error(s.get_line(), s.get_col(), "unexpected indent");
+        break;
+    default:
+        diag.error(s.get_line(), s.get_col(),
+                   "unexpected token " + tok2str(cur_tok));
+        break;
+    }
+
+    return node;
+}
+
+// simple_stmt: small_stmt (';' small_stmt)* [';'] NEWLINE
+ASTNode* Parser::simple_stmt()
+{
+    ASTNode* node;
+
+    node = small_stmt();
+
+    ASTNode* tn = node;
+    while (cur_tok == TOK_SEMICOLON) {
+        match(TOK_SEMICOLON);
+
+        ASTNode* n = small_stmt();
+        if (n != nullptr) {
+            if (tn == nullptr)
+                node = tn = n;
+            else {
+                tn->set_sibling(n);
+                tn = n;
+            }
+        }
+    }
+
+    if (cur_tok != TOK_EOF && cur_tok != TOK_DEDENT) match(TOK_NEWLINE);
+
+    return node;
+}
+
+ASTNode* Parser::small_stmt()
+{
+    ASTNode* node = nullptr;
+
+    switch (cur_tok) {
     case TOK_BREAK:
         node = break_stmt();
         break;
@@ -207,23 +288,11 @@ ASTNode* Parser::stmt()
     case TOK_PASS:
         node = pass_stmt();
         break;
-    case TOK_TRY:
-        compound_stmt = true;
-        node = try_stmt();
-        break;
-    case TOK_WITH:
-        compound_stmt = true;
-        node = with_stmt();
-        break;
     case TOK_IMPORT:
         node = import_stmt();
         break;
     case TOK_FROM:
         node = import_from_stmt();
-        break;
-    case TOK_AT:
-        compound_stmt = true;
-        node = decorated();
         break;
     case TOK_GLOBAL:
         node = global_stmt();
@@ -238,19 +307,6 @@ ASTNode* Parser::stmt()
     case TOK_NONE:
         node = expr_stmt();
         break;
-    case TOK_INDENT:
-        diag.error(s.get_line(), s.get_col(), "unexpected indent");
-        break;
-    case TOK_NEWLINE:
-        break;
-    default:
-        diag.error(s.get_line(), s.get_col(),
-                   "unexpected token " + tok2str(cur_tok));
-        break;
-    }
-
-    if (!compound_stmt) {
-        if (cur_tok != TOK_EOF && cur_tok != TOK_DEDENT) match(TOK_NEWLINE);
     }
 
     return node;
@@ -829,8 +885,7 @@ ASTNode* Parser::atom()
         node = name();
         break;
     case TOK_LPAREN: {
-        bool joining = s.get_implicit_line_joining();
-        s.set_implicit_line_joining(true);
+        ScopedImplicitLineJoining lj(s);
         match(TOK_LPAREN);
         if (cur_tok == TOK_RPAREN)
             node = new TupleNode(s.get_line());
@@ -838,26 +893,22 @@ ASTNode* Parser::atom()
             node = yield_expr();
         else
             node = testlist_comp();
+    }
 
-        s.set_implicit_line_joining(joining);
         match(TOK_RPAREN);
         break;
-    }
     case TOK_LSQUARE: {
-        bool joining = s.get_implicit_line_joining();
-        s.set_implicit_line_joining(true);
+        ScopedImplicitLineJoining lj(s);
         match(TOK_LSQUARE);
         if (cur_tok == TOK_RSQUARE)
             node = new ListNode(s.get_line());
         else
             node = testlist_comp_list();
-        s.set_implicit_line_joining(joining);
+    }
         match(TOK_RSQUARE);
         break;
-    }
     case TOK_LBRACE: {
-        bool joining = s.get_implicit_line_joining();
-        s.set_implicit_line_joining(true);
+        ScopedImplicitLineJoining lj(s);
         match(TOK_LBRACE);
         if (cur_tok == TOK_RBRACE)
             node = new DictNode(s.get_line());
@@ -878,12 +929,25 @@ ASTNode* Parser::atom()
                 }
                 node = set_node;
             } else {
+                DictNode* dict_node = new DictNode(s.get_line());
+                dict_node->push_key(first_elt);
+                match(TOK_COLON);
+                dict_node->push_value(test());
+
+                while (cur_tok == TOK_COMMA) {
+                    match(TOK_COMMA);
+                    ASTNode* elt = test();
+                    if (!elt) break;
+                    dict_node->push_key(elt);
+                    match(TOK_COLON);
+                    dict_node->push_value(test());
+                }
+                node = dict_node;
             }
         }
-        s.set_implicit_line_joining(joining);
+    }
         match(TOK_RBRACE);
         break;
-    }
     case TOK_INTLITERAL:
     case TOK_LONGLITERAL:
     case TOK_FLOATLITERAL:
@@ -993,45 +1057,47 @@ ASTNode* Parser::call(ASTNode* callable)
     CallNode* node = new CallNode(s.get_line());
     node->set_func(callable);
 
-    bool joining = s.get_implicit_line_joining();
-    s.set_implicit_line_joining(true);
-    match(TOK_LPAREN);
-    ASTNode* vararg = nullptr;
-    ASTNode* kwarg = nullptr;
+    {
+        ScopedImplicitLineJoining lj(s);
 
-    while (cur_tok != TOK_RPAREN) {
-        if (cur_tok == TOK_STAR) {
-            match(TOK_STAR);
-            vararg = test();
-        } else if (cur_tok == TOK_STARSTAR) {
-            match(TOK_STARSTAR);
-            kwarg = test();
-        } else {
-            ASTNode* arg = argument();
+        match(TOK_LPAREN);
+        ASTNode* vararg = nullptr;
+        ASTNode* kwarg = nullptr;
 
-            if (cur_tok == TOK_FOR) {
-                GeneratorExpNode* genexp = new GeneratorExpNode(s.get_line());
-                genexp->set_elt(arg);
+        while (cur_tok != TOK_RPAREN) {
+            if (cur_tok == TOK_STAR) {
+                match(TOK_STAR);
+                vararg = test();
+            } else if (cur_tok == TOK_STARSTAR) {
+                match(TOK_STARSTAR);
+                kwarg = test();
+            } else {
+                ASTNode* arg = argument();
 
-                while (cur_tok == TOK_FOR) {
-                    genexp->push_comprehension(comp_for());
+                if (cur_tok == TOK_FOR) {
+                    GeneratorExpNode* genexp =
+                        new GeneratorExpNode(s.get_line());
+                    genexp->set_elt(arg);
+
+                    while (cur_tok == TOK_FOR) {
+                        genexp->push_comprehension(comp_for());
+                    }
+
+                    arg = genexp;
                 }
 
-                arg = genexp;
+                KeywordNode* keyword = dynamic_cast<KeywordNode*>(arg);
+                if (keyword) {
+                    node->push_keyword(keyword);
+                } else {
+                    node->push_arg(arg);
+                }
             }
 
-            KeywordNode* keyword = dynamic_cast<KeywordNode*>(arg);
-            if (keyword) {
-                node->push_keyword(keyword);
-            } else {
-                node->push_arg(arg);
-            }
+            if (cur_tok != TOK_RPAREN) match(TOK_COMMA);
         }
-
-        if (cur_tok != TOK_RPAREN) match(TOK_COMMA);
     }
 
-    s.set_implicit_line_joining(joining);
     match(TOK_RPAREN);
     return node;
 }
@@ -1526,6 +1592,7 @@ ASTNode* Parser::arguments()
     bool have_default = false;
     ASTNode* vararg = nullptr;
     ASTNode* kwarg = nullptr;
+    ScopedImplicitLineJoining lj(s);
 
     if (cur_tok != TOK_RPAREN) {
         p = test();

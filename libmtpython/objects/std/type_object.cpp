@@ -351,16 +351,22 @@ M_StdTypeObject::__getattribute__(mtpython::vm::ThreadContext* context,
                                   M_BaseObject* obj, M_BaseObject* attr)
 {
     ObjSpace* space = context->get_space();
+    M_StdTypeObject* as_type = static_cast<M_StdTypeObject*>(obj);
     std::string name = space->unwrap_str(attr);
     M_BaseObject* descr = space->lookup(obj, name);
 
-    M_BaseObject* value = obj->get_dict_value(space, name);
-    if (value) {
-        M_BaseObject* getter = space->lookup(value, "__get__");
+    if (descr) {
+        M_BaseObject* getter = space->lookup(descr, "__get__");
         if (getter) {
-            return space->get(value, obj);
+            auto* type = space->type(obj);
+            return space->get_and_call_function(context, getter,
+                                                {descr, obj, type});
         }
-        return value;
+    }
+
+    M_BaseObject* value = as_type->lookup(name);
+    if (value) {
+        return space->get(value, space->wrap_None(), obj);
     }
 
     if (descr) return space->get(descr, obj);

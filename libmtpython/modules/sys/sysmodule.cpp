@@ -28,6 +28,7 @@ SysModule::SysModule(mtpython::vm::ThreadContext* context, M_BaseObject* name)
 
     add_def("platform",
             space->wrap_str(vm::ThreadContext::current_thread(), PLATFORM));
+    add_def("implementation", space->wrap_None());
     add_def("getfilesystemencoding",
             new InterpFunctionWrapper("getfilesystemencoding",
                                       SysModule::getfilesystemencoding));
@@ -43,7 +44,6 @@ static M_BaseObject* create_stdio(mtpython::vm::ThreadContext* context,
     int buffering = (writing && unbuffered) ? 0 : -1;
     std::string mode = writing ? "w" : "r";
     mode += "b";
-
 
     M_BaseObject* open_impl = space->getattr_str(io, "open");
     if (!open_impl) return nullptr;
