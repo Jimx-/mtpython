@@ -1,6 +1,7 @@
 #include <fstream>
 #include <iostream>
 #include <vector>
+#include <filesystem>
 
 #include "modules/builtins/bltinmodule.h"
 #include "objects/bltin_exceptions.h"
@@ -13,32 +14,37 @@
 #include "utils/file_helper.h"
 #include "gc/garbage_collector.h"
 
+#include "spdlog/spdlog.h"
+
 using namespace mtpython::objects;
 using namespace mtpython::interpreter;
+
+namespace fs = std::filesystem;
 
 namespace mtpython {
 
 namespace modules {
 
-typedef enum {
-    UNKNOWN_MODTYPE,
+enum class ModType {
+    UNKNOWN,
     PY_SOURCE,
-} ModType;
+    PKG_DIRECTORY,
+};
 
 class ModuleSpec {
 private:
     ModType type;
-    std::string filename;
+    fs::path filename;
     std::string suffix;
 
 public:
-    ModuleSpec(ModType type, const std::string& filename,
+    ModuleSpec(ModType type, const fs::path& filename,
                const std::string& suffix)
         : type(type), suffix(suffix), filename(filename)
     {}
 
     ModType get_type() { return type; }
-    std::string& get_filename() { return filename; }
+    fs::path& get_filename() { return filename; }
 };
 
 /* find the module named mod_name in sys.modules */
@@ -61,15 +67,25 @@ static M_BaseObject* lookup_sys_modules(ObjSpace* space,
     return first_mod;
 }
 
-static ModType get_modtype(const std::string& filepart, std::string& suffix)
+static ModType get_modtype(const fs::path& filepart, std::string& suffix)
 {
-    std::string py_file = filepart + ".py";
-    if (mtpython::FileHelper::file_exists(py_file)) {
+    fs::path py_file = filepart;
+
+    py_file.replace_extension(".py");
+    if (fs::is_regular_file(py_file)) {
         suffix.assign(".py");
-        return PY_SOURCE;
+        return ModType::PY_SOURCE;
     }
 
-    return UNKNOWN_MODTYPE;
+    return ModType::UNKNOWN;
+}
+
+static bool has_init_module(const fs::path& filepart)
+{
+    auto init_path = filepart / "__init__";
+
+    init_path.replace_extension(".py");
+    return fs::is_regular_file(init_path);
 }
 
 static ModuleSpec* find_module(mtpython::vm::ThreadContext* context,
@@ -86,14 +102,19 @@ static ModuleSpec* find_module(mtpython::vm::ThreadContext* context,
         std::vector<M_BaseObject*> path_items;
         path->unpack_iterable(space, path_items);
         for (auto wrapped_path : path_items) {
-            std::string dir =
-                space->unwrap_str(wrapped_path) + mtpython::FileHelper::sep;
-            dir += part;
+            auto dir = fs::path(space->unwrap_str(wrapped_path)) / part;
+
+            if (fs::is_directory(dir)) {
+                if (has_init_module(dir)) {
+                    return new ModuleSpec(ModType::PKG_DIRECTORY, dir, "");
+                }
+            }
 
             std::string suffix;
             ModType mod_type = get_modtype(dir, suffix);
-            if (mod_type == PY_SOURCE) {
-                return new ModuleSpec(mod_type, dir + suffix, suffix);
+            if (mod_type == ModType::PY_SOURCE) {
+                dir.replace_extension(suffix);
+                return new ModuleSpec(mod_type, dir, suffix);
             }
         }
     }
@@ -135,7 +156,12 @@ static M_BaseObject* load_module(mtpython::vm::ThreadContext* context,
 {
     ObjSpace* space = context->get_space();
     ModType mod_type = spec->get_type();
-    if (mod_type == PY_SOURCE) {
+
+    spdlog::debug("Loading module `{}'", std::string(spec->get_filename()));
+
+    switch (mod_type) {
+    case ModType::PY_SOURCE:
+    case ModType::PKG_DIRECTORY: {
         M_BaseObject* module = nullptr;
         try {
             module = space->getitem(space->get_sys()->get(space, "modules"),
@@ -147,24 +173,46 @@ static M_BaseObject* load_module(mtpython::vm::ThreadContext* context,
             module =
                 space->wrap(context, new (context) Module(space, w_modulename));
 
-        std::string filename = spec->get_filename();
-        std::ifstream file;
-        file.open(filename);
-        std::string source;
-        file.seekg(0, std::ios::end);
-        source.resize((unsigned int)file.tellg());
-        file.seekg(0, std::ios::beg);
-        file.read(&source[0], source.size());
-        file.close();
-
         space->setitem(space->get_sys()->get(space, "modules"), w_modulename,
                        module);
         space->setattr(module, space->wrap_str(context, "__file__"),
-                       space->wrap_str(context, filename));
-        module =
-            load_source_module(context, w_modulename, module, filename, source);
+                       space->wrap_str(context, spec->get_filename()));
 
-        return module;
+        if (mod_type == ModType::PY_SOURCE) {
+            std::string filename = spec->get_filename();
+            std::ifstream file;
+            file.open(filename);
+            std::string source;
+            file.seekg(0, std::ios::end);
+            source.resize((unsigned int)file.tellg());
+            file.seekg(0, std::ios::beg);
+            file.read(&source[0], source.size());
+            file.close();
+
+            module = load_source_module(context, w_modulename, module, filename,
+                                        source);
+
+            return module;
+        } else if (mod_type == ModType::PKG_DIRECTORY) {
+            M_BaseObject* w_new_path = space->new_list(
+                context, {space->wrap_str(context, spec->get_filename())});
+            space->setattr(module, space->wrap_str(context, "__path__"),
+                           w_new_path);
+            std::unique_ptr<ModuleSpec> new_spec;
+            new_spec.reset(find_module(context, "__init__", nullptr, "__init__",
+                                       w_new_path));
+
+            if (!new_spec) return module;
+
+            module = load_module(context, w_modulename, new_spec.get());
+
+            return module;
+        }
+        break;
+    }
+
+    default:
+        break;
     }
 
     return nullptr;
@@ -182,11 +230,11 @@ static M_BaseObject* load_part(mtpython::vm::ThreadContext* context,
     if (mod && !space->i_is(mod, space->wrap_None())) {
         return mod;
     } else if (prefix.size() == 0 || path) {
-        ModuleSpec* spec =
-            find_module(context, mod_name, w_mod_name, part, path);
+        std::unique_ptr<ModuleSpec> spec;
+        spec.reset(find_module(context, mod_name, w_mod_name, part, path));
 
         if (spec) {
-            M_BaseObject* mod = load_module(context, w_mod_name, spec);
+            M_BaseObject* mod = load_module(context, w_mod_name, spec.get());
 
             try {
                 mod = space->getitem(space->get_sys()->get(space, "modules"),

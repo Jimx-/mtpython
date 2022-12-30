@@ -4,6 +4,7 @@
 #include "interpreter/error.h"
 #include "objects/space_cache.h"
 
+#include "modules/_collections/collectionsmodule.h"
 #include "modules/_io/iomodule.h"
 #include "modules/builtins/bltinmodule.h"
 #include "modules/posix/posixmodule.h"
@@ -75,6 +76,14 @@ void ObjSpace::make_builtins()
     errno_mod->install();
     builtin_names.push_back(wrap_str(ThreadContext::current_thread(), "errno"));
 
+    M_BaseObject* _collections_name =
+        wrap_str(ThreadContext::current_thread(), "_collections");
+    mtpython::modules::CollectionsModule* collections_mod =
+        new mtpython::modules::CollectionsModule(this, _collections_name);
+    collections_mod->install();
+    builtin_names.push_back(
+        wrap_str(ThreadContext::current_thread(), "_collections"));
+
     setitem(sys_mod->get_dict(this),
             wrap_str(ThreadContext::current_thread(), "builtin_module_names"),
             new_tuple(ThreadContext::current_thread(), builtin_names));
@@ -88,6 +97,7 @@ void ObjSpace::setup_builtin_modules()
     get_builtin_module("posix");
     get_builtin_module("_weakref");
     get_builtin_module("errno");
+    get_builtin_module("_collections");
 }
 
 void ObjSpace::init_builtin_exceptions()

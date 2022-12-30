@@ -27,6 +27,9 @@ mtpython::interpreter::Typedef* M_StdListObject::_list_typedef()
             {"__getitem__", new InterpFunctionWrapper(
                                 "__getitem__", M_StdListObject::__getitem__)},
 
+            {"__iadd__",
+             new InterpFunctionWrapper("__iadd__", M_StdListObject::__iadd__)},
+
             {"append",
              new InterpFunctionWrapper("append", M_StdListObject::append)},
             {"extend",
@@ -193,4 +196,18 @@ M_BaseObject* M_StdListObject::pop(mtpython::vm::ThreadContext* context,
     as_list->items.erase(as_list->items.begin() + index);
 
     return result;
+}
+
+M_BaseObject* M_StdListObject::__iadd__(mtpython::vm::ThreadContext* context,
+                                        M_BaseObject* self, M_BaseObject* other)
+{
+    ObjSpace* space = context->get_space();
+    M_StdListObject* as_list = static_cast<M_StdListObject*>(self);
+
+    if (space->i_isinstance(other, space->get_type_by_name("list"))) {
+        extend(context, self, other);
+        return self;
+    }
+
+    return space->wrap_NotImplemented();
 }

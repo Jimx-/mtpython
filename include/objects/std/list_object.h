@@ -48,6 +48,9 @@ public:
     static M_BaseObject* __getitem__(vm::ThreadContext* context,
                                      M_BaseObject* self, M_BaseObject* index);
 
+    static M_BaseObject* __iadd__(vm::ThreadContext* context,
+                                  M_BaseObject* self, M_BaseObject* other);
+
     static M_BaseObject* append(vm::ThreadContext* context, M_BaseObject* self,
                                 M_BaseObject* item);
     static M_BaseObject* extend(vm::ThreadContext* context, M_BaseObject* self,
