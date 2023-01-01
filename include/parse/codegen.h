@@ -60,6 +60,7 @@ public:
     mtpython::tree::ASTNode*
     visit_augassign(mtpython::tree::AugAssignNode* node);
     mtpython::tree::ASTNode* visit_binop(mtpython::tree::BinOpNode* node);
+    mtpython::tree::ASTNode* visit_boolop(mtpython::tree::BoolOpNode* node);
     mtpython::tree::ASTNode* visit_break(mtpython::tree::BreakNode* node);
     mtpython::tree::ASTNode* visit_call(mtpython::tree::CallNode* node);
     mtpython::tree::ASTNode* visit_classdef(mtpython::tree::ClassDefNode* node);

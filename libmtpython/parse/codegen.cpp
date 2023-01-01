@@ -7,21 +7,49 @@ using namespace mtpython::tree;
 using namespace mtpython::objects;
 
 static std::unordered_map<int, int> name_ops_default = {
-    {EC_LOAD, LOAD_NAME}, {EC_STORE, STORE_NAME}, {EC_DEL, DELETE_NAME}};
+    {EC_LOAD, LOAD_NAME},
+    {EC_STORE, STORE_NAME},
+    {EC_DEL, DELETE_NAME},
+};
+
 static std::unordered_map<int, int> name_ops_fast = {
-    {EC_LOAD, LOAD_FAST}, {EC_STORE, STORE_FAST}, {EC_DEL, DELETE_FAST}};
+    {EC_LOAD, LOAD_FAST},
+    {EC_STORE, STORE_FAST},
+    {EC_DEL, DELETE_FAST},
+};
+
 static std::unordered_map<int, int> name_ops_global = {
-    {EC_LOAD, LOAD_GLOBAL}, {EC_STORE, STORE_GLOBAL}, {EC_DEL, DELETE_GLOBAL}};
+    {EC_LOAD, LOAD_GLOBAL},
+    {EC_STORE, STORE_GLOBAL},
+    {EC_DEL, DELETE_GLOBAL},
+};
+
 static std::unordered_map<int, int> name_ops_deref = {
-    {EC_LOAD, LOAD_DEREF}, {EC_STORE, STORE_DEREF}, {EC_DEL, DELETE_DEREF}};
-static std::unordered_map<int, int> subscr_op = {{EC_LOAD, BINARY_SUBSCR},
-                                                 {EC_STORE, STORE_SUBSCR},
-                                                 {EC_DEL, DELETE_SUBSCR}};
+    {EC_LOAD, LOAD_DEREF},
+    {EC_STORE, STORE_DEREF},
+    {EC_DEL, DELETE_DEREF},
+};
+
+static std::unordered_map<int, int> subscr_op = {
+    {EC_LOAD, BINARY_SUBSCR},
+    {EC_STORE, STORE_SUBSCR},
+    {EC_DEL, DELETE_SUBSCR},
+};
+
 static std::unordered_map<int, int> augassign_op = {
     {OP_PLUSEQ, INPLACE_ADD},
     {OP_MINUSEQ, INPLACE_SUBTRACT},
     {OP_MULEQ, INPLACE_MULTIPLY},
-    {OP_DIVEQ, INPLACE_TRUE_DIVIDE}};
+    {OP_DIVEQ, INPLACE_TRUE_DIVIDE},
+    {OP_FLOORDIVEQ, INPLACE_FLOOR_DIVIDE},
+    {OP_MODEQ, INPLACE_MODULO},
+    {OP_SHLEQ, INPLACE_LSHIFT},
+    {OP_SHREQ, INPLACE_RSHIFT},
+    {OP_BITANDEQ, INPLACE_AND},
+    {OP_BITOREQ, INPLACE_OR},
+    {OP_BITXOREQ, INPLACE_XOR},
+    {OP_POWEREQ, INPLACE_POWER},
+};
 
 BaseCodeGenerator::BaseCodeGenerator(const std::string& name,
                                      mtpython::vm::ThreadContext* context,
@@ -42,8 +70,26 @@ unsigned char BaseCodeGenerator::_binop(BinaryOper op)
         return BINARY_SUBTRACT;
     case OP_MUL:
         return BINARY_MULTIPLY;
-    case OP_AND:
+    case OP_DIV:
+        return BINARY_TRUE_DIVIDE;
+    case OP_FLOORDIV:
+        return BINARY_FLOOR_DIVIDE;
+    case OP_MOD:
+        return BINARY_MODULO;
+    case OP_SHL:
+        return BINARY_LSHIFT;
+    case OP_SHR:
+        return BINARY_RSHIFT;
+    case OP_BITAND:
         return BINARY_AND;
+    case OP_BITOR:
+        return BINARY_OR;
+    case OP_BITXOR:
+        return BINARY_XOR;
+    case OP_POWER:
+        return BINARY_POWER;
+    default:
+        break;
     }
 
     return NOP;
@@ -131,6 +177,26 @@ ASTNode* BaseCodeGenerator::visit_binop(BinOpNode* node)
     node->get_left()->visit(this);
     node->get_right()->visit(this);
     emit_op(_binop(node->get_op()));
+
+    return node;
+}
+
+ASTNode* BaseCodeGenerator::visit_boolop(BoolOpNode* node)
+{
+    set_lineno(node->get_line());
+    int inst =
+        node->get_op() == OP_AND ? JUMP_IF_FALSE_OR_POP : JUMP_IF_TRUE_OR_POP;
+
+    CodeBlock* end = new_block();
+    auto& values = node->get_values();
+
+    for (int i = 0; i < values.size() - 1; i++) {
+        values[i]->visit(this);
+        emit_jump(inst, end, true);
+    }
+
+    values.back()->visit(this);
+    use_next_block(end);
 
     return node;
 }

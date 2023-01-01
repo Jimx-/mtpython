@@ -16,6 +16,8 @@ NODE_CONSTRUCTOR(ReturnNode) {}
 
 NODE_CONSTRUCTOR(BinOpNode) { left = right = nullptr; }
 
+NODE_CONSTRUCTOR(BoolOpNode) { values.clear(); }
+
 NODE_CONSTRUCTOR(UnaryOpNode) { operand = nullptr; }
 
 NODE_CONSTRUCTOR(CompareNode) { left = nullptr; }

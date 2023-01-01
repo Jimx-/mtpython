@@ -279,8 +279,12 @@ BinaryOper mtpython::parse::tok2binop(Token tok)
         return OP_MUL;
     case TOK_SLASH:
         return OP_DIV;
+    case TOK_SLASHSLASH:
+        return OP_FLOORDIV;
     case TOK_PERCENT:
         return OP_MOD;
+    case TOK_PERCENTEQ:
+        return OP_MODEQ;
     case TOK_PLUSEQ:
         return OP_PLUSEQ;
     case TOK_MINUSEQ:
@@ -289,6 +293,8 @@ BinaryOper mtpython::parse::tok2binop(Token tok)
         return OP_MULEQ;
     case TOK_SLASHEQ:
         return OP_DIVEQ;
+    case TOK_SLASHSLASHEQ:
+        return OP_FLOORDIVEQ;
     case TOK_AND:
         return OP_AND;
     case TOK_OR:
@@ -299,15 +305,28 @@ BinaryOper mtpython::parse::tok2binop(Token tok)
         return OP_BITOR;
     case TOK_CARET:
         return OP_BITXOR;
+    case TOK_AMPEQ:
+        return OP_BITANDEQ;
+    case TOK_VERTBAREQ:
+        return OP_BITOREQ;
+    case TOK_CARETEQ:
+        return OP_BITXOREQ;
     case TOK_LSSLSS:
         return OP_SHL;
     case TOK_GTRGTR:
         return OP_SHR;
+    case TOK_LSSLSSEQ:
+        return OP_SHLEQ;
+    case TOK_GTRGTREQ:
+        return OP_SHREQ;
     case TOK_STARSTAR:
         return OP_POWER;
+    case TOK_STARSTAREQ:
+        return OP_POWEREQ;
     default:
         break;
     }
+    spdlog::info("Unrec token {}", tok);
     return INVALID_BINOP;
 }
 

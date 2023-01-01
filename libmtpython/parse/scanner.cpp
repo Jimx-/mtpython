@@ -468,6 +468,10 @@ Token Scanner::get_token()
             return TOK_NEQ;
         } else if (last_char == '<') {
             last_char = read_char();
+            if (last_char == '=') {
+                last_char = read_char();
+                return TOK_LSSLSSEQ;
+            }
             return TOK_LSSLSS;
         } else
             return TOK_LSS;
@@ -482,6 +486,10 @@ Token Scanner::get_token()
             return TOK_GEQ;
         } else if (last_char == '>') {
             last_char = read_char();
+            if (last_char == '=') {
+                last_char = read_char();
+                return TOK_GTRGTREQ;
+            }
             return TOK_GTRGTR;
         } else
             return TOK_GTR;
@@ -501,6 +509,10 @@ Token Scanner::get_token()
             return TOK_SLASHEQ; /* /= */
         } else if (last_char == '/') {
             last_char = read_char();
+            if (last_char == '=') {
+                last_char = read_char();
+                return TOK_SLASHSLASHEQ;
+            }
             return TOK_SLASHSLASH;
         }
         return TOK_SLASH;
@@ -563,6 +575,10 @@ Token Scanner::get_token()
             return TOK_STAREQ;
         } else if (last_char == '*') { /* ** */
             last_char = read_char();
+            if (last_char == '=') {
+                last_char = read_char();
+                return TOK_STARSTAREQ;
+            }
             return TOK_STARSTAR;
         }
         return TOK_STAR;
@@ -604,6 +620,10 @@ Token Scanner::get_token()
 
     else if (last_char == '|') {
         last_char = read_char();
+        if (last_char == '=') {
+            last_char = read_char();
+            return TOK_VERTBAREQ;
+        }
         return TOK_VERTBAR;
     }
 
@@ -618,6 +638,10 @@ Token Scanner::get_token()
 
     else if (last_char == '%') {
         last_char = read_char();
+        if (last_char == '=') {
+            last_char = read_char();
+            return TOK_PERCENTEQ;
+        }
         return TOK_PERCENT;
     }
 

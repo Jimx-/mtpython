@@ -324,11 +324,28 @@ public:
     M_BaseObject* add(M_BaseObject* obj1, M_BaseObject* obj2);
     M_BaseObject* sub(M_BaseObject* obj1, M_BaseObject* obj2);
     M_BaseObject* mul(M_BaseObject* obj1, M_BaseObject* obj2);
-    M_BaseObject* _and(M_BaseObject* obj1, M_BaseObject* obj2);
+    M_BaseObject* truediv(M_BaseObject* obj1, M_BaseObject* obj2);
+    M_BaseObject* floordiv(M_BaseObject* obj1, M_BaseObject* obj2);
+    M_BaseObject* mod(M_BaseObject* obj1, M_BaseObject* obj2);
+    M_BaseObject* lshift(M_BaseObject* obj1, M_BaseObject* obj2);
+    M_BaseObject* rshift(M_BaseObject* obj1, M_BaseObject* obj2);
+    M_BaseObject* and_(M_BaseObject* obj1, M_BaseObject* obj2);
+    M_BaseObject* or_(M_BaseObject* obj1, M_BaseObject* obj2);
+    M_BaseObject* xor_(M_BaseObject* obj1, M_BaseObject* obj2);
+    M_BaseObject* pow(M_BaseObject* obj1, M_BaseObject* obj2);
 
     M_BaseObject* inplace_add(M_BaseObject* obj1, M_BaseObject* obj2);
     M_BaseObject* inplace_sub(M_BaseObject* obj1, M_BaseObject* obj2);
     M_BaseObject* inplace_mul(M_BaseObject* obj1, M_BaseObject* obj2);
+    M_BaseObject* inplace_truediv(M_BaseObject* obj1, M_BaseObject* obj2);
+    M_BaseObject* inplace_floordiv(M_BaseObject* obj1, M_BaseObject* obj2);
+    M_BaseObject* inplace_mod(M_BaseObject* obj1, M_BaseObject* obj2);
+    M_BaseObject* inplace_lshift(M_BaseObject* obj1, M_BaseObject* obj2);
+    M_BaseObject* inplace_rshift(M_BaseObject* obj1, M_BaseObject* obj2);
+    M_BaseObject* inplace_and(M_BaseObject* obj1, M_BaseObject* obj2);
+    M_BaseObject* inplace_or(M_BaseObject* obj1, M_BaseObject* obj2);
+    M_BaseObject* inplace_xor(M_BaseObject* obj1, M_BaseObject* obj2);
+    M_BaseObject* inplace_pow(M_BaseObject* obj1, M_BaseObject* obj2);
 
     M_BaseObject* issubtype(M_BaseObject* sub, M_BaseObject* type);
     M_BaseObject* issubtype_override(M_BaseObject* sub, M_BaseObject* type);

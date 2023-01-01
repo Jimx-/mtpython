@@ -8,6 +8,7 @@
 #include "tree/nodes/functiondef_node.h"
 #include "tree/nodes/return_node.h"
 #include "tree/nodes/binop_node.h"
+#include "tree/nodes/boolop_node.h"
 #include "tree/nodes/unaryop_node.h"
 #include "tree/nodes/compare_node.h"
 #include "tree/nodes/arguments_node.h"

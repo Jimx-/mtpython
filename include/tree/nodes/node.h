@@ -105,6 +105,7 @@ class AssertNode;
 class AssignNode;
 class AugAssignNode;
 class BinOpNode;
+class BoolOpNode;
 class BreakNode;
 class CallNode;
 class ClassDefNode;
@@ -166,6 +167,7 @@ public:
     virtual ASTNode* visit_assign(AssignNode* node) { return nullptr; }
     virtual ASTNode* visit_augassign(AugAssignNode* node) { return nullptr; }
     virtual ASTNode* visit_binop(BinOpNode* node) { return nullptr; }
+    virtual ASTNode* visit_boolop(BoolOpNode* node) { return nullptr; }
     virtual ASTNode* visit_break(BreakNode* node) { return nullptr; }
     virtual ASTNode* visit_call(CallNode* node) { return nullptr; }
     virtual ASTNode* visit_classdef(ClassDefNode* node) { return nullptr; }

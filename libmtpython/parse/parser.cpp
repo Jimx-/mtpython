@@ -344,7 +344,10 @@ ASTNode* Parser::expr_stmt()
         expression = asgn;
     } else if (cur_tok == TOK_PLUSEQ || cur_tok == TOK_MINUSEQ ||
                cur_tok == TOK_STAREQ || cur_tok == TOK_SLASHEQ ||
-               cur_tok == TOK_CARETEQ || cur_tok == TOK_AMPEQ) {
+               cur_tok == TOK_SLASHSLASHEQ || cur_tok == TOK_PERCENTEQ ||
+               cur_tok == TOK_LSSLSSEQ || cur_tok == TOK_GTRGTREQ ||
+               cur_tok == TOK_CARETEQ || cur_tok == TOK_VERTBAREQ ||
+               cur_tok == TOK_AMPEQ || cur_tok == TOK_STARSTAREQ) {
         if (TupleNode* tuple = dynamic_cast<TupleNode*>(expression)) {
             delete tuple;
             diag.error(s.get_line(), s.get_col(),
@@ -500,17 +503,20 @@ ASTNode* Parser::test()
 ASTNode* Parser::or_test()
 {
     ASTNode* node = and_test();
-    BinOpNode* p = nullptr;
-    while (cur_tok == TOK_OR) {
-        p = new BinOpNode(s.get_line());
-        if (p != nullptr) {
-            p->set_left(node);
-            p->set_op(OP_OR);
-            match(cur_tok);
-            p->set_right(and_test());
-            node = p;
+
+    if (cur_tok == TOK_OR) {
+        auto* p = new BoolOpNode(s.get_line());
+
+        p->set_op(OP_OR);
+        p->push_value(node);
+        node = p;
+
+        while (cur_tok == TOK_OR) {
+            match(TOK_OR);
+            p->push_value(and_test());
         }
     }
+
     return node;
 }
 
@@ -518,17 +524,20 @@ ASTNode* Parser::or_test()
 ASTNode* Parser::and_test()
 {
     ASTNode* node = not_test();
-    BinOpNode* p = nullptr;
-    while (cur_tok == TOK_AND) {
-        p = new BinOpNode(s.get_line());
-        if (p != nullptr) {
-            p->set_left(node);
-            p->set_op(OP_AND);
-            match(cur_tok);
-            p->set_right(not_test());
-            node = p;
+
+    if (cur_tok == TOK_AND) {
+        auto* p = new BoolOpNode(s.get_line());
+
+        p->set_op(OP_AND);
+        p->push_value(node);
+        node = p;
+
+        while (cur_tok == TOK_AND) {
+            match(TOK_AND);
+            p->push_value(not_test());
         }
     }
+
     return node;
 }
 

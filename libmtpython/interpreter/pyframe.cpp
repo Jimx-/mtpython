@@ -275,6 +275,33 @@ int PyFrame::dispatch_bytecode(ThreadContext* context,
         case BINARY_MULTIPLY:
             binary_mul(arg, next_pc);
             break;
+        case BINARY_TRUE_DIVIDE:
+            binary_truediv(arg, next_pc);
+            break;
+        case BINARY_FLOOR_DIVIDE:
+            binary_floordiv(arg, next_pc);
+            break;
+        case BINARY_MODULO:
+            binary_mod(arg, next_pc);
+            break;
+        case BINARY_LSHIFT:
+            binary_lshift(arg, next_pc);
+            break;
+        case BINARY_RSHIFT:
+            binary_rshift(arg, next_pc);
+            break;
+        case BINARY_AND:
+            binary_and_(arg, next_pc);
+            break;
+        case BINARY_OR:
+            binary_or_(arg, next_pc);
+            break;
+        case BINARY_XOR:
+            binary_xor_(arg, next_pc);
+            break;
+        case BINARY_POWER:
+            binary_pow(arg, next_pc);
+            break;
         case INPLACE_ADD:
             binary_inplace_add(arg, next_pc);
             break;
@@ -283,6 +310,33 @@ int PyFrame::dispatch_bytecode(ThreadContext* context,
             break;
         case INPLACE_MULTIPLY:
             binary_inplace_mul(arg, next_pc);
+            break;
+        case INPLACE_TRUE_DIVIDE:
+            binary_inplace_truediv(arg, next_pc);
+            break;
+        case INPLACE_FLOOR_DIVIDE:
+            binary_inplace_floordiv(arg, next_pc);
+            break;
+        case INPLACE_MODULO:
+            binary_inplace_mod(arg, next_pc);
+            break;
+        case INPLACE_LSHIFT:
+            binary_inplace_lshift(arg, next_pc);
+            break;
+        case INPLACE_RSHIFT:
+            binary_inplace_rshift(arg, next_pc);
+            break;
+        case INPLACE_AND:
+            binary_inplace_and(arg, next_pc);
+            break;
+        case INPLACE_OR:
+            binary_inplace_or(arg, next_pc);
+            break;
+        case INPLACE_XOR:
+            binary_inplace_xor(arg, next_pc);
+            break;
+        case INPLACE_POWER:
+            binary_inplace_pow(arg, next_pc);
             break;
         case LOAD_CONST:
             load_const(arg, next_pc);
@@ -325,6 +379,9 @@ int PyFrame::dispatch_bytecode(ThreadContext* context,
             break;
         case JUMP_IF_FALSE_OR_POP:
             next_pc = jump_if_false_or_pop(arg, next_pc);
+            break;
+        case JUMP_IF_TRUE_OR_POP:
+            next_pc = jump_if_true_or_pop(arg, next_pc);
             break;
         case BUILD_TUPLE:
             build_tuple(arg, next_pc);
@@ -400,9 +457,6 @@ int PyFrame::dispatch_bytecode(ThreadContext* context,
             break;
         case IMPORT_STAR:
             import_star(arg, next_pc);
-            break;
-        case BINARY_AND:
-            binary__and(arg, next_pc);
             break;
         case BUILD_SET:
             build_set(arg, next_pc);
@@ -510,10 +564,29 @@ void PyFrame::fill_cellvars_from_args()
 DEF_BINARY_OPER(add)
 DEF_BINARY_OPER(sub)
 DEF_BINARY_OPER(mul)
+DEF_BINARY_OPER(truediv)
+DEF_BINARY_OPER(floordiv)
+DEF_BINARY_OPER(mod)
+DEF_BINARY_OPER(lshift)
+DEF_BINARY_OPER(rshift)
+DEF_BINARY_OPER(and_)
+DEF_BINARY_OPER(or_)
+DEF_BINARY_OPER(xor_)
+DEF_BINARY_OPER(pow)
+
 DEF_BINARY_OPER(inplace_add)
 DEF_BINARY_OPER(inplace_sub)
 DEF_BINARY_OPER(inplace_mul)
-DEF_BINARY_OPER(_and)
+DEF_BINARY_OPER(inplace_truediv)
+DEF_BINARY_OPER(inplace_floordiv)
+DEF_BINARY_OPER(inplace_mod)
+DEF_BINARY_OPER(inplace_lshift)
+DEF_BINARY_OPER(inplace_rshift)
+DEF_BINARY_OPER(inplace_and)
+DEF_BINARY_OPER(inplace_or)
+DEF_BINARY_OPER(inplace_xor)
+DEF_BINARY_OPER(inplace_pow)
+
 DEF_BINARY_OPER_ALIAS(subscr, getitem)
 
 void PyFrame::pop_top(int arg, int next_pc) { pop_value(); }
@@ -716,6 +789,20 @@ int PyFrame::jump_if_false_or_pop(int arg, int next_pc)
     M_BaseObject* value = peek_value();
     int result;
     if (!space->is_true(value))
+        result = arg;
+    else {
+        pop_value();
+        result = next_pc;
+    }
+
+    return result;
+}
+
+int PyFrame::jump_if_true_or_pop(int arg, int next_pc)
+{
+    M_BaseObject* value = peek_value();
+    int result;
+    if (space->is_true(value))
         result = arg;
     else {
         pop_value();

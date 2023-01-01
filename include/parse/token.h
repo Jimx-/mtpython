@@ -82,14 +82,20 @@ typedef enum {
     TOK_PLUSEQ,
     TOK_MINUSEQ,
     TOK_STAREQ,
+    TOK_STARSTAREQ,
     TOK_SLASHEQ,
+    TOK_SLASHSLASHEQ,
+    TOK_PERCENTEQ,
     TOK_CARETEQ,
     TOK_AMPEQ,
+    TOK_VERTBAREQ,
     TOK_NEQ,
     TOK_LSS,
     TOK_GTR,
     TOK_LEQ,
     TOK_GEQ,
+    TOK_LSSLSSEQ,
+    TOK_GTRGTREQ,
     TOK_SEMICOLON,
     TOK_RETURN,
     TOK_EOF
@@ -102,20 +108,28 @@ typedef enum {
     OP_MINUS,
     OP_MUL,
     OP_DIV,
-    OP_MOD, /* + - * / % */
+    OP_FLOORDIV,
+    OP_MOD, /* + - * / // % */
     OP_PLUSEQ,
     OP_MINUSEQ,
     OP_MULEQ,
     OP_DIVEQ,
-    OP_MODEQ, /* += -= *= /= %= */
+    OP_FLOORDIVEQ,
+    OP_MODEQ, /* += -= *= /= //= %= */
     OP_SHL,
     OP_SHR,
+    OP_SHLEQ,
+    OP_SHREQ,
     OP_AND,
     OP_OR,
     OP_BITAND,
     OP_BITOR,
     OP_BITXOR, /* << >> && || & | ^ */
-    OP_POWER,  /* ** */
+    OP_BITANDEQ,
+    OP_BITOREQ,
+    OP_BITXOREQ, /* &= |= ^= */
+    OP_POWER,    /* ** */
+    OP_POWEREQ,
     INVALID_BINOP
 } BinaryOper;
 
