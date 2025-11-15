@@ -1,3 +1,5 @@
+find_package(spdlog)
+
 corrosion_import_crate(MANIFEST_PATH ${TOPDIR}/3rdparty/mmtk/mmtk/Cargo.toml)
 
 set(LIBMTPYTHON_SRCLIST
@@ -58,7 +60,7 @@ set(LIBMTPYTHON_SRCLIST
     vm/thread_context.cpp
     vm/vm.cpp)
 
-set(LIBRARIES CONAN_PKG::spdlog
+set(LIBRARIES spdlog::spdlog
               mmtk_ruby)
 
 add_library(libmtpython ${LIBMTPYTHON_SRCLIST})

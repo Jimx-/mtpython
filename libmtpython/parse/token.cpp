@@ -1,4 +1,5 @@
 #include "parse/token.h"
+#include "spdlog/spdlog.h"
 
 using namespace mtpython::parse;
 
