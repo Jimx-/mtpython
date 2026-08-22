@@ -12,8 +12,6 @@ using namespace mtpython::interpreter;
 using namespace mtpython::objects;
 using namespace mtpython::vm;
 
-static BreakUnwinder break_unwinder;
-
 class ExitFrameException : public std::exception {};
 class ReturnException : public ExitFrameException {};
 class YieldException : public ExitFrameException {};
@@ -50,11 +48,9 @@ int ExceptBlock::handle(PyFrame* frame, StackUnwinder* unwinder)
 int FinallyBlock::handle(PyFrame* frame, StackUnwinder* unwinder)
 {
     cleanup(frame);
-    ExceptionUnwinder* as_exc = dynamic_cast<ExceptionUnwinder*>(unwinder);
-    if (as_exc) {
-        ObjSpace* space = frame->get_space();
-        frame->push_value(space->wrap(frame->get_context(), as_exc));
-    }
+    /* END_FINALLY pops the unwinder after the finally body and
+       re-dispatches it (return/break/continue) or re-raises it */
+    frame->push_value(unwinder);
 
     return handler;
 }
@@ -1221,7 +1217,9 @@ void PyFrame::_pop_block(int arg, int next_pc)
 
 int PyFrame::break_loop(int arg, int next_pc)
 {
-    return unwind_stack_jump(&break_unwinder);
+    /* heap-allocated: a finally block may push the unwinder onto the
+       value stack, where the GC scans it */
+    return unwind_stack_jump(new (context) BreakUnwinder());
 }
 
 #define DEF_UNARY_OPER(opname, name)                   \

@@ -50,6 +50,11 @@ public:
     }
     const InterpError& get_error() { return error; }
     virtual objects::M_BaseObject* unhandle() { throw error; }
+    virtual void mark_children(gc::GarbageCollector* gc)
+    {
+        gc->mark_object(error.get_value());
+        gc->mark_object(error.get_type());
+    }
 };
 
 class ReturnUnwinder : public StackUnwinder {
@@ -62,6 +67,10 @@ public:
         why_code = WHY_RETURN;
     }
     virtual objects::M_BaseObject* unhandle() { return retval; }
+    virtual void mark_children(gc::GarbageCollector* gc)
+    {
+        gc->mark_object(retval);
+    }
 };
 
 class BreakUnwinder : public StackUnwinder {
