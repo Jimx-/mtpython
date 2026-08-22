@@ -327,7 +327,7 @@ BinaryOper mtpython::parse::tok2binop(Token tok)
     default:
         break;
     }
-    spdlog::info("Unrec token {}", tok);
+    spdlog::info("Unrec token {}", static_cast<int>(tok));
     return INVALID_BINOP;
 }
 

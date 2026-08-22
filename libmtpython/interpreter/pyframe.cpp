@@ -157,6 +157,41 @@ M_BaseObject* PyFrame::execute_frame(M_BaseObject* arg)
     return retval;
 }
 
+#if defined(__GNUC__) && !defined(MTPYTHON_NO_COMPUTED_GOTO)
+#define MTPYTHON_USE_COMPUTED_GOTO 1
+#endif
+
+#if defined(MTPYTHON_USE_COMPUTED_GOTO)
+#define TARGET(op) L_##op:
+#define DISPATCH()                     \
+    do {                               \
+        FETCH_NEXT_OPCODE();           \
+        goto *dispatch_table[opcode];  \
+    } while (0)
+#else
+#define TARGET(op) case op:
+#define DISPATCH() continue
+#endif
+
+#define FETCH_NEXT_OPCODE()                                             \
+    do {                                                                \
+        pc = next_pc;                                                   \
+        opcode = bytecode[next_pc];                                     \
+        next_pc++;                                                      \
+        arg = 0;                                                        \
+        if (opcode >= HAVE_ARGUMENT) {                                  \
+            unsigned char lo = bytecode[next_pc++];                     \
+            unsigned char hi = bytecode[next_pc++];                     \
+            arg = (hi << 8) | lo;                                       \
+        }                                                               \
+        while (opcode == EXTENDED_ARG) {                                \
+            opcode = bytecode[next_pc++];                               \
+            unsigned char lo = bytecode[next_pc++];                     \
+            unsigned char hi = bytecode[next_pc++];                     \
+            arg = (arg << 16) | (hi << 8) | lo;                         \
+        }                                                               \
+    } while (0)
+
 M_BaseObject* PyFrame::dispatch(ThreadContext* context, Code* code, int next_pc)
 {
     PyCode* pycode = dynamic_cast<PyCode*>(code);
@@ -165,27 +200,633 @@ M_BaseObject* PyFrame::dispatch(ThreadContext* context, Code* code, int next_pc)
     std::vector<unsigned char>& bytecode = pycode->get_code();
 
     try {
-        while (true) {
-            next_pc = execute_bytecode(context, bytecode, next_pc);
-        }
+        dispatch_bytecode(context, bytecode, next_pc);
     } catch (YieldException) {
         return pop_value();
     } catch (ExitFrameException) {
         return pop_value();
     }
+
+    return nullptr;
 }
 
-int PyFrame::execute_bytecode(ThreadContext* context,
-                              std::vector<unsigned char>& bytecode, int next_pc)
+void PyFrame::dispatch_bytecode(ThreadContext* context,
+                                std::vector<unsigned char>& bytecode, int next_pc)
 {
-    try {
-        next_pc = dispatch_bytecode(context, bytecode, next_pc);
-    } catch (InterpError& e) {
-        next_pc = handle_interp_error(e);
+#if defined(MTPYTHON_USE_COMPUTED_GOTO)
+    void* dispatch_table[256];
+    {
+        int i;
+        for (i = 0; i < 256; i++)
+            dispatch_table[i] = &&L_unknown_opcode;
+#define SET_LABEL(op) dispatch_table[op] = &&L_##op
+        SET_LABEL(RETURN_VALUE);
+        SET_LABEL(END_FINALLY);
+        SET_LABEL(JUMP_ABSOLUTE);
+        SET_LABEL(POP_TOP);
+        SET_LABEL(BINARY_ADD);
+        SET_LABEL(BINARY_SUBTRACT);
+        SET_LABEL(BINARY_MULTIPLY);
+        SET_LABEL(BINARY_TRUE_DIVIDE);
+        SET_LABEL(BINARY_FLOOR_DIVIDE);
+        SET_LABEL(BINARY_MODULO);
+        SET_LABEL(BINARY_LSHIFT);
+        SET_LABEL(BINARY_RSHIFT);
+        SET_LABEL(BINARY_AND);
+        SET_LABEL(BINARY_OR);
+        SET_LABEL(BINARY_XOR);
+        SET_LABEL(BINARY_POWER);
+        SET_LABEL(INPLACE_ADD);
+        SET_LABEL(INPLACE_SUBTRACT);
+        SET_LABEL(INPLACE_MULTIPLY);
+        SET_LABEL(INPLACE_TRUE_DIVIDE);
+        SET_LABEL(INPLACE_FLOOR_DIVIDE);
+        SET_LABEL(INPLACE_MODULO);
+        SET_LABEL(INPLACE_LSHIFT);
+        SET_LABEL(INPLACE_RSHIFT);
+        SET_LABEL(INPLACE_AND);
+        SET_LABEL(INPLACE_OR);
+        SET_LABEL(INPLACE_XOR);
+        SET_LABEL(INPLACE_POWER);
+        SET_LABEL(LOAD_CONST);
+        SET_LABEL(LOAD_FAST);
+        SET_LABEL(STORE_FAST);
+        SET_LABEL(JUMP_FORWARD);
+        SET_LABEL(POP_JUMP_IF_FALSE);
+        SET_LABEL(LOAD_GLOBAL);
+        SET_LABEL(CALL_FUNCTION);
+        SET_LABEL(MAKE_FUNCTION);
+        SET_LABEL(MAKE_CLOSURE);
+        SET_LABEL(DUP_TOP);
+        SET_LABEL(ROT_THREE);
+        SET_LABEL(ROT_TWO);
+        SET_LABEL(COMPARE_OP);
+        SET_LABEL(JUMP_IF_FALSE_OR_POP);
+        SET_LABEL(JUMP_IF_TRUE_OR_POP);
+        SET_LABEL(BUILD_TUPLE);
+        SET_LABEL(SETUP_LOOP);
+        SET_LABEL(GET_ITER);
+        SET_LABEL(FOR_ITER);
+        SET_LABEL(POP_BLOCK);
+        SET_LABEL(BREAK_LOOP);
+        SET_LABEL(UNARY_POSITIVE);
+        SET_LABEL(UNARY_NEGATIVE);
+        SET_LABEL(UNARY_NOT);
+        SET_LABEL(UNARY_INVERT);
+        SET_LABEL(SETUP_FINALLY);
+        SET_LABEL(SETUP_EXCEPT);
+        SET_LABEL(POP_EXCEPT);
+        SET_LABEL(DELETE_FAST);
+        SET_LABEL(LOAD_ATTR);
+        SET_LABEL(STORE_ATTR);
+        SET_LABEL(DELETE_ATTR);
+        SET_LABEL(IMPORT_NAME);
+        SET_LABEL(STORE_GLOBAL);
+        SET_LABEL(LOAD_NAME);
+        SET_LABEL(STORE_NAME);
+        SET_LABEL(BINARY_SUBSCR);
+        SET_LABEL(BUILD_LIST);
+        SET_LABEL(IMPORT_FROM);
+        SET_LABEL(IMPORT_STAR);
+        SET_LABEL(BUILD_SET);
+        SET_LABEL(LOAD_BUILD_CLASS);
+        SET_LABEL(BUILD_MAP);
+        SET_LABEL(LOAD_CLOSURE);
+        SET_LABEL(LOAD_DEREF);
+        SET_LABEL(STORE_DEREF);
+        SET_LABEL(SETUP_WITH);
+        SET_LABEL(WITH_CLEANUP);
+        SET_LABEL(YIELD_VALUE);
+        SET_LABEL(UNPACK_SEQUENCE);
+        SET_LABEL(STORE_SUBSCR);
+#undef SET_LABEL
     }
+#endif
 
-    return next_pc;
+    unsigned char opcode;
+    int arg = 0;
+
+    for (;;) {
+        try {
+            for (;;) {
+                FETCH_NEXT_OPCODE();
+#if defined(MTPYTHON_USE_COMPUTED_GOTO)
+                goto *dispatch_table[opcode];
+#else
+                switch (opcode) {
+#endif
+
+                TARGET(RETURN_VALUE)
+                {
+                    M_BaseObject* result = pop_value();
+                    FrameBlock* block = unwind_stack(WHY_RETURN);
+                    if (!block) {
+                        push_value(result);
+                        throw ReturnException();
+                    } else {
+                        StackUnwinder* unwinder =
+                            new (context) ReturnUnwinder(result);
+                        next_pc = block->handle(this, unwinder);
+                    }
+
+                    DISPATCH();
+                }
+
+                TARGET(END_FINALLY)
+                {
+                    StackUnwinder* unwinder =
+                        dynamic_cast<StackUnwinder*>(end_finally());
+                    if (unwinder) {
+                        FrameBlock* block = unwind_stack(unwinder->why());
+                        if (!block) {
+                            push_value(unwinder->unhandle());
+                            throw ReturnException();
+                        } else {
+                            next_pc = block->handle(this, unwinder);
+                        }
+                    }
+
+                    DISPATCH();
+                }
+
+                TARGET(JUMP_ABSOLUTE)
+                {
+                    next_pc = jump_absolute(arg);
+                    DISPATCH();
+                }
+
+                TARGET(POP_TOP)
+                {
+                    pop_top(arg, next_pc);
+                    DISPATCH();
+                }
+
+                TARGET(BINARY_ADD)
+                {
+                    binary_add(arg, next_pc);
+                    DISPATCH();
+                }
+
+                TARGET(BINARY_SUBTRACT)
+                {
+                    binary_sub(arg, next_pc);
+                    DISPATCH();
+                }
+
+                TARGET(BINARY_MULTIPLY)
+                {
+                    binary_mul(arg, next_pc);
+                    DISPATCH();
+                }
+
+                TARGET(BINARY_TRUE_DIVIDE)
+                {
+                    binary_truediv(arg, next_pc);
+                    DISPATCH();
+                }
+
+                TARGET(BINARY_FLOOR_DIVIDE)
+                {
+                    binary_floordiv(arg, next_pc);
+                    DISPATCH();
+                }
+
+                TARGET(BINARY_MODULO)
+                {
+                    binary_mod(arg, next_pc);
+                    DISPATCH();
+                }
+
+                TARGET(BINARY_LSHIFT)
+                {
+                    binary_lshift(arg, next_pc);
+                    DISPATCH();
+                }
+
+                TARGET(BINARY_RSHIFT)
+                {
+                    binary_rshift(arg, next_pc);
+                    DISPATCH();
+                }
+
+                TARGET(BINARY_AND)
+                {
+                    binary_and_(arg, next_pc);
+                    DISPATCH();
+                }
+
+                TARGET(BINARY_OR)
+                {
+                    binary_or_(arg, next_pc);
+                    DISPATCH();
+                }
+
+                TARGET(BINARY_XOR)
+                {
+                    binary_xor_(arg, next_pc);
+                    DISPATCH();
+                }
+
+                TARGET(BINARY_POWER)
+                {
+                    binary_pow(arg, next_pc);
+                    DISPATCH();
+                }
+
+                TARGET(INPLACE_ADD)
+                {
+                    binary_inplace_add(arg, next_pc);
+                    DISPATCH();
+                }
+
+                TARGET(INPLACE_SUBTRACT)
+                {
+                    binary_inplace_sub(arg, next_pc);
+                    DISPATCH();
+                }
+
+                TARGET(INPLACE_MULTIPLY)
+                {
+                    binary_inplace_mul(arg, next_pc);
+                    DISPATCH();
+                }
+
+                TARGET(INPLACE_TRUE_DIVIDE)
+                {
+                    binary_inplace_truediv(arg, next_pc);
+                    DISPATCH();
+                }
+
+                TARGET(INPLACE_FLOOR_DIVIDE)
+                {
+                    binary_inplace_floordiv(arg, next_pc);
+                    DISPATCH();
+                }
+
+                TARGET(INPLACE_MODULO)
+                {
+                    binary_inplace_mod(arg, next_pc);
+                    DISPATCH();
+                }
+
+                TARGET(INPLACE_LSHIFT)
+                {
+                    binary_inplace_lshift(arg, next_pc);
+                    DISPATCH();
+                }
+
+                TARGET(INPLACE_RSHIFT)
+                {
+                    binary_inplace_rshift(arg, next_pc);
+                    DISPATCH();
+                }
+
+                TARGET(INPLACE_AND)
+                {
+                    binary_inplace_and(arg, next_pc);
+                    DISPATCH();
+                }
+
+                TARGET(INPLACE_OR)
+                {
+                    binary_inplace_or(arg, next_pc);
+                    DISPATCH();
+                }
+
+                TARGET(INPLACE_XOR)
+                {
+                    binary_inplace_xor(arg, next_pc);
+                    DISPATCH();
+                }
+
+                TARGET(INPLACE_POWER)
+                {
+                    binary_inplace_pow(arg, next_pc);
+                    DISPATCH();
+                }
+
+                TARGET(LOAD_CONST)
+                {
+                    load_const(arg, next_pc);
+                    DISPATCH();
+                }
+
+                TARGET(LOAD_FAST)
+                {
+                    load_fast(arg, next_pc);
+                    DISPATCH();
+                }
+
+                TARGET(STORE_FAST)
+                {
+                    store_fast(arg, next_pc);
+                    DISPATCH();
+                }
+
+                TARGET(JUMP_FORWARD)
+                {
+                    next_pc = jump_forward(arg, next_pc);
+                    DISPATCH();
+                }
+
+                TARGET(POP_JUMP_IF_FALSE)
+                {
+                    next_pc = pop_jump_if_false(arg, next_pc);
+                    DISPATCH();
+                }
+
+                TARGET(LOAD_GLOBAL)
+                {
+                    load_global(arg, next_pc);
+                    DISPATCH();
+                }
+
+                TARGET(CALL_FUNCTION)
+                {
+                    call_function(arg, next_pc);
+                    DISPATCH();
+                }
+
+                TARGET(MAKE_FUNCTION)
+                {
+                    make_function(arg, next_pc);
+                    DISPATCH();
+                }
+
+                TARGET(MAKE_CLOSURE)
+                {
+                    make_closure(arg, next_pc);
+                    DISPATCH();
+                }
+
+                TARGET(DUP_TOP)
+                {
+                    dup_top(arg, next_pc);
+                    DISPATCH();
+                }
+
+                TARGET(ROT_THREE)
+                {
+                    rot_three(arg, next_pc);
+                    DISPATCH();
+                }
+
+                TARGET(ROT_TWO)
+                {
+                    rot_two(arg, next_pc);
+                    DISPATCH();
+                }
+
+                TARGET(COMPARE_OP)
+                {
+                    compare_op(arg, next_pc);
+                    DISPATCH();
+                }
+
+                TARGET(JUMP_IF_FALSE_OR_POP)
+                {
+                    next_pc = jump_if_false_or_pop(arg, next_pc);
+                    DISPATCH();
+                }
+
+                TARGET(JUMP_IF_TRUE_OR_POP)
+                {
+                    next_pc = jump_if_true_or_pop(arg, next_pc);
+                    DISPATCH();
+                }
+
+                TARGET(BUILD_TUPLE)
+                {
+                    build_tuple(arg, next_pc);
+                    DISPATCH();
+                }
+
+                TARGET(SETUP_LOOP)
+                {
+                    setup_loop(arg, next_pc);
+                    DISPATCH();
+                }
+
+                TARGET(GET_ITER)
+                {
+                    get_iter(arg, next_pc);
+                    DISPATCH();
+                }
+
+                TARGET(FOR_ITER)
+                {
+                    next_pc = for_iter(arg, next_pc);
+                    DISPATCH();
+                }
+
+                TARGET(POP_BLOCK)
+                {
+                    _pop_block(arg, next_pc);
+                    DISPATCH();
+                }
+
+                TARGET(BREAK_LOOP)
+                {
+                    next_pc = break_loop(arg, next_pc);
+                    DISPATCH();
+                }
+
+                TARGET(UNARY_POSITIVE)
+                {
+                    unary_positive(arg, next_pc);
+                    DISPATCH();
+                }
+
+                TARGET(UNARY_NEGATIVE)
+                {
+                    unary_negative(arg, next_pc);
+                    DISPATCH();
+                }
+
+                TARGET(UNARY_NOT)
+                {
+                    unary_not(arg, next_pc);
+                    DISPATCH();
+                }
+
+                TARGET(UNARY_INVERT)
+                {
+                    unary_invert(arg, next_pc);
+                    DISPATCH();
+                }
+
+                TARGET(SETUP_FINALLY)
+                {
+                    setup_finally(arg, next_pc);
+                    DISPATCH();
+                }
+
+                TARGET(SETUP_EXCEPT)
+                {
+                    setup_except(arg, next_pc);
+                    DISPATCH();
+                }
+
+                TARGET(POP_EXCEPT)
+                {
+                    pop_except(arg, next_pc);
+                    DISPATCH();
+                }
+
+                TARGET(DELETE_FAST)
+                {
+                    delete_fast(arg, next_pc);
+                    DISPATCH();
+                }
+
+                TARGET(LOAD_ATTR)
+                {
+                    load_attr(arg, next_pc);
+                    DISPATCH();
+                }
+
+                TARGET(STORE_ATTR)
+                {
+                    store_attr(arg, next_pc);
+                    DISPATCH();
+                }
+
+                TARGET(DELETE_ATTR)
+                {
+                    delete_attr(arg, next_pc);
+                    DISPATCH();
+                }
+
+                TARGET(IMPORT_NAME)
+                {
+                    import_name(arg, next_pc);
+                    DISPATCH();
+                }
+
+                TARGET(STORE_GLOBAL)
+                {
+                    store_global(arg, next_pc);
+                    DISPATCH();
+                }
+
+                TARGET(LOAD_NAME)
+                {
+                    load_name(arg, next_pc);
+                    DISPATCH();
+                }
+
+                TARGET(STORE_NAME)
+                {
+                    store_name(arg, next_pc);
+                    DISPATCH();
+                }
+
+                TARGET(BINARY_SUBSCR)
+                {
+                    binary_subscr(arg, next_pc);
+                    DISPATCH();
+                }
+
+                TARGET(BUILD_LIST)
+                {
+                    build_list(arg, next_pc);
+                    DISPATCH();
+                }
+
+                TARGET(IMPORT_FROM)
+                {
+                    import_from(arg, next_pc);
+                    DISPATCH();
+                }
+
+                TARGET(IMPORT_STAR)
+                {
+                    import_star(arg, next_pc);
+                    DISPATCH();
+                }
+
+                TARGET(BUILD_SET)
+                {
+                    build_set(arg, next_pc);
+                    DISPATCH();
+                }
+
+                TARGET(LOAD_BUILD_CLASS)
+                {
+                    load_build_class(arg, next_pc);
+                    DISPATCH();
+                }
+
+                TARGET(BUILD_MAP)
+                {
+                    build_map(arg, next_pc);
+                    DISPATCH();
+                }
+
+                TARGET(LOAD_CLOSURE)
+                {
+                    load_closure(arg, next_pc);
+                    DISPATCH();
+                }
+
+                TARGET(LOAD_DEREF)
+                {
+                    load_deref(arg, next_pc);
+                    DISPATCH();
+                }
+
+                TARGET(STORE_DEREF)
+                {
+                    store_deref(arg, next_pc);
+                    DISPATCH();
+                }
+
+                TARGET(SETUP_WITH)
+                {
+                    setup_with(arg, next_pc);
+                    DISPATCH();
+                }
+
+                TARGET(WITH_CLEANUP)
+                {
+                    with_cleanup(arg, next_pc);
+                    DISPATCH();
+                }
+
+                TARGET(YIELD_VALUE)
+                {
+                    yield_value(arg, next_pc);
+                    DISPATCH();
+                }
+
+                TARGET(UNPACK_SEQUENCE)
+                {
+                    unpack_sequence(arg, next_pc);
+                    DISPATCH();
+                }
+
+                TARGET(STORE_SUBSCR)
+                {
+                    store_subscr(arg, next_pc);
+                    DISPATCH();
+                }
+
+#if defined(MTPYTHON_USE_COMPUTED_GOTO)
+            L_unknown_opcode:
+                DISPATCH();
+#else
+                }
+#endif
+            }
+        } catch (InterpError& e) {
+            next_pc = handle_interp_error(e);
+        }
+    }
 }
+
+#undef TARGET
+#undef DISPATCH
+#undef FETCH_NEXT_OPCODE
 
 int PyFrame::handle_interp_error(InterpError& exc)
 {
@@ -204,296 +845,6 @@ int PyFrame::handle_interp_error(InterpError& exc)
     return next_pc;
 }
 
-int PyFrame::dispatch_bytecode(ThreadContext* context,
-                               std::vector<unsigned char>& bytecode,
-                               int next_pc)
-{
-    while (true) {
-        pc = next_pc;
-
-        unsigned char opcode = bytecode[next_pc];
-        next_pc++;
-
-        int arg = 0;
-        if (opcode >= HAVE_ARGUMENT) {
-            unsigned char lo = bytecode[next_pc++];
-            unsigned char hi = bytecode[next_pc++];
-
-            arg = (hi << 8) | lo;
-        }
-
-        while (opcode == EXTENDED_ARG) {
-            opcode = bytecode[next_pc++];
-            unsigned char lo = bytecode[next_pc++];
-            unsigned char hi = bytecode[next_pc++];
-
-            arg = (arg << 16) | (hi << 8) | lo;
-        }
-
-        if (opcode == RETURN_VALUE) {
-            M_BaseObject* result = pop_value();
-            FrameBlock* block = unwind_stack(WHY_RETURN);
-            if (!block) {
-                push_value(result);
-                throw ReturnException();
-            } else {
-                StackUnwinder* unwinder = new (context) ReturnUnwinder(result);
-                next_pc = block->handle(this, unwinder);
-            }
-
-            return next_pc;
-        }
-
-        if (opcode == END_FINALLY) {
-            StackUnwinder* unwinder =
-                dynamic_cast<StackUnwinder*>(end_finally());
-            if (unwinder) {
-                FrameBlock* block = unwind_stack(unwinder->why());
-                if (!block) {
-                    push_value(unwinder->unhandle());
-                    throw ReturnException();
-                } else {
-                    next_pc = block->handle(this, unwinder);
-                }
-            }
-
-            return next_pc;
-        }
-
-        switch (opcode) {
-        case JUMP_ABSOLUTE:
-            return jump_absolute(arg);
-        case POP_TOP:
-            pop_top(arg, next_pc);
-            break;
-        case BINARY_ADD:
-            binary_add(arg, next_pc);
-            break;
-        case BINARY_SUBTRACT:
-            binary_sub(arg, next_pc);
-            break;
-        case BINARY_MULTIPLY:
-            binary_mul(arg, next_pc);
-            break;
-        case BINARY_TRUE_DIVIDE:
-            binary_truediv(arg, next_pc);
-            break;
-        case BINARY_FLOOR_DIVIDE:
-            binary_floordiv(arg, next_pc);
-            break;
-        case BINARY_MODULO:
-            binary_mod(arg, next_pc);
-            break;
-        case BINARY_LSHIFT:
-            binary_lshift(arg, next_pc);
-            break;
-        case BINARY_RSHIFT:
-            binary_rshift(arg, next_pc);
-            break;
-        case BINARY_AND:
-            binary_and_(arg, next_pc);
-            break;
-        case BINARY_OR:
-            binary_or_(arg, next_pc);
-            break;
-        case BINARY_XOR:
-            binary_xor_(arg, next_pc);
-            break;
-        case BINARY_POWER:
-            binary_pow(arg, next_pc);
-            break;
-        case INPLACE_ADD:
-            binary_inplace_add(arg, next_pc);
-            break;
-        case INPLACE_SUBTRACT:
-            binary_inplace_sub(arg, next_pc);
-            break;
-        case INPLACE_MULTIPLY:
-            binary_inplace_mul(arg, next_pc);
-            break;
-        case INPLACE_TRUE_DIVIDE:
-            binary_inplace_truediv(arg, next_pc);
-            break;
-        case INPLACE_FLOOR_DIVIDE:
-            binary_inplace_floordiv(arg, next_pc);
-            break;
-        case INPLACE_MODULO:
-            binary_inplace_mod(arg, next_pc);
-            break;
-        case INPLACE_LSHIFT:
-            binary_inplace_lshift(arg, next_pc);
-            break;
-        case INPLACE_RSHIFT:
-            binary_inplace_rshift(arg, next_pc);
-            break;
-        case INPLACE_AND:
-            binary_inplace_and(arg, next_pc);
-            break;
-        case INPLACE_OR:
-            binary_inplace_or(arg, next_pc);
-            break;
-        case INPLACE_XOR:
-            binary_inplace_xor(arg, next_pc);
-            break;
-        case INPLACE_POWER:
-            binary_inplace_pow(arg, next_pc);
-            break;
-        case LOAD_CONST:
-            load_const(arg, next_pc);
-            break;
-        case LOAD_FAST:
-            load_fast(arg, next_pc);
-            break;
-        case STORE_FAST:
-            store_fast(arg, next_pc);
-            break;
-        case JUMP_FORWARD:
-            next_pc = jump_forward(arg, next_pc);
-            break;
-        case POP_JUMP_IF_FALSE:
-            next_pc = pop_jump_if_false(arg, next_pc);
-            break;
-        case LOAD_GLOBAL:
-            load_global(arg, next_pc);
-            break;
-        case CALL_FUNCTION:
-            call_function(arg, next_pc);
-            break;
-        case MAKE_FUNCTION:
-            make_function(arg, next_pc);
-            break;
-        case MAKE_CLOSURE:
-            make_closure(arg, next_pc);
-            break;
-        case DUP_TOP:
-            dup_top(arg, next_pc);
-            break;
-        case ROT_THREE:
-            rot_three(arg, next_pc);
-            break;
-        case ROT_TWO:
-            rot_two(arg, next_pc);
-            break;
-        case COMPARE_OP:
-            compare_op(arg, next_pc);
-            break;
-        case JUMP_IF_FALSE_OR_POP:
-            next_pc = jump_if_false_or_pop(arg, next_pc);
-            break;
-        case JUMP_IF_TRUE_OR_POP:
-            next_pc = jump_if_true_or_pop(arg, next_pc);
-            break;
-        case BUILD_TUPLE:
-            build_tuple(arg, next_pc);
-            break;
-        case SETUP_LOOP:
-            setup_loop(arg, next_pc);
-            break;
-        case GET_ITER:
-            get_iter(arg, next_pc);
-            break;
-        case FOR_ITER:
-            next_pc = for_iter(arg, next_pc);
-            break;
-        case POP_BLOCK:
-            _pop_block(arg, next_pc);
-            break;
-        case BREAK_LOOP:
-            next_pc = break_loop(arg, next_pc);
-            break;
-        case UNARY_POSITIVE:
-            unary_positive(arg, next_pc);
-            break;
-        case UNARY_NEGATIVE:
-            unary_negative(arg, next_pc);
-            break;
-        case UNARY_NOT:
-            unary_not(arg, next_pc);
-            break;
-        case UNARY_INVERT:
-            unary_invert(arg, next_pc);
-            break;
-        case SETUP_FINALLY:
-            setup_finally(arg, next_pc);
-            break;
-        case SETUP_EXCEPT:
-            setup_except(arg, next_pc);
-            break;
-        case POP_EXCEPT:
-            pop_except(arg, next_pc);
-            break;
-        case DELETE_FAST:
-            delete_fast(arg, next_pc);
-            break;
-        case LOAD_ATTR:
-            load_attr(arg, next_pc);
-            break;
-        case STORE_ATTR:
-            store_attr(arg, next_pc);
-            break;
-        case DELETE_ATTR:
-            delete_attr(arg, next_pc);
-            break;
-        case IMPORT_NAME:
-            import_name(arg, next_pc);
-            break;
-        case STORE_GLOBAL:
-            store_global(arg, next_pc);
-            break;
-        case LOAD_NAME:
-            load_name(arg, next_pc);
-            break;
-        case STORE_NAME:
-            store_name(arg, next_pc);
-            break;
-        case BINARY_SUBSCR:
-            binary_subscr(arg, next_pc);
-            break;
-        case BUILD_LIST:
-            build_list(arg, next_pc);
-            break;
-        case IMPORT_FROM:
-            import_from(arg, next_pc);
-            break;
-        case IMPORT_STAR:
-            import_star(arg, next_pc);
-            break;
-        case BUILD_SET:
-            build_set(arg, next_pc);
-            break;
-        case LOAD_BUILD_CLASS:
-            load_build_class(arg, next_pc);
-            break;
-        case BUILD_MAP:
-            build_map(arg, next_pc);
-            break;
-        case LOAD_CLOSURE:
-            load_closure(arg, next_pc);
-            break;
-        case LOAD_DEREF:
-            load_deref(arg, next_pc);
-            break;
-        case STORE_DEREF:
-            store_deref(arg, next_pc);
-            break;
-        case SETUP_WITH:
-            setup_with(arg, next_pc);
-            break;
-        case WITH_CLEANUP:
-            with_cleanup(arg, next_pc);
-            break;
-        case YIELD_VALUE:
-            yield_value(arg, next_pc);
-            break;
-        case UNPACK_SEQUENCE:
-            unpack_sequence(arg, next_pc);
-            break;
-        case STORE_SUBSCR:
-            store_subscr(arg, next_pc);
-            break;
-        }
-    }
-}
 
 M_BaseObject* PyFrame::get_locals() { return locals; }
 
