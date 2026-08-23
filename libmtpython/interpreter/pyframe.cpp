@@ -109,14 +109,14 @@ void PyFrame::init_cells(M_BaseObject* outer, PyCode* code)
 void PyFrame::mark_children(gc::GarbageCollector* gc)
 {
     gc->mark_object(pycode);
-    gc->mark_object(globals);
-    gc->mark_object(locals);
+    gc->mark_object_maybe(globals);
+    gc->mark_object_maybe(locals);
 
     for (const auto& val : value_stack)
-        gc->mark_object(val);
+        gc->mark_object_maybe(val);
 
     for (const auto& obj : local_vars)
-        gc->mark_object(obj);
+        gc->mark_object_maybe(obj);
 
     for (const auto& obj : cells)
         gc->mark_object(obj);

@@ -18,9 +18,18 @@ private:
     objects::M_BaseObject* encoding;
 
 public:
-    M_TextIOWrapper(mtpython::objects::ObjSpace* space) : M_TextIOBase(space) {}
+    M_TextIOWrapper(objects::ObjSpace* space)
+        : M_TextIOBase(space), buffer(nullptr), encoding(nullptr)
+    {}
 
     interpreter::Typedef* get_typedef();
+
+    virtual void mark_children(gc::GarbageCollector* gc)
+    {
+        M_TextIOBase::mark_children(gc);
+        gc->mark_object_maybe(buffer);
+        gc->mark_object_maybe(encoding);
+    }
 
     static objects::M_BaseObject* __new__(vm::ThreadContext* context,
                                           const interpreter::Arguments& args);

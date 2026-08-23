@@ -20,7 +20,10 @@ public:
     objects::M_BaseObject* get() { return value; }
     void set(objects::M_BaseObject* v) { value = v; }
 
-    void mark_children(gc::GarbageCollector* gc) { gc->mark_object(value); }
+    void mark_children(gc::GarbageCollector* gc)
+    {
+        gc->mark_object_maybe(value);
+    }
 };
 
 } // namespace interpreter

@@ -31,10 +31,10 @@ public:
 
     int size() { return items.size(); }
 
-    virtual void mark_chidren(gc::GarbageCollector* gc)
+    virtual void mark_children(gc::GarbageCollector* gc)
     {
         for (const auto& obj : items)
-            gc->mark_object(obj);
+            gc->mark_object_maybe(obj);
     }
 
     static M_BaseObject* __len__(vm::ThreadContext* context,

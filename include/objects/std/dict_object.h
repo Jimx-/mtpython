@@ -47,11 +47,11 @@ public:
     M_BaseObject* getitem(M_BaseObject* key);
     void setitem(M_BaseObject* key, M_BaseObject* value);
 
-    virtual void mark_chidren(gc::GarbageCollector* gc)
+    virtual void mark_children(gc::GarbageCollector* gc)
     {
         for (const auto& [k, v] : dict) {
-            gc->mark_object(k);
-            gc->mark_object(v);
+            gc->mark_object_maybe(k);
+            gc->mark_object_maybe(v);
         }
     }
 

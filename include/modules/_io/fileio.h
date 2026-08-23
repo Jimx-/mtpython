@@ -14,9 +14,17 @@ private:
     bool closefd;
 
 public:
-    M_FileIO(mtpython::objects::ObjSpace* space) : M_RawIOBase(space) {}
+    M_FileIO(mtpython::objects::ObjSpace* space)
+        : M_RawIOBase(space), name(nullptr)
+    {}
 
     interpreter::Typedef* get_typedef();
+
+    virtual void mark_children(gc::GarbageCollector* gc)
+    {
+        M_RawIOBase::mark_children(gc);
+        gc->mark_object_maybe(name);
+    }
 
     static objects::M_BaseObject* __new__(vm::ThreadContext* context,
                                           const interpreter::Arguments& args);

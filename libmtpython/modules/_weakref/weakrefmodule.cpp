@@ -4,6 +4,7 @@
 #include "interpreter/compiler.h"
 #include "interpreter/error.h"
 #include "interpreter/pyframe.h"
+#include "gc/garbage_collector.h"
 
 using namespace mtpython::modules;
 using namespace mtpython::objects;
@@ -46,6 +47,13 @@ public:
     {
         M_Ref* ref = static_cast<M_Ref*>(self);
         return ref->obj;
+    }
+
+    virtual void mark_children(mtpython::gc::GarbageCollector* gc)
+    {
+        /* obj is deliberately not traced: a weakref must not keep its
+           referent alive */
+        gc->mark_object_maybe(callback);
     }
 
     static Typedef* _ref_typedef()

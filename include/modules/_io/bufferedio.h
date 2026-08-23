@@ -20,7 +20,15 @@ protected:
     objects::M_BaseObject* raw;
 
 public:
-    BufferedBase(objects::ObjSpace* space) : M_BufferedIOBase(space) {}
+    BufferedBase(objects::ObjSpace* space)
+        : M_BufferedIOBase(space), raw(nullptr)
+    {}
+
+    virtual void mark_children(gc::GarbageCollector* gc)
+    {
+        M_BufferedIOBase::mark_children(gc);
+        gc->mark_object_maybe(raw);
+    }
 
     static objects::M_BaseObject* name_get(vm::ThreadContext* context,
                                            objects::M_BaseObject* self);

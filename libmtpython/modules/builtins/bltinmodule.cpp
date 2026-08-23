@@ -661,10 +661,10 @@ public:
 
     virtual void mark_children(gc::GarbageCollector* gc)
     {
-        gc->mark_object(start);
-        gc->mark_object(stop);
-        gc->mark_object(step);
-        gc->mark_object(length);
+        gc->mark_object_maybe(start);
+        gc->mark_object_maybe(stop);
+        gc->mark_object_maybe(step);
+        gc->mark_object_maybe(length);
     }
 
     static M_BaseObject* __new__(mtpython::vm::ThreadContext* context,
@@ -815,7 +815,7 @@ public:
 
     virtual void mark_children(gc::GarbageCollector* gc)
     {
-        gc->mark_object(obj);
+        gc->mark_object_maybe(obj);
     }
 
     static M_BaseObject* __next__(mtpython::vm::ThreadContext* context,
@@ -909,10 +909,10 @@ public:
 
     virtual void mark_children(gc::GarbageCollector* gc)
     {
-        gc->mark_object(fget);
-        gc->mark_object(fset);
-        gc->mark_object(fdel);
-        gc->mark_object(doc);
+        gc->mark_object_maybe(fget);
+        gc->mark_object_maybe(fset);
+        gc->mark_object_maybe(fdel);
+        gc->mark_object_maybe(doc);
     }
 
     static M_BaseObject* __new__(mtpython::vm::ThreadContext* context,
@@ -1031,9 +1031,9 @@ public:
 
     virtual void mark_children(gc::GarbageCollector* gc)
     {
-        gc->mark_object(type);
-        gc->mark_object(obj_type);
-        gc->mark_object(self);
+        gc->mark_object_maybe(type);
+        gc->mark_object_maybe(obj_type);
+        gc->mark_object_maybe(self);
     }
 
     static M_BaseObject* __new__(mtpython::vm::ThreadContext* context,

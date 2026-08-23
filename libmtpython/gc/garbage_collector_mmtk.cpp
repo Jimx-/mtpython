@@ -164,7 +164,14 @@ void* GarbageCollectorMmtk::allocate(size_t size)
     void* obj = (char*)addr + prefix_size;
     mmtk_post_alloc(context->mutator_, obj, mmtk_alloc_size, 0);
 
-    mmtk_add_finalizer(obj);
+    /* Do not register every object as finalizable: mmtk-core's
+       FinalizableProcessor resurrects dead candidates (keeps them
+       marked through the sweep, handing them to the binding only
+       after the mutator resumes), so a finalizer on every object
+       delays reclamation of each GC cycle's garbage by one full
+       cycle. With the fixed 32MB heap and a churning workload the
+       free space after a GC drops to ~0 and the VM dies with
+       HeapOutOfMemory. Dead objects are simply swept instead. */
 
     return obj;
 }

@@ -26,7 +26,7 @@ public:
 
     virtual void mark_children(gc::GarbageCollector* gc)
     {
-        gc->mark_object(dict);
+        gc->mark_object_maybe(dict);
         gc->mark_object(obj_type);
     }
 

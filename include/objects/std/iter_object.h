@@ -20,9 +20,9 @@ public:
     {}
     interpreter::Typedef* get_typedef();
 
-    virtual void mark_chidren(gc::GarbageCollector* gc)
+    virtual void mark_children(gc::GarbageCollector* gc)
     {
-        gc->mark_object(obj);
+        gc->mark_object_maybe(obj);
     }
 
     static M_BaseObject* __next__(vm::ThreadContext* context,
@@ -42,10 +42,10 @@ public:
 
     interpreter::Typedef* get_typedef();
 
-    virtual void mark_chidren(gc::GarbageCollector* gc)
+    virtual void mark_children(gc::GarbageCollector* gc)
     {
         for (const auto& obj : items) {
-            gc->mark_object(obj);
+            gc->mark_object_maybe(obj);
         }
     }
 

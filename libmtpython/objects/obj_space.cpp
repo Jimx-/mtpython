@@ -124,6 +124,36 @@ void ObjSpace::mark_roots(gc::GarbageCollector* gc)
 
     typedef_cache->mark_objects(gc);
     gateway_cache.mark_objects(gc);
+
+    /* Builtin modules are allocated off the GC heap (BuiltinModule uses
+       plain operator new) and are immortal, but they hold GC-allocated
+       dicts/names that are referenced from nowhere else: scan them as
+       roots. mark_object_maybe keeps working if a module ever moves
+       on-heap (marking is idempotent). */
+    auto scan_module = [&](M_BaseObject* mod) {
+        if (!mod) return;
+        gc->mark_object_maybe(mod);
+        mod->mark_children(gc);
+    };
+    scan_module(_io);
+    scan_module(builtin);
+    scan_module(sys);
+    for (const auto& [k, v] : builtin_modules)
+        scan_module(v);
+
+    /* exception types cached for InterpError; set by init_builtin_exceptions()
+       which runs after some allocation has already happened */
+    gc->mark_object_maybe(type_TypeError);
+    gc->mark_object_maybe(type_StopIteration);
+    gc->mark_object_maybe(type_NameError);
+    gc->mark_object_maybe(type_UnboundLocalError);
+    gc->mark_object_maybe(type_AttributeError);
+    gc->mark_object_maybe(type_ImportError);
+    gc->mark_object_maybe(type_ValueError);
+    gc->mark_object_maybe(type_SystemError);
+    gc->mark_object_maybe(type_KeyError);
+    gc->mark_object_maybe(type_IndexError);
+    gc->mark_object_maybe(type_SyntaxError);
 }
 
 M_BaseObject* ObjSpace::get_builtin_module(const std::string& name)

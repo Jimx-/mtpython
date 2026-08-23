@@ -2,6 +2,7 @@
 #define _IOBASE_H_
 
 #include "objects/obj_space.h"
+#include "gc/garbage_collector.h"
 
 namespace mtpython {
 namespace modules {
@@ -14,6 +15,11 @@ public:
     M_IOBase(mtpython::objects::ObjSpace* space);
 
     objects::M_BaseObject* get_dict(objects::ObjSpace* space) { return dict; }
+
+    virtual void mark_children(gc::GarbageCollector* gc)
+    {
+        gc->mark_object_maybe(dict);
+    }
 };
 
 class M_RawIOBase : public M_IOBase {

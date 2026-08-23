@@ -76,7 +76,7 @@ public:
     virtual void mark_children(gc::GarbageCollector* gc)
     {
         for (const auto& obj : set)
-            gc->mark_object(obj);
+            gc->mark_object_maybe(obj);
     }
 };
 

@@ -52,8 +52,8 @@ public:
     virtual objects::M_BaseObject* unhandle() { throw error; }
     virtual void mark_children(gc::GarbageCollector* gc)
     {
-        gc->mark_object(error.get_value());
-        gc->mark_object(error.get_type());
+        gc->mark_object_maybe(error.get_value());
+        gc->mark_object_maybe(error.get_type());
     }
 };
 
@@ -69,7 +69,7 @@ public:
     virtual objects::M_BaseObject* unhandle() { return retval; }
     virtual void mark_children(gc::GarbageCollector* gc)
     {
-        gc->mark_object(retval);
+        gc->mark_object_maybe(retval);
     }
 };
 
