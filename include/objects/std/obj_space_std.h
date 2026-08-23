@@ -12,10 +12,15 @@ namespace objects {
 /* General-purpose object space */
 class StdObjSpace : public ObjSpace {
 private:
+    static const int SMALL_INT_MIN = -5;
+    static const int SMALL_INT_MAX = 256;
+
     M_BaseObject* wrapped_None;
     M_BaseObject* wrapped_True;
     M_BaseObject* wrapped_False;
     M_BaseObject* wrapped_NotImplemented;
+
+    M_BaseObject* small_ints[SMALL_INT_MAX - SMALL_INT_MIN + 1] = {};
 
     std::unordered_map<std::string, M_BaseObject*> builtin_types;
 

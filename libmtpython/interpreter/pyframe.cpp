@@ -970,10 +970,10 @@ void PyFrame::store_fast(int arg, int next_pc)
 void PyFrame::load_global(int arg, int next_pc)
 {
     M_BaseObject* name = get_name(arg);
-    std::string unwrapped_name = space->unwrap_str(name);
 
-    M_BaseObject* value = space->finditem_str(globals, unwrapped_name);
+    M_BaseObject* value = space->finditem(globals, name);
     if (!value) {
+        std::string unwrapped_name = space->unwrap_str(name);
         value = space->get_builtin()->get_dict_value(space, unwrapped_name);
         if (!value)
             throw InterpError::format(space, space->NameError_type(),
@@ -1340,27 +1340,26 @@ void PyFrame::import_name(int arg, int next_pc)
 void PyFrame::store_global(int arg, int next_pc)
 {
     M_BaseObject* w_name = get_name(arg);
-    std::string name = space->unwrap_str(w_name);
     M_BaseObject* value = pop_value();
-    space->setitem_str(globals, name, value);
+    space->setitem(globals, w_name, value);
 }
 
 void PyFrame::load_name(int arg, int next_pc)
 {
     M_BaseObject* w_name = get_name(arg);
-    std::string name = space->unwrap_str(w_name);
     M_BaseObject* value = nullptr;
 
     if (locals != globals) {
-        value = space->finditem_str(locals, name);
+        value = space->finditem(locals, w_name);
         if (value) {
             push_value(value);
             return;
         }
     }
 
-    value = space->finditem_str(globals, name);
+    value = space->finditem(globals, w_name);
     if (!value) {
+        std::string name = space->unwrap_str(w_name);
         value = space->get_builtin()->get_dict_value(space, name);
         if (!value)
             throw InterpError::format(space, space->NameError_type(),
@@ -1373,9 +1372,8 @@ void PyFrame::load_name(int arg, int next_pc)
 void PyFrame::store_name(int arg, int next_pc)
 {
     M_BaseObject* w_name = get_name(arg);
-    std::string name = space->unwrap_str(w_name);
     M_BaseObject* value = pop_value();
-    space->setitem_str(locals, name, value);
+    space->setitem(locals, w_name, value);
 }
 
 void PyFrame::build_list(int arg, int next_pc)

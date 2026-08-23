@@ -60,6 +60,10 @@ void StdObjSpace::initialize()
     wrapped_NotImplemented =
         new (ThreadContext::current_thread()) M_NotImplemented();
 
+    for (int i = SMALL_INT_MIN; i <= SMALL_INT_MAX; i++)
+        small_ints[i - SMALL_INT_MIN] =
+            new (ThreadContext::current_thread()) M_StdIntObject(i);
+
     /* type of all types */
     M_BaseObject* type_obj = get_typeobject(M_StdTypeObject::_type_typedef());
     type_obj->set_class(this, type_obj);
@@ -96,6 +100,9 @@ void StdObjSpace::mark_roots(gc::GarbageCollector* gc)
     gc->mark_object_maybe(wrapped_True);
     gc->mark_object_maybe(wrapped_False);
     gc->mark_object_maybe(wrapped_NotImplemented);
+
+    for (const auto& obj : small_ints)
+        gc->mark_object_maybe(obj);
 
     for (const auto& [k, v] : builtin_types)
         gc->mark_object(v);
@@ -180,13 +187,21 @@ std::string StdObjSpace::get_type_name(M_BaseObject* obj)
 
 M_BaseObject* StdObjSpace::wrap_int(ThreadContext* context, int x)
 {
+    if (x >= SMALL_INT_MIN && x <= SMALL_INT_MAX)
+        return small_ints[x - SMALL_INT_MIN];
     return new (context) M_StdIntObject(x);
 }
 
 M_BaseObject* StdObjSpace::wrap_int(ThreadContext* context,
                                     const std::string& x)
 {
-    return new (context) M_StdIntObject(x);
+    int value = 0;
+    try {
+        value = std::stoi(x, nullptr, 0);
+    } catch (std::out_of_range&) {
+        /* TODO: create long object */
+    }
+    return wrap_int(context, value);
 }
 
 M_BaseObject* StdObjSpace::wrap_str(ThreadContext* context,
