@@ -5,6 +5,7 @@
 #include "interpreter/pycode.h"
 #include "interpreter/module.h"
 #include "objects/space_cache.h"
+#include "objects/std/type_object.h"
 #include "gc/garbage_collector_mmtk.h"
 #include "interpreter/error.h"
 
@@ -101,12 +102,35 @@ mtpython::interpreter::Code* PyVM::compile_code(ThreadContext* context,
     return code;
 }
 
+/* Format an uncaught app-level exception the way CPython's last
+   traceback line does: "TypeError: message". The error value is not
+   necessarily a string (e.g. StopIteration carries None, and to_string()
+   is unimplemented for most objects), so stringification failures just
+   drop the message instead of aborting the printer. */
+static std::string
+format_uncaught(InterpError& e, mtpython::objects::ObjSpace* space)
+{
+    std::string name = "Exception";
+    auto* type_obj =
+        dynamic_cast<mtpython::objects::M_StdTypeObject*>(e.get_type());
+    if (type_obj) name = type_obj->get_name();
+
+    std::string msg;
+    try {
+        msg = space->unwrap_str(e.get_value());
+    } catch (...) {
+    }
+
+    if (msg.empty()) return name;
+    return name + ": " + msg;
+}
+
 void PyVM::run_toplevel(std::function<void()> f)
 {
     try {
         f();
-    } catch (interpreter::InterpError& e) {
-        spdlog::error("{}", space_->unwrap_str(e.get_value()));
+    } catch (InterpError& e) {
+        spdlog::error("{}", format_uncaught(e, space_));
     }
 }
 
