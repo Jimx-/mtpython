@@ -104,15 +104,32 @@ static void copy_mapping(mtpython::vm::ThreadContext* context,
     }
 }
 
+/* collect an iterable into a vector via the iter/next protocol: works
+   for tuples and lists alike, and raises TypeError for
+   non-iterables */
+static void collect_iterable(mtpython::vm::ThreadContext* context,
+                             ObjSpace* space, M_BaseObject* iterable,
+                             std::vector<M_BaseObject*>& list)
+{
+    M_BaseObject* iter = space->iter(iterable);
+    while (true) {
+        try {
+            list.push_back(space->next(iter));
+        } catch (InterpError& e) {
+            if (!e.match(space, space->StopIteration_type())) throw e;
+            break;
+        }
+    }
+}
+
 M_BaseObject* M_StdDictObject::__new__(mtpython::vm::ThreadContext* context,
                                        const Arguments& args)
 {
-    static Signature new_signature({"type", "source"}, "", "kwargs", {});
+    static Signature new_signature({"type"}, "args", "kwargs", {});
 
     ObjSpace* space = context->get_space();
-    M_BaseObject* None = space->wrap_None();
     std::vector<M_BaseObject*> scope;
-    args.parse("dict", nullptr, new_signature, scope, {None});
+    args.parse("dict", nullptr, new_signature, scope);
 
     M_BaseObject* wrapped_type = scope[0];
     M_StdTypeObject* type_obj = dynamic_cast<M_StdTypeObject*>(wrapped_type);
@@ -120,10 +137,17 @@ M_BaseObject* M_StdDictObject::__new__(mtpython::vm::ThreadContext* context,
         throw InterpError::format(space, space->TypeError_type(),
                                   "dict.__new__(X): X is not a type object");
 
+    std::vector<M_BaseObject*> extra;
+    space->unwrap_tuple(scope[1], extra);
+    if (extra.size() > 1)
+        throw InterpError::format(space, space->TypeError_type(),
+                                  "dict() takes at most 1 argument (%d given)",
+                                  (int)extra.size());
+
     M_StdDictObject* dict = new (context) M_StdDictObject(space);
 
-    M_BaseObject* source = scope[1];
-    if (!space->i_is(source, None)) {
+    if (extra.size() == 1) {
+        M_BaseObject* source = extra[0];
         bool is_mapping = true;
         try {
             space->getattr_str(source, "keys");
@@ -135,36 +159,24 @@ M_BaseObject* M_StdDictObject::__new__(mtpython::vm::ThreadContext* context,
         if (is_mapping) {
             copy_mapping(context, space, source, dict);
         } else { /* iterable of (key, value) pairs */
-            M_BaseObject* iter = space->iter(source);
-            int i = 0;
-            while (true) {
-                M_BaseObject* item;
-                try {
-                    item = space->next(iter);
-                } catch (InterpError& e) {
-                    if (!e.match(space, space->StopIteration_type()))
-                        throw e;
-                    break;
-                }
+            std::vector<M_BaseObject*> items;
+            collect_iterable(context, space, source, items);
+            for (std::size_t i = 0; i < items.size(); i++) {
                 std::vector<M_BaseObject*> pair;
-                space->unwrap_tuple(item, pair);
+                collect_iterable(context, space, items[i], pair);
                 if (pair.size() != 2)
                     throw InterpError::format(
                         space, space->ValueError_type(),
                         "dictionary update sequence element #%d has length "
                         "%d; 2 is required",
-                        i, pair.size());
+                        (int)i, (int)pair.size());
                 dict->setitem(pair[0], pair[1]);
-                i++;
             }
         }
     }
 
     /* keyword arguments */
-    M_BaseObject* kwargs = scope[2];
-    if (kwargs && !space->i_is(kwargs, None)) {
-        copy_mapping(context, space, kwargs, dict);
-    }
+    copy_mapping(context, space, scope[2], dict);
 
     return space->wrap(context, dict);
 }

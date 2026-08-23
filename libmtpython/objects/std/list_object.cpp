@@ -5,6 +5,7 @@
 #include "interpreter/typedef.h"
 #include "interpreter/error.h"
 #include "interpreter/gateway.h"
+#include "objects/std/type_object.h"
 #include "objects/std/list_object.h"
 
 using namespace mtpython::objects;
@@ -15,6 +16,8 @@ mtpython::interpreter::Typedef* M_StdListObject::_list_typedef()
     static mtpython::interpreter::Typedef list_typedef(
         "list",
         {
+            {"__new__",
+             new InterpFunctionWrapper("__new__", M_StdListObject::__new__)},
             {"__repr__",
              new InterpFunctionWrapper("__repr__", M_StdListObject::__repr__)},
             {"__len__",
@@ -43,6 +46,52 @@ mtpython::interpreter::Typedef* M_StdListObject::_list_typedef()
 mtpython::interpreter::Typedef* M_StdListObject::get_typedef()
 {
     return _list_typedef();
+}
+
+M_BaseObject* M_StdListObject::__new__(mtpython::vm::ThreadContext* context,
+                                       const Arguments& args)
+{
+    static Signature new_signature({"type"}, "args", "kwargs", {});
+
+    ObjSpace* space = context->get_space();
+    std::vector<M_BaseObject*> scope;
+    args.parse("list", nullptr, new_signature, scope);
+
+    M_BaseObject* wrapped_type = scope[0];
+    M_StdTypeObject* type_obj = dynamic_cast<M_StdTypeObject*>(wrapped_type);
+    if (!type_obj)
+        throw InterpError::format(space, space->TypeError_type(),
+                                  "list.__new__(X): X is not a type object");
+
+    std::vector<M_BaseObject*> extra;
+    space->unwrap_tuple(scope[1], extra);
+    if (extra.size() > 1)
+        throw InterpError::format(space, space->TypeError_type(),
+                                  "list() takes at most 1 argument (%d given)",
+                                  (int)extra.size());
+
+    M_BaseObject* kwargs = scope[2];
+    if (space->unwrap_int(space->len(kwargs)) > 0)
+        throw InterpError(space->TypeError_type(),
+                          space->wrap_str(
+                              context, "list() takes no keyword arguments"));
+
+    M_StdListObject* list = new (context) M_StdListObject();
+    if (extra.size() == 1) { /* list(iterable) */
+        M_BaseObject* iter = space->iter(extra[0]);
+        list->lock();
+        while (true) {
+            try {
+                list->items.push_back(space->next(iter));
+            } catch (InterpError& e) {
+                if (!e.match(space, space->StopIteration_type())) throw e;
+                break;
+            }
+        }
+        list->unlock();
+    }
+
+    return space->wrap(context, list);
 }
 
 M_BaseObject* M_StdListObject::__len__(mtpython::vm::ThreadContext* context,

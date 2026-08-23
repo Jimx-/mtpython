@@ -804,7 +804,12 @@ ASTNode* BaseCodeGenerator::visit_try_except(TryNode* node)
             emit_op(DUP_TOP);
             type->visit(this);
             emit_op_arg(COMPARE_OP, 10);
-            emit_jump(JUMP_IF_FALSE_OR_POP, next_exc, true);
+            /* POP_JUMP_IF_FALSE, not JUMP_IF_FALSE_OR_POP: the match
+               result must be popped on the non-matching path too, or
+               the leftover False corrupts the [unwinder, value, type]
+               triple END_FINALLY expects and the exception is
+               silently swallowed */
+            emit_jump(POP_JUMP_IF_FALSE, next_exc, true);
         }
         emit_op(POP_TOP);
         std::string& name = handler->get_name();
@@ -896,10 +901,14 @@ ASTNode* BaseCodeGenerator::visit_tuple(TupleNode* node)
 
     ExprContext ctx = node->get_context();
     if (ctx == ExprContext::EC_STORE) {
+        /* tuple assignment target (e.g. a for-loop target): unpack
+           the iterable, then store into each element (contexts were
+           propagated to the elements by set_context) */
+        emit_op_arg(UNPACK_SEQUENCE, eltcount);
         for (std::size_t i = 0; i < eltcount; i++) {
-            ASTNode* elt = elements[i];
-            /* TODO: Starred assignment PEP 3132 */
+            elements[i]->visit(this);
         }
+        return node;
     }
 
     for (auto elt : elements) {
