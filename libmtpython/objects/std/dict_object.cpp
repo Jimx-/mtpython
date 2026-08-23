@@ -5,6 +5,7 @@
 #include "interpreter/typedef.h"
 #include "interpreter/gateway.h"
 #include "interpreter/error.h"
+#include "objects/std/type_object.h"
 #include "objects/std/dict_object.h"
 
 using namespace mtpython::objects;
@@ -77,11 +78,106 @@ M_BaseObject* M_StdDictObject::__setitem__(mtpython::vm::ThreadContext* context,
     return nullptr;
 }
 
+M_BaseObject* M_StdDictObject::__len__(mtpython::vm::ThreadContext* context,
+                                       M_BaseObject* self)
+{
+    M_StdDictObject* as_dict = static_cast<M_StdDictObject*>(self);
+
+    as_dict->lock();
+    std::size_t size = as_dict->dict.size();
+    as_dict->unlock();
+
+    return context->get_space()->wrap_int(context, (int)size);
+}
+
+/* copy the (key, value) pairs of a mapping into dict */
+static void copy_mapping(mtpython::vm::ThreadContext* context,
+                         ObjSpace* space, M_BaseObject* source,
+                         M_StdDictObject* dict)
+{
+    M_BaseObject* keys_meth = space->getattr_str(source, "keys");
+    M_BaseObject* wrapped_keys = space->call_function(context, keys_meth, {});
+    std::vector<M_BaseObject*> keys;
+    space->unwrap_tuple(wrapped_keys, keys);
+    for (M_BaseObject* key : keys) {
+        dict->setitem(key, space->getitem(source, key));
+    }
+}
+
+M_BaseObject* M_StdDictObject::__new__(mtpython::vm::ThreadContext* context,
+                                       const Arguments& args)
+{
+    static Signature new_signature({"type", "source"}, "", "kwargs", {});
+
+    ObjSpace* space = context->get_space();
+    M_BaseObject* None = space->wrap_None();
+    std::vector<M_BaseObject*> scope;
+    args.parse("dict", nullptr, new_signature, scope, {None});
+
+    M_BaseObject* wrapped_type = scope[0];
+    M_StdTypeObject* type_obj = dynamic_cast<M_StdTypeObject*>(wrapped_type);
+    if (!type_obj)
+        throw InterpError::format(space, space->TypeError_type(),
+                                  "dict.__new__(X): X is not a type object");
+
+    M_StdDictObject* dict = new (context) M_StdDictObject(space);
+
+    M_BaseObject* source = scope[1];
+    if (!space->i_is(source, None)) {
+        bool is_mapping = true;
+        try {
+            space->getattr_str(source, "keys");
+        } catch (InterpError& e) {
+            if (!e.match(space, space->AttributeError_type())) throw e;
+            is_mapping = false;
+        }
+
+        if (is_mapping) {
+            copy_mapping(context, space, source, dict);
+        } else { /* iterable of (key, value) pairs */
+            M_BaseObject* iter = space->iter(source);
+            int i = 0;
+            while (true) {
+                M_BaseObject* item;
+                try {
+                    item = space->next(iter);
+                } catch (InterpError& e) {
+                    if (!e.match(space, space->StopIteration_type()))
+                        throw e;
+                    break;
+                }
+                std::vector<M_BaseObject*> pair;
+                space->unwrap_tuple(item, pair);
+                if (pair.size() != 2)
+                    throw InterpError::format(
+                        space, space->ValueError_type(),
+                        "dictionary update sequence element #%d has length "
+                        "%d; 2 is required",
+                        i, pair.size());
+                dict->setitem(pair[0], pair[1]);
+                i++;
+            }
+        }
+    }
+
+    /* keyword arguments */
+    M_BaseObject* kwargs = scope[2];
+    if (kwargs && !space->i_is(kwargs, None)) {
+        copy_mapping(context, space, kwargs, dict);
+    }
+
+    return space->wrap(context, dict);
+}
+
 mtpython::interpreter::Typedef* M_StdDictObject::_dict_typedef()
 {
     static mtpython::interpreter::Typedef dict_typedef(
         "dict",
         {
+            {"__new__",
+             new InterpFunctionWrapper("__new__", M_StdDictObject::__new__)},
+            {"__len__",
+             new InterpFunctionWrapper("__len__", M_StdDictObject::__len__)},
             {"__repr__",
              new InterpFunctionWrapper("__repr__", M_StdDictObject::__repr__)},
             {"__getitem__", new InterpFunctionWrapper(

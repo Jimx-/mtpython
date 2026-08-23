@@ -59,6 +59,8 @@ mtpython::interpreter::Typedef* M_StdIntObject::_int_typedef()
              new InterpFunctionWrapper("__abs__", M_StdIntObject::__abs__)},
             {"__neg__",
              new InterpFunctionWrapper("__neg__", M_StdIntObject::__neg__)},
+            {"__hash__",
+             new InterpFunctionWrapper("__hash__", M_StdIntObject::__hash__)},
         });
 
     return &int_typedef;
@@ -70,6 +72,15 @@ mtpython::interpreter::Typedef* M_StdIntObject::get_typedef()
 }
 
 void M_StdIntObject::dbg_print() { std::cout << intval; }
+
+M_BaseObject* M_StdIntObject::__hash__(mtpython::vm::ThreadContext* context,
+                                       mtpython::objects::M_BaseObject* self)
+{
+    M_StdIntObject* as_int = static_cast<M_StdIntObject*>(self);
+    /* hash(int) == int, matching CPython, so equal ints in distinct
+       boxes land in the same hash bucket */
+    return context->get_space()->wrap_int(context, as_int->intval);
+}
 
 M_BaseObject* M_StdIntObject::__new__(mtpython::vm::ThreadContext* context,
                                       mtpython::objects::M_BaseObject* int_type,

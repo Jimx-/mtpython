@@ -64,6 +64,8 @@ public:
                                  mtpython::objects::M_BaseObject* self);
     static M_BaseObject* __neg__(mtpython::vm::ThreadContext* context,
                                  mtpython::objects::M_BaseObject* self);
+    static M_BaseObject* __hash__(mtpython::vm::ThreadContext* context,
+                                  mtpython::objects::M_BaseObject* self);
 
     static interpreter::Typedef* _int_typedef();
     virtual interpreter::Typedef* get_typedef();

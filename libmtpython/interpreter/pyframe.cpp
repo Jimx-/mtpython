@@ -287,6 +287,7 @@ void PyFrame::dispatch_bytecode(ThreadContext* context,
         SET_LABEL(BUILD_SET);
         SET_LABEL(LOAD_BUILD_CLASS);
         SET_LABEL(BUILD_MAP);
+        SET_LABEL(STORE_MAP);
         SET_LABEL(LOAD_CLOSURE);
         SET_LABEL(LOAD_DEREF);
         SET_LABEL(STORE_DEREF);
@@ -756,6 +757,12 @@ void PyFrame::dispatch_bytecode(ThreadContext* context,
                 TARGET(BUILD_MAP)
                 {
                     build_map(arg, next_pc);
+                    DISPATCH();
+                }
+
+                TARGET(STORE_MAP)
+                {
+                    store_map(arg, next_pc);
                     DISPATCH();
                 }
 
@@ -1467,6 +1474,20 @@ void PyFrame::load_build_class(int arg, int next_pc)
 void PyFrame::build_map(int arg, int next_pc)
 {
     M_BaseObject* dict = space->new_dict(context);
+    push_value(dict);
+}
+
+/* codegen evaluates dict literals as BUILD_MAP 0, then value and key
+   per pair; STORE_MAP consumes the pair and leaves the dict on the
+   stack */
+void PyFrame::store_map(int arg, int next_pc)
+{
+    M_BaseObject* key = pop_value();
+    M_BaseObject* value = pop_value();
+    M_BaseObject* dict = pop_value();
+
+    space->setitem(dict, key, value);
+
     push_value(dict);
 }
 

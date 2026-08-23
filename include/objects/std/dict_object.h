@@ -4,6 +4,7 @@
 #include <string>
 #include <unordered_map>
 #include "objects/obj_space.h"
+#include "interpreter/arguments.h"
 #include "gc/garbage_collector.h"
 
 namespace mtpython {
@@ -57,6 +58,10 @@ public:
 
     static M_BaseObject* __repr__(vm::ThreadContext* context,
                                   M_BaseObject* self);
+    static M_BaseObject* __len__(vm::ThreadContext* context,
+                                 M_BaseObject* self);
+    static M_BaseObject* __new__(vm::ThreadContext* context,
+                                 const interpreter::Arguments& args);
     static M_BaseObject* __getitem__(mtpython::vm::ThreadContext* context,
                                      M_BaseObject* obj, M_BaseObject* key);
     static M_BaseObject* __setitem__(mtpython::vm::ThreadContext* context,

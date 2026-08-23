@@ -269,6 +269,7 @@ protected:
     void build_set(int arg, int next_pc);
     void load_build_class(int arg, int next_pc);
     void build_map(int arg, int next_pc);
+    void store_map(int arg, int next_pc);
     void load_closure(int arg, int next_pc);
     void load_deref(int arg, int next_pc);
     void store_deref(int arg, int next_pc);
