@@ -154,7 +154,23 @@ protected:
     mtpython::objects::M_BaseObject* globals;
     mtpython::objects::M_BaseObject* locals;
 
-    std::deque<mtpython::objects::M_BaseObject*> value_stack;
+    mtpython::objects::M_BaseObject** value_stack;
+    int value_stack_top;
+    int value_stack_cap;
+
+    void grow_value_stack(int needed)
+    {
+        int new_cap = value_stack_cap * 2;
+        if (new_cap < needed) new_cap = needed;
+        mtpython::objects::M_BaseObject** grown =
+            new mtpython::objects::M_BaseObject*[new_cap];
+        for (int i = 0; i < value_stack_top; i++)
+            grown[i] = value_stack[i];
+        delete[] value_stack;
+        value_stack = grown;
+        value_stack_cap = new_cap;
+    }
+
     std::vector<mtpython::objects::M_BaseObject*> local_vars;
     std::vector<mtpython::interpreter::Cell*> cells;
     std::stack<FrameBlock*> block_stack;
@@ -164,23 +180,20 @@ protected:
 
     mtpython::objects::M_BaseObject* pop_value()
     {
-        mtpython::objects::M_BaseObject* tmp = value_stack.back();
-        value_stack.pop_back();
-        return tmp;
+        return value_stack[--value_stack_top];
     }
 
     void pop_values(int n, std::vector<mtpython::objects::M_BaseObject*>& v)
     {
         v.resize(n);
-        n--;
-        while (n >= 0) {
-            mtpython::objects::M_BaseObject* tmp = value_stack.back();
-            value_stack.pop_back();
-            v[n--] = tmp;
-        }
+        for (int i = n - 1; i >= 0; i--)
+            v[i] = value_stack[--value_stack_top];
     }
 
-    mtpython::objects::M_BaseObject* peek_value() { return value_stack.back(); }
+    mtpython::objects::M_BaseObject* peek_value()
+    {
+        return value_stack[value_stack_top - 1];
+    }
 
     FrameBlock* pop_block()
     {
@@ -290,13 +303,16 @@ public:
     PyFrame(vm::ThreadContext* context, Code* code,
             mtpython::objects::M_BaseObject* globals,
             mtpython::objects::M_BaseObject* outer);
+    virtual ~PyFrame() { delete[] value_stack; }
 
     void push_value(mtpython::objects::M_BaseObject* value)
     {
-        value_stack.push_back(value);
+        if (value_stack_top == value_stack_cap)
+            grow_value_stack(value_stack_top + 1);
+        value_stack[value_stack_top++] = value;
     }
 
-    int value_stack_level() { return value_stack.size(); }
+    int value_stack_level() { return value_stack_top; }
 
     void push_block(FrameBlock* block) { block_stack.push(block); }
 
@@ -330,8 +346,8 @@ public:
 
     void drop_values_until(int level)
     {
-        while (value_stack.size() > (std::size_t)level)
-            pop_value();
+        while (value_stack_top > level)
+            value_stack_top--;
     }
 
     void mark_children(gc::GarbageCollector* gc);

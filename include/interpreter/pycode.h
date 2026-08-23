@@ -59,6 +59,7 @@ public:
     std::vector<std::string>& get_cellvars() { return co_cellvars; }
     const std::vector<int>& args_as_cellvars() { return _args_as_cellvars; }
     int get_nlocals() { return co_nlocals; }
+    int get_stacksize() { return co_stacksize; }
     int get_nfreevars() { return co_freevars.size(); }
     int get_ncellvars() { return co_cellvars.size(); }
     int get_flags() { return co_flags; }

@@ -65,6 +65,11 @@ PyFrame::PyFrame(ThreadContext* context, Code* code, M_BaseObject* globals,
     int nlocals = pycode->get_nlocals();
     local_vars.resize(nlocals, nullptr);
 
+    int stacksize = pycode->get_stacksize() + 8;
+    value_stack = new M_BaseObject*[stacksize];
+    value_stack_cap = stacksize;
+    value_stack_top = 0;
+
     this->globals = globals;
     this->locals = globals;
 
@@ -112,8 +117,8 @@ void PyFrame::mark_children(gc::GarbageCollector* gc)
     gc->mark_object_maybe(globals);
     gc->mark_object_maybe(locals);
 
-    for (const auto& val : value_stack)
-        gc->mark_object_maybe(val);
+    for (int i = 0; i < value_stack_top; i++)
+        gc->mark_object_maybe(value_stack[i]);
 
     for (const auto& obj : local_vars)
         gc->mark_object_maybe(obj);
@@ -1182,7 +1187,7 @@ void PyFrame::build_tuple(int arg, int next_pc)
 
 void PyFrame::setup_loop(int arg, int next_pc)
 {
-    FrameBlock* loop_block = new LoopBlock(next_pc + arg, value_stack.size());
+    FrameBlock* loop_block = new LoopBlock(next_pc + arg, value_stack_level());
     push_block(loop_block);
 }
 
@@ -1242,14 +1247,14 @@ DEF_UNARY_OPER(not, not_)
 void PyFrame::setup_finally(int arg, int next_pc)
 {
     FrameBlock* finally_block =
-        new FinallyBlock(next_pc + arg, value_stack.size());
+        new FinallyBlock(next_pc + arg, value_stack_level());
     push_block(finally_block);
 }
 
 void PyFrame::setup_except(int arg, int next_pc)
 {
     FrameBlock* except_block =
-        new ExceptBlock(next_pc + arg, value_stack.size());
+        new ExceptBlock(next_pc + arg, value_stack_level());
     push_block(except_block);
 }
 
@@ -1559,7 +1564,7 @@ void PyFrame::setup_with(int arg, int next_pc)
     M_BaseObject* result =
         space->get_and_call_function(context, enter, {manager});
 
-    FrameBlock* frame = new WithBlock(next_pc + arg, value_stack.size());
+    FrameBlock* frame = new WithBlock(next_pc + arg, value_stack_level());
     push_block(frame);
 
     push_value(result);
